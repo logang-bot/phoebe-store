@@ -1,0 +1,384 @@
+package com.example.phoebestore.ui.screen.store
+
+import android.Manifest
+import android.content.pm.PackageManager
+import android.net.Uri
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuAnchorType
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
+import androidx.hilt.navigation.compose.hiltViewModel
+import coil3.compose.AsyncImage
+import com.example.phoebestore.R
+import com.example.phoebestore.domain.model.Currency
+import com.example.phoebestore.ui.common.CameraPermissionTextProvider
+import com.example.phoebestore.ui.common.PermissionDialog
+import com.example.phoebestore.ui.common.openAppSettings
+import java.io.File
+
+private enum class CameraTarget { LOGO, PHOTO }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun CreateStoreScreen(
+    storeId: Long?,
+    onStoreSaved: () -> Unit,
+    viewModel: CreateStoreViewModel = hiltViewModel()
+) {
+    val context = LocalContext.current
+    val activity = context as ComponentActivity
+    val formState = viewModel.formState
+    val dialogQueue = viewModel.visiblePermissionDialogQueue
+
+    var logoCameraUri by remember { mutableStateOf<Uri?>(null) }
+    var photoCameraUri by remember { mutableStateOf<Uri?>(null) }
+    var pendingCameraTarget by remember { mutableStateOf<CameraTarget?>(null) }
+    var cameraReadyToLaunch by remember { mutableStateOf(false) }
+    var currencyExpanded by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        viewModel.events.collect { event ->
+            when (event) {
+                CreateStoreEvent.StoreSaved -> onStoreSaved()
+            }
+        }
+    }
+
+    val cameraPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        viewModel.onPermissionResult(Manifest.permission.CAMERA, isGranted)
+        if (isGranted) cameraReadyToLaunch = true
+    }
+
+    val logoCameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicture()
+    ) { success ->
+        if (success) logoCameraUri?.let { viewModel.onLogoCaptured(it.toString()) }
+    }
+
+    val photoCameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicture()
+    ) { success ->
+        if (success) photoCameraUri?.let { viewModel.onPhotoCaptured(it.toString()) }
+    }
+
+    val logoGalleryLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia()
+    ) { uri ->
+        uri?.let { viewModel.onLogoCaptured(it.toString()) }
+    }
+
+    val photoGalleryLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia()
+    ) { uri ->
+        uri?.let { viewModel.onPhotoCaptured(it.toString()) }
+    }
+
+    LaunchedEffect(cameraReadyToLaunch) {
+        if (!cameraReadyToLaunch) return@LaunchedEffect
+        cameraReadyToLaunch = false
+        val target = pendingCameraTarget ?: return@LaunchedEffect
+        pendingCameraTarget = null
+        when (target) {
+            CameraTarget.LOGO -> {
+                val file = File(context.cacheDir, "store_logo_${System.currentTimeMillis()}.jpg")
+                val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
+                logoCameraUri = uri
+                logoCameraLauncher.launch(uri)
+            }
+            CameraTarget.PHOTO -> {
+                val file = File(context.cacheDir, "store_photo_${System.currentTimeMillis()}.jpg")
+                val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
+                photoCameraUri = uri
+                photoCameraLauncher.launch(uri)
+            }
+        }
+    }
+
+    fun onTakePhotoClick(target: CameraTarget) {
+        val isGranted = ContextCompat.checkSelfPermission(
+            context, Manifest.permission.CAMERA
+        ) == PackageManager.PERMISSION_GRANTED
+        pendingCameraTarget = target
+        if (isGranted) {
+            cameraReadyToLaunch = true
+        } else {
+            cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+        }
+    }
+
+    dialogQueue.reversed().forEach { permission ->
+        PermissionDialog(
+            permissionTextProvider = when (permission) {
+                Manifest.permission.CAMERA -> CameraPermissionTextProvider()
+                else -> return@forEach
+            },
+            isPermanentlyDeclined = !activity.shouldShowRequestPermissionRationale(permission),
+            onDismiss = viewModel::dismissDialog,
+            onOkClick = {
+                viewModel.dismissDialog()
+                cameraPermissionLauncher.launch(permission)
+            },
+            onGoToAppSettingsClick = {
+                viewModel.dismissDialog()
+                activity.openAppSettings()
+            }
+        )
+    }
+
+    Scaffold(
+        containerColor = MaterialTheme.colorScheme.surfaceContainer
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(innerPadding)
+                .padding(horizontal = 16.dp, vertical = 24.dp)
+        ) {
+            Text(
+                text = stringResource(
+                    if (storeId == null) R.string.create_store_title_create
+                    else R.string.create_store_title_edit
+                ),
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Logo
+            Text(
+                text = stringResource(R.string.create_store_logo_label),
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Box(
+                modifier = Modifier
+                    .size(120.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant),
+                contentAlignment = Alignment.Center
+            ) {
+                if (formState.logoUrl.isNotBlank()) {
+                    AsyncImage(
+                        model = formState.logoUrl,
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                } else {
+                    Icon(
+                        imageVector = Icons.Default.Star,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(40.dp)
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedButton(
+                    onClick = { onTakePhotoClick(CameraTarget.LOGO) },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(
+                        stringResource(
+                            if (formState.logoUrl.isBlank()) R.string.create_store_take_photo
+                            else R.string.create_store_retake_photo
+                        )
+                    )
+                }
+                OutlinedButton(
+                    onClick = {
+                        logoGalleryLauncher.launch(
+                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                        )
+                    },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(stringResource(R.string.create_store_choose_from_gallery))
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Cover photo
+            Text(
+                text = stringResource(R.string.create_store_photo_label),
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            if (formState.photoUrl.isNotBlank()) {
+                AsyncImage(
+                    model = formState.photoUrl,
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(16f / 9f)
+                        .clip(RoundedCornerShape(8.dp))
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedButton(
+                    onClick = { onTakePhotoClick(CameraTarget.PHOTO) },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(
+                        stringResource(
+                            if (formState.photoUrl.isBlank()) R.string.create_store_take_photo
+                            else R.string.create_store_retake_photo
+                        )
+                    )
+                }
+                OutlinedButton(
+                    onClick = {
+                        photoGalleryLauncher.launch(
+                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                        )
+                    },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(stringResource(R.string.create_store_choose_from_gallery))
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Name
+            OutlinedTextField(
+                value = formState.name,
+                onValueChange = viewModel::onNameChange,
+                label = { Text(stringResource(R.string.create_store_name_label)) },
+                placeholder = { Text(stringResource(R.string.create_store_name_placeholder)) },
+                isError = formState.nameError,
+                supportingText = if (formState.nameError) {
+                    { Text(stringResource(R.string.create_store_name_required_error)) }
+                } else null,
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Description
+            OutlinedTextField(
+                value = formState.description,
+                onValueChange = viewModel::onDescriptionChange,
+                label = { Text(stringResource(R.string.create_store_description_label)) },
+                placeholder = { Text(stringResource(R.string.create_store_description_placeholder)) },
+                minLines = 3,
+                maxLines = 5,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Currency dropdown
+            ExposedDropdownMenuBox(
+                expanded = currencyExpanded,
+                onExpandedChange = { currencyExpanded = it }
+            ) {
+                OutlinedTextField(
+                    value = formState.currency.name,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text(stringResource(R.string.create_store_currency_label)) },
+                    trailingIcon = {
+                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = currencyExpanded)
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .menuAnchor(MenuAnchorType.PrimaryNotEditable)
+                )
+                ExposedDropdownMenu(
+                    expanded = currencyExpanded,
+                    onDismissRequest = { currencyExpanded = false }
+                ) {
+                    Currency.entries.forEach { currency ->
+                        DropdownMenuItem(
+                            text = { Text(currency.name) },
+                            onClick = {
+                                viewModel.onCurrencyChange(currency)
+                                currencyExpanded = false
+                            },
+                            contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Save button
+            Button(
+                onClick = viewModel::saveStore,
+                enabled = !formState.isLoading,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                if (formState.isLoading) {
+                    CircularProgressIndicator(
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        strokeWidth = 2.dp,
+                        modifier = Modifier.height(18.dp)
+                    )
+                } else {
+                    Text(stringResource(R.string.create_store_save))
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls:*)",
+      "Bash(find /run/media/restrusher/RESOURCES/Development/myRepos/drunkhub/partyPuzz/app/src/main/java/com/restrusher/partypuzz/data/local/entities -type f -name \"*.kt\" 2>/dev/null | sort)",
+      "Bash(find /run/media/restrusher/RESOURCES/Development/myRepos/drunkhub/partyPuzz/app/src/main/java/com/restrusher/partypuzz/data/local/dao -type f -name \"*.kt\" 2>/dev/null | sort)",
+      "Bash(find /run/media/restrusher/RESOURCES/Development/myRepos/drunkhub/partyPuzz/app/src/main/java/com/restrusher/partypuzz/data/proxies -type f -name \"*.kt\" 2>/dev/null | sort)",
+      "Bash(find /run/media/restrusher/RESOURCES/Development/myRepos/drunkhub/partyPuzz/app/src/main/java/com/restrusher/partypuzz/data/local/proxies -type f -name \"*.kt\" 2>/dev/null | sort)",
+      "Bash(find /run/media/restrusher/RESOURCES/Development/myRepos/drunkhub/partyPuzz/app/src/main/java/com/restrusher/partypuzz/data/repositories -type f -name \"*.kt\" 2>/dev/null | sort)",
+      "Bash(find /run/media/restrusher/RESOURCES/Development/myRepos/drunkhub/partyPuzz/app/src/main/java/com/restrusher/partypuzz/ui/views/home -type f -name \"*.kt\" 2>/dev/null | sort)"
+    ]
+  }
+}

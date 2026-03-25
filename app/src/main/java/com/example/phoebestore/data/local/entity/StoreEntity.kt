@@ -11,5 +11,6 @@ data class StoreEntity(
     val description: String = "",
     val currency: String = "USD",
     val logoUrl: String = "",
+    val photoUrl: String = "",
     val createdAt: Long = System.currentTimeMillis()
 )

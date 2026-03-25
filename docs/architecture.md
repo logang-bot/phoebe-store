@@ -1,142 +1,150 @@
-# PhoebeStore — Clean Architecture
+# PhoebeStore — Architecture
 
 ## Overview
 
-This project follows **Clean Architecture** as described by Robert C. Martin, adapted for Android with Jetpack Compose. The goal is a strict separation of concerns where inner layers know nothing about outer layers, making the codebase testable, maintainable, and scalable.
+PhoebeStore follows **Clean Architecture** with three layers. Dependencies only ever point inward — the domain layer has zero knowledge of Room, Compose, or any framework.
 
 ```
-┌────────────────────────────────────────────────┐
-│                 Presentation                   │  ← Android / Compose
-│  screens/ · navigation/ · ViewModels           │
-├────────────────────────────────────────────────┤
-│                   Domain                       │  ← Pure Kotlin
-│  model/ · usecase/ · repository/ (interfaces) │
-├────────────────────────────────────────────────┤
-│                    Data                        │  ← Android / Retrofit / Room
-│  remote/ · local/ · repository/ · mapper/     │
-└────────────────────────────────────────────────┘
-         ↑ dependencies point inward only ↑
+┌──────────────────────────────────────────────────────┐
+│                   UI / Presentation                  │  ← Jetpack Compose, ViewModels, Hilt
+│  ui/screen/  ·  ui/theme/  ·  ui/common/            │
+│  presentation/navigation/  ·  presentation/screens/  │
+├──────────────────────────────────────────────────────┤
+│                      Domain                          │  ← Pure Kotlin, zero Android deps
+│  domain/model/  ·  domain/repository/ (interfaces)  │
+├──────────────────────────────────────────────────────┤
+│                       Data                           │  ← Room, Retrofit (future), Hilt
+│  data/local/  ·  data/remote/  ·  data/mapper/      │
+│  data/repository/impl/                               │
+└──────────────────────────────────────────────────────┘
+           ↑  dependencies point inward only  ↑
 ```
 
 ---
 
 ## Layer Responsibilities
 
-### domain/
-The innermost layer. Contains **pure Kotlin** with zero Android dependencies.
+### `domain/`
+The innermost layer. Pure Kotlin — no Android, no Room, no Retrofit.
 
 | Package | Contents |
 |---|---|
-| `domain/model/` | Business entities — plain data classes that represent core concepts (e.g. `Product`, `Cart`, `Order`) |
-| `domain/repository/` | Repository **interfaces** — contracts the data layer must fulfill (e.g. `ProductRepository`) |
-| `domain/usecase/` | Use cases / interactors — one class per business action, each exposing a single `invoke` operator (e.g. `GetProductsUseCase`, `AddToCartUseCase`) |
+| `domain/model/` | Plain Kotlin data classes representing core business concepts |
+| `domain/repository/` | Repository **interfaces** — contracts the data layer must fulfill |
 
-Rules:
-- No Android imports.
-- No framework dependencies (no Retrofit, no Room).
-- Use cases only depend on domain models and repository interfaces.
-
----
-
-### data/
-Implements the contracts defined in `domain/repository/`. This layer is the only one allowed to talk to external systems.
+### `data/`
+Implements `domain/repository/` contracts. The only layer allowed to touch databases or network calls.
 
 | Package | Contents |
 |---|---|
-| `data/remote/` | Retrofit API service interfaces and their response DTOs |
-| `data/local/` | Room database, DAO interfaces, and entity classes |
-| `data/mapper/` | Extension functions that convert DTOs/entities ↔ domain models |
-| `data/repository/` | Concrete `Repository` implementations that coordinate remote and local sources |
+| `data/local/entity/` | Room `@Entity` classes (suffixed `Entity`) |
+| `data/local/dao/` | Room DAO interfaces |
+| `data/local/AppDatabase.kt` | Room database definition |
+| `data/remote/dto/` | `@Serializable` API response classes (suffixed `Dto`) |
+| `data/mapper/` | Extension functions: `Entity → Domain`, `Dto → Domain`, `Domain → Entity` |
+| `data/repository/impl/` | Concrete repository implementations |
 
-Rules:
-- Implements interfaces from `domain/repository/`.
-- Never exposes DTOs or Room entities upward — always maps to domain models first.
-- Handles caching strategy (network-first, cache-first, etc.) here.
+Rule: never expose entities or DTOs above this layer — always map to domain models first.
 
----
-
-### presentation/
-The outermost layer. Owns everything the user sees and interacts with.
+### `ui/` & `presentation/`
+The outermost layer. Owns everything the user sees.
 
 | Package | Contents |
 |---|---|
-| `presentation/screens/` | One sub-package per feature (e.g. `screens/home/`, `screens/product/`). Each contains a `Screen` composable and its `ViewModel`. |
-| `presentation/navigation/` | The single Compose Navigation graph that wires all screens together. |
-| `ui/theme/` | Shared Material 3 theme — colors, typography, shapes. |
+| `ui/screen/<feature>/` | Screen composable + ViewModel per feature |
+| `ui/common/` | Shared composables and utilities (e.g. `PermissionDialog`) |
+| `ui/theme/` | Material 3 theme — colors, typography, shapes |
+| `presentation/navigation/` | Single `NavHost` graph wiring all screens |
+| `presentation/screens/` | Type-safe `@Serializable` route definitions |
 
-Rules:
-- ViewModels depend on use cases, never on repositories or data sources directly.
-- Screen composables hold no business logic — they observe `UiState` and delegate events to the ViewModel.
-- Navigation routes are defined as sealed objects/classes in `navigation/`.
-
----
-
-### di/
-Hilt modules that wire everything together. One module file per layer is a good starting point:
+### `di/`
+Hilt modules that wire everything at startup.
 
 | File | Provides |
 |---|---|
-| `di/NetworkModule.kt` | Retrofit, OkHttp, API services |
-| `di/DatabaseModule.kt` | Room database, DAOs |
-| `di/RepositoryModule.kt` | Binds repository interfaces → implementations |
+| `di/DatabaseModule.kt` | Room database, DAOs, repository bindings |
 
 ---
 
 ## Dependency Rule
 
-> Source code dependencies must point **inward only**.
-
 ```
-Presentation  →  Domain  ←  Data
-                   ↑
-                  di/
+UI / Presentation  →  Domain  ←  Data
+                         ↑
+                        di/
 ```
 
-- `domain` has no dependencies on any other layer.
+- `domain` has **no** dependencies on any other layer.
 - `data` depends on `domain` (implements its interfaces).
-- `presentation` depends on `domain` (calls its use cases).
-- `di` depends on all layers so it can wire them at startup.
+- `ui` depends on `domain` (ViewModels call repository interfaces).
+- `di` depends on all layers to wire them together at startup.
 
 ---
 
-## Folder Structure
+## Actual Folder Structure
 
 ```
 app/src/main/java/com/example/phoebestore/
 ├── di/
-│   ├── NetworkModule.kt
-│   ├── DatabaseModule.kt
-│   └── RepositoryModule.kt
+│   └── DatabaseModule.kt
 ├── domain/
 │   ├── model/
+│   │   ├── Store.kt
 │   │   └── Product.kt
-│   ├── repository/
-│   │   └── ProductRepository.kt
-│   └── usecase/
-│       └── GetProductsUseCase.kt
+│   └── repository/
+│       ├── StoreRepository.kt
+│       └── ProductRepository.kt
 ├── data/
-│   ├── remote/
-│   │   ├── ApiService.kt
-│   │   └── dto/
 │   ├── local/
 │   │   ├── AppDatabase.kt
+│   │   ├── entity/
+│   │   │   ├── StoreEntity.kt
+│   │   │   └── ProductEntity.kt
 │   │   └── dao/
+│   │       ├── StoreDao.kt
+│   │       └── ProductDao.kt
+│   ├── remote/
+│   │   └── dto/
+│   │       ├── StoreDto.kt
+│   │       └── ProductDto.kt
 │   ├── mapper/
+│   │   ├── StoreMapper.kt
 │   │   └── ProductMapper.kt
 │   └── repository/
-│       └── ProductRepositoryImpl.kt
+│       └── impl/
+│           ├── StoreRepositoryImpl.kt
+│           └── ProductRepositoryImpl.kt
 ├── presentation/
 │   ├── navigation/
-│   │   └── AppNavGraph.kt
+│   │   └── AppNavigation.kt
 │   └── screens/
-│       └── home/
-│           ├── HomeScreen.kt
-│           └── HomeViewModel.kt
+│       └── AppRoutes.kt
 ├── ui/
+│   ├── common/
+│   │   ├── ActivityExtensions.kt
+│   │   └── PermissionDialog.kt
+│   ├── screen/
+│   │   ├── home/
+│   │   │   ├── HomeScreen.kt
+│   │   │   ├── HomeViewModel.kt
+│   │   │   ├── LastStoreCard.kt
+│   │   │   └── StoreOverviewPlaceholder.kt
+│   │   ├── store/
+│   │   │   ├── StoreListScreen.kt
+│   │   │   ├── StoreListViewModel.kt
+│   │   │   ├── StoreCard.kt
+│   │   │   ├── StoreDetailScreen.kt    ← placeholder
+│   │   │   ├── CreateStoreScreen.kt
+│   │   │   └── CreateStoreViewModel.kt
+│   │   ├── product/
+│   │   │   └── CreateProductScreen.kt  ← placeholder
+│   │   └── sale/
+│   │       └── RecordSaleScreen.kt     ← placeholder
 │   └── theme/
 │       ├── Color.kt
 │       ├── Theme.kt
 │       └── Type.kt
+├── PhoebeStoreApp.kt
 └── MainActivity.kt
 ```
 
@@ -144,12 +152,13 @@ app/src/main/java/com/example/phoebestore/
 
 ## Data Flow Example
 
-**User opens the product list screen:**
+**User creates a new store:**
 
-1. `HomeScreen` (composable) collects `uiState` from `HomeViewModel`.
-2. `HomeViewModel` calls `GetProductsUseCase()` inside a coroutine.
-3. `GetProductsUseCase` calls `ProductRepository.getProducts()` (the interface).
-4. `ProductRepositoryImpl` fetches from `ApiService` (remote) and caches in Room (local).
-5. The impl maps DTOs → domain `Product` models and returns them.
-6. The use case returns the list; the ViewModel wraps it in `UiState.Success`.
-7. The composable recomposes and renders the product list.
+1. `CreateStoreScreen` collects `formState` from `CreateStoreViewModel`.
+2. User fills the form and taps Save.
+3. `CreateStoreViewModel.saveStore()` validates the form, then calls `StoreRepository.create(store)`.
+4. `StoreRepositoryImpl` maps the domain `Store` → `StoreEntity` via `StoreMapper`, then calls `StoreDao.insert()`.
+5. Room inserts the row and returns the new ID.
+6. The ViewModel emits a `StoreSaved` event via a `Channel`.
+7. The screen collects the event and calls `onStoreSaved()`, which pops the back stack.
+8. `StoreListScreen` is now visible. Its `StateFlow<List<Store>>` (backed by `StoreDao.getAll()`) automatically emits the updated list, and the new `StoreCard` appears with a `animateItem()` fade-in.

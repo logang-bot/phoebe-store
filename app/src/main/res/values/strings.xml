@@ -1,3 +1,61 @@
 <resources>
     <string name="app_name">PhoebeStore</string>
+
+    <!-- Home Screen -->
+    <string-array name="home_welcome_messages">
+        <item>Welcome back!</item>
+        <item>Good to see you again!</item>
+        <item>Ready to manage your stores?</item>
+        <item>Let\'s check on your business today.</item>
+        <item>Great to have you here!</item>
+        <item>Your store dashboard awaits.</item>
+        <item>Hello! Let\'s take a look at your stores.</item>
+    </string-array>
+    <string name="home_view_all_stores">View all stores</string>
+
+    <!-- Last Store Card -->
+    <string name="home_last_sale_placeholder">Last sale: —</string>
+    <string name="home_last_store_label">Last store</string>
+    <string name="home_no_stores_title">No stores yet</string>
+    <string name="home_no_stores_subtitle">Create your first store to get started.</string>
+    <string name="home_currency_format">Currency: %s</string>
+
+    <!-- Permissions -->
+    <string name="permission_required">Permission required</string>
+    <string name="permission_ok">OK</string>
+    <string name="permission_grant">Grant permission</string>
+    <string name="camera_permission_rationale">Camera access is needed to take a cover photo for your store.</string>
+    <string name="camera_permission_permanently_declined">You have permanently declined camera permission. Go to app settings to grant it so you can add a store photo.</string>
+
+    <!-- Create / Edit Store Screen -->
+    <string name="create_store_title_create">New store</string>
+    <string name="create_store_title_edit">Edit store</string>
+    <string name="create_store_name_label">Store name</string>
+    <string name="create_store_name_placeholder">My awesome store</string>
+    <string name="create_store_name_required_error">Store name is required</string>
+    <string name="create_store_description_label">Description</string>
+    <string name="create_store_description_placeholder">What does your store sell?</string>
+    <string name="create_store_currency_label">Currency</string>
+    <string name="create_store_logo_label">Store logo</string>
+    <string name="create_store_photo_label">Cover photo</string>
+    <string name="create_store_take_photo">Take photo</string>
+    <string name="create_store_retake_photo">Retake photo</string>
+    <string name="create_store_choose_from_gallery">Choose from gallery</string>
+    <string name="create_store_save">Save</string>
+
+    <!-- Store List Screen -->
+    <string name="store_list_title">Your stores</string>
+    <string name="store_list_empty_title">No stores yet</string>
+    <string name="store_list_empty_subtitle">Tap the button below to create your first store.</string>
+    <string name="store_list_create_button">Create new store</string>
+    <string name="store_card_currency_format">%s</string>
+
+    <!-- Store Overview -->
+    <string name="home_overview_title">Store overview</string>
+    <string name="home_overview_total_sales">Total sales</string>
+    <string name="home_overview_revenue">Revenue</string>
+    <string name="home_overview_profit">Profit</string>
+    <string name="home_overview_products_in_stock">Products in stock</string>
+    <string name="home_overview_low_stock_alerts">Low stock alerts</string>
+    <string name="home_overview_placeholder_value">—</string>
 </resources>
