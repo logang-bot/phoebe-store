@@ -13,6 +13,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.Typography
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -20,6 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -29,6 +31,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.phoebestore.R
 import com.example.phoebestore.domain.model.Currency
 import com.example.phoebestore.domain.model.Store
+import com.example.phoebestore.ui.common.StoreCard
 import com.example.phoebestore.ui.theme.PhoebeStoreTheme
 
 @Composable
@@ -70,12 +73,12 @@ private fun HomeScreenContent(
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth().padding(vertical = 35.dp)
             )
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            LastStoreCard(
+            StoreCard(
                 store = lastStore,
                 modifier = Modifier
                     .fillMaxWidth()

@@ -1,5 +1,7 @@
 package com.example.phoebestore.presentation.navigation
 
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -25,7 +27,11 @@ fun AppNavigation(
 ) {
     NavHost(
         navController = navController,
-        startDestination = HomeScreen
+        startDestination = HomeScreen,
+        enterTransition = { slideInHorizontally { it } },
+        exitTransition = { slideOutHorizontally { -it } },
+        popEnterTransition = { slideInHorizontally { -it } },
+        popExitTransition = { slideOutHorizontally { it } }
     ) {
         composable<HomeScreen> {
             HomeScreen(

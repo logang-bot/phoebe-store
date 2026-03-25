@@ -19,14 +19,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -43,7 +42,10 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -77,8 +79,9 @@ fun CreateStoreScreen(
     val formState = viewModel.formState
     val dialogQueue = viewModel.visiblePermissionDialogQueue
 
-    var logoCameraUri by remember { mutableStateOf<Uri?>(null) }
-    var photoCameraUri by remember { mutableStateOf<Uri?>(null) }
+    val scope = rememberCoroutineScope()
+    var logoCameraFile by remember { mutableStateOf<File?>(null) }
+    var photoCameraFile by remember { mutableStateOf<File?>(null) }
     var pendingCameraTarget by remember { mutableStateOf<CameraTarget?>(null) }
     var cameraReadyToLaunch by remember { mutableStateOf(false) }
     var currencyExpanded by remember { mutableStateOf(false) }
@@ -101,25 +104,37 @@ fun CreateStoreScreen(
     val logoCameraLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicture()
     ) { success ->
-        if (success) logoCameraUri?.let { viewModel.onLogoCaptured(it.toString()) }
+        if (success) logoCameraFile?.let { viewModel.onLogoCaptured(Uri.fromFile(it).toString()) }
     }
 
     val photoCameraLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicture()
     ) { success ->
-        if (success) photoCameraUri?.let { viewModel.onPhotoCaptured(it.toString()) }
+        if (success) photoCameraFile?.let { viewModel.onPhotoCaptured(Uri.fromFile(it).toString()) }
     }
 
     val logoGalleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia()
     ) { uri ->
-        uri?.let { viewModel.onLogoCaptured(it.toString()) }
+        uri?.let { sourceUri ->
+            scope.launch(Dispatchers.IO) {
+                val dest = File(context.filesDir, "logo_${System.currentTimeMillis()}.jpg")
+                context.contentResolver.openInputStream(sourceUri)?.use { it.copyTo(dest.outputStream()) }
+                viewModel.onLogoCaptured(Uri.fromFile(dest).toString())
+            }
+        }
     }
 
     val photoGalleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia()
     ) { uri ->
-        uri?.let { viewModel.onPhotoCaptured(it.toString()) }
+        uri?.let { sourceUri ->
+            scope.launch(Dispatchers.IO) {
+                val dest = File(context.filesDir, "photo_${System.currentTimeMillis()}.jpg")
+                context.contentResolver.openInputStream(sourceUri)?.use { it.copyTo(dest.outputStream()) }
+                viewModel.onPhotoCaptured(Uri.fromFile(dest).toString())
+            }
+        }
     }
 
     LaunchedEffect(cameraReadyToLaunch) {
@@ -129,15 +144,15 @@ fun CreateStoreScreen(
         pendingCameraTarget = null
         when (target) {
             CameraTarget.LOGO -> {
-                val file = File(context.cacheDir, "store_logo_${System.currentTimeMillis()}.jpg")
+                val file = File(context.filesDir, "logo_${System.currentTimeMillis()}.jpg")
                 val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
-                logoCameraUri = uri
+                logoCameraFile = file
                 logoCameraLauncher.launch(uri)
             }
             CameraTarget.PHOTO -> {
-                val file = File(context.cacheDir, "store_photo_${System.currentTimeMillis()}.jpg")
+                val file = File(context.filesDir, "photo_${System.currentTimeMillis()}.jpg")
                 val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
-                photoCameraUri = uri
+                photoCameraFile = file
                 photoCameraLauncher.launch(uri)
             }
         }
@@ -363,21 +378,17 @@ fun CreateStoreScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Save button
+            if (formState.isLoading) {
+                LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+
             Button(
                 onClick = viewModel::saveStore,
                 enabled = !formState.isLoading,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                if (formState.isLoading) {
-                    CircularProgressIndicator(
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        strokeWidth = 2.dp,
-                        modifier = Modifier.height(18.dp)
-                    )
-                } else {
-                    Text(stringResource(R.string.create_store_save))
-                }
+                Text(stringResource(R.string.create_store_save))
             }
         }
     }

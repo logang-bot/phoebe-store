@@ -9,7 +9,7 @@ import com.example.phoebestore.data.local.entity.StoreEntity
 
 @Database(
     entities = [StoreEntity::class, ProductEntity::class],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {

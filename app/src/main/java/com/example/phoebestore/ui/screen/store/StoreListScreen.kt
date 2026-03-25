@@ -31,6 +31,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.phoebestore.R
 import com.example.phoebestore.domain.model.Currency
 import com.example.phoebestore.domain.model.Store
+import com.example.phoebestore.ui.common.StoreCard
 import com.example.phoebestore.ui.theme.PhoebeStoreTheme
 
 @Composable
@@ -103,10 +104,10 @@ private fun StoreListScreenContent(
                     items(stores, key = { it.id }) { store ->
                         StoreCard(
                             store = store,
-                            onClick = { onNavigateToStoreDetail(store.id) },
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .animateItem()
+                                .animateItem(),
+                            onClick = { onNavigateToStoreDetail(store.id) }
                         )
                     }
                 }
