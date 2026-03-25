@@ -37,6 +37,7 @@ import com.example.phoebestore.ui.theme.PhoebeStoreTheme
 @Composable
 fun HomeScreen(
     onNavigateToStoreList: () -> Unit,
+    onNavigateToStoreDetail: (storeId: Long) -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val lastStore by viewModel.lastStore.collectAsStateWithLifecycle()
@@ -46,7 +47,8 @@ fun HomeScreen(
     HomeScreenContent(
         lastStore = lastStore,
         welcomeMessage = welcomeMessage,
-        onNavigateToStoreList = onNavigateToStoreList
+        onNavigateToStoreList = onNavigateToStoreList,
+        onNavigateToStoreDetail = onNavigateToStoreDetail
     )
 }
 
@@ -54,7 +56,8 @@ fun HomeScreen(
 private fun HomeScreenContent(
     lastStore: Store?,
     welcomeMessage: String,
-    onNavigateToStoreList: () -> Unit
+    onNavigateToStoreList: () -> Unit,
+    onNavigateToStoreDetail: (storeId: Long) -> Unit
 ) {
     Scaffold(
         containerColor = MaterialTheme.colorScheme.surfaceContainer
@@ -80,6 +83,7 @@ private fun HomeScreenContent(
 
             StoreCard(
                 store = lastStore,
+                onClick = { lastStore?.let { onNavigateToStoreDetail(it.id) } },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 4.dp)
@@ -115,7 +119,8 @@ private fun HomeScreenLightPreview() {
         HomeScreenContent(
             lastStore = previewStore,
             welcomeMessage = "Welcome back!",
-            onNavigateToStoreList = {}
+            onNavigateToStoreList = {},
+            onNavigateToStoreDetail = {}
         )
     }
 }
@@ -127,7 +132,8 @@ private fun HomeScreenDarkPreview() {
         HomeScreenContent(
             lastStore = previewStore,
             welcomeMessage = "Welcome back!",
-            onNavigateToStoreList = {}
+            onNavigateToStoreList = {},
+            onNavigateToStoreDetail = {}
         )
     }
 }
@@ -139,7 +145,8 @@ private fun HomeScreenEmptyLightPreview() {
         HomeScreenContent(
             lastStore = null,
             welcomeMessage = "Ready to manage your stores?",
-            onNavigateToStoreList = {}
+            onNavigateToStoreList = {},
+            onNavigateToStoreDetail = {}
         )
     }
 }
@@ -151,7 +158,8 @@ private fun HomeScreenEmptyDarkPreview() {
         HomeScreenContent(
             lastStore = null,
             welcomeMessage = "Ready to manage your stores?",
-            onNavigateToStoreList = {}
+            onNavigateToStoreList = {},
+            onNavigateToStoreDetail = {}
         )
     }
 }

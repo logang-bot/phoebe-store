@@ -23,16 +23,29 @@ Navigation uses Jetpack Navigation Compose with **type-safe serializable routes*
 
 ```
 HomeScreen
-    └─► StoreListScreen
-            ├─► CreateStoreScreen()              (create new store)
-            └─► StoreDetailScreen(storeId)
-                    ├─► CreateStoreScreen(storeId)          (edit store)
-                    ├─► CreateProductScreen(storeId)        (create product)
-                    ├─► CreateProductScreen(storeId, productId)  (edit product)
-                    └─► RecordSaleScreen(storeId)           (log a sale)
+    ├─► StoreListScreen
+    │       ├─► CreateStoreScreen()              (create new store)
+    │       └─► StoreDetailScreen(storeId)
+    │               ├─► CreateStoreScreen(storeId)          (edit store)
+    │               ├─► ProductListScreen(storeId)
+    │               │       ├─► CreateProductScreen(storeId)         (create product)
+    │               │       └─► CreateProductScreen(storeId, productId)  (edit product)
+    │               └─► RecordSaleScreen(storeId)           (log a sale)
+    └─►(tap last store card)─► StoreDetailScreen(storeId)
 ```
 
 All leaf actions (`onStoreSaved`, `onProductSaved`, `onSaleRecorded`) call `popBackStack()` to return to the previous screen.
+
+## Transitions
+
+All screen entries and exits use horizontal slide animations:
+
+| Direction | Transition |
+|---|---|
+| Forward (navigate) | Slide in from right, previous screen slides out to left |
+| Back (pop) | Current screen slides out to right, previous screen slides in from left |
+
+Configured globally on the `NavHost` via `enterTransition`, `exitTransition`, `popEnterTransition`, `popExitTransition`.
 
 ---
 

@@ -4,7 +4,9 @@
 
 Runtime permission requests follow an MVVM pattern: the **ViewModel** owns the permission dialog queue state, and the **Composable screen** handles the Android system interactions (launching the permission request and showing the dialog).
 
-Currently only `CAMERA` is requested, triggered when the user taps "Take photo" in `CreateStoreScreen` to add a cover photo to a store.
+Currently only `CAMERA` is requested. It is triggered in two screens:
+- `CreateStoreScreen` — to take a logo or cover photo for a store.
+- `CreateProductScreen` — to take a product image.
 
 ---
 
@@ -55,7 +57,9 @@ String resources used:
 
 Extension on `Activity` that opens the app's system settings page so the user can manually grant a permanently declined permission.
 
-### `CreateStoreViewModel` — queue state
+### ViewModel queue state
+
+Each screen that requires camera access owns its own `visiblePermissionDialogQueue`:
 
 ```kotlin
 val visiblePermissionDialogQueue = mutableStateListOf<String>()
@@ -68,9 +72,11 @@ A `SnapshotStateList` of permission strings that currently need a dialog shown. 
 | `onPermissionResult(permission, isGranted)` | If denied and not already queued, adds the permission string to the queue |
 | `dismissDialog()` | Removes the first item in the queue |
 
-### `CreateStoreScreen` — system interactions
+Implemented in: `CreateStoreViewModel`, `CreateProductViewModel`.
 
-The screen owns the two `ActivityResultLauncher`s that interact with the Android system:
+### Screen — system interactions
+
+The screen owns the `ActivityResultLauncher`s that interact with the Android system:
 
 ```
 cameraPermissionLauncher   →   RequestPermission contract
@@ -121,14 +127,32 @@ dialogQueue.reversed().forEach { permission ->
 
 ### Photo URI
 
-The capture URI is created in the screen (not the ViewModel) since it requires a `Context`:
+The capture URI is created in the screen (not the ViewModel) since it requires a `Context`. All image files are stored in `filesDir` (not `cacheDir`) to prevent eviction:
 
 ```kotlin
-val file = File(context.cacheDir, "store_photo_${System.currentTimeMillis()}.jpg")
+val file = File(context.filesDir, "product_${System.currentTimeMillis()}.jpg")
 val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
 ```
 
-`FileProvider` is declared in `AndroidManifest.xml` with paths defined in `res/xml/file_paths.xml` (cache-path).
+`FileProvider` is declared in `AndroidManifest.xml` with paths defined in `res/xml/file_paths.xml`. Both `cache-path` and `files-path` entries are present.
+
+### Gallery URI persistence
+
+Gallery `content://media/...` URIs from `PickVisualMedia` are temporary — the permission expires after the picker is dismissed. To avoid images disappearing after navigation, gallery picks are immediately copied to `filesDir` on `Dispatchers.IO`:
+
+```kotlin
+val galleryLauncher = rememberLauncherForActivityResult(PickVisualMedia()) { uri ->
+    uri?.let { sourceUri ->
+        scope.launch(Dispatchers.IO) {
+            val dest = File(context.filesDir, "product_${System.currentTimeMillis()}.jpg")
+            context.contentResolver.openInputStream(sourceUri)?.use { it.copyTo(dest.outputStream()) }
+            viewModel.onImageCaptured(Uri.fromFile(dest).toString())
+        }
+    }
+}
+```
+
+The stored URI is a `file://` path that Coil resolves natively, ensuring images remain visible after the app is backgrounded or the user navigates away and back.
 
 ---
 

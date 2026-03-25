@@ -89,6 +89,7 @@ app/src/main/java/com/example/phoebestore/
 │   └── DatabaseModule.kt
 ├── domain/
 │   ├── model/
+│   │   ├── Currency.kt
 │   │   ├── Store.kt
 │   │   └── Product.kt
 │   └── repository/
@@ -122,22 +123,26 @@ app/src/main/java/com/example/phoebestore/
 ├── ui/
 │   ├── common/
 │   │   ├── ActivityExtensions.kt
-│   │   └── PermissionDialog.kt
+│   │   ├── PermissionDialog.kt
+│   │   └── StoreCard.kt               ← shared card (HomeScreen + StoreListScreen)
 │   ├── screen/
 │   │   ├── home/
 │   │   │   ├── HomeScreen.kt
 │   │   │   ├── HomeViewModel.kt
-│   │   │   ├── LastStoreCard.kt
 │   │   │   └── StoreOverviewPlaceholder.kt
 │   │   ├── store/
 │   │   │   ├── StoreListScreen.kt
 │   │   │   ├── StoreListViewModel.kt
-│   │   │   ├── StoreCard.kt
-│   │   │   ├── StoreDetailScreen.kt    ← placeholder
+│   │   │   ├── StoreDetailScreen.kt
+│   │   │   ├── StoreDetailViewModel.kt
 │   │   │   ├── CreateStoreScreen.kt
 │   │   │   └── CreateStoreViewModel.kt
 │   │   ├── product/
-│   │   │   └── CreateProductScreen.kt  ← placeholder
+│   │   │   ├── ProductListScreen.kt
+│   │   │   ├── ProductListViewModel.kt
+│   │   │   ├── ProductCard.kt
+│   │   │   ├── CreateProductScreen.kt
+│   │   │   └── CreateProductViewModel.kt
 │   │   └── sale/
 │   │       └── RecordSaleScreen.kt     ← placeholder
 │   └── theme/

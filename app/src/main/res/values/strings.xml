@@ -58,4 +58,36 @@
     <string name="home_overview_products_in_stock">Products in stock</string>
     <string name="home_overview_low_stock_alerts">Low stock alerts</string>
     <string name="home_overview_placeholder_value">—</string>
+
+    <!-- Store Detail Screen -->
+    <string name="store_detail_edit_button">Edit store</string>
+    <string name="store_detail_products_button">Products</string>
+    <string name="store_detail_analytics_title">Analytics</string>
+    <string name="store_detail_analytics_coming_soon">Charts and analytics coming soon</string>
+
+    <!-- Product List Screen -->
+    <string name="product_list_title">Products</string>
+    <string name="product_list_empty_title">No products yet</string>
+    <string name="product_list_empty_subtitle">Tap the button below to add your first product.</string>
+    <string name="product_list_add_button">Add product</string>
+
+    <!-- Product Card -->
+    <string name="product_card_stock">Stock: %d</string>
+
+    <!-- Create / Edit Product Screen -->
+    <string name="create_product_title_create">New product</string>
+    <string name="create_product_title_edit">Edit product</string>
+    <string name="create_product_name_label">Product name</string>
+    <string name="create_product_name_placeholder">My product</string>
+    <string name="create_product_name_required_error">Product name is required</string>
+    <string name="create_product_description_label">Description</string>
+    <string name="create_product_description_placeholder">What is this product?</string>
+    <string name="create_product_price_label">Selling price</string>
+    <string name="create_product_price_placeholder">0.00</string>
+    <string name="create_product_price_error">Enter a valid price greater than 0</string>
+    <string name="create_product_cost_price_label">Cost price</string>
+    <string name="create_product_cost_price_placeholder">0.00</string>
+    <string name="create_product_stock_label">Stock</string>
+    <string name="create_product_image_label">Product image</string>
+    <string name="create_product_save">Save</string>
 </resources>

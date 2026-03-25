@@ -11,11 +11,13 @@ import androidx.navigation.toRoute
 import com.example.phoebestore.presentation.screens.CreateProductScreen
 import com.example.phoebestore.presentation.screens.CreateStoreScreen
 import com.example.phoebestore.presentation.screens.HomeScreen
+import com.example.phoebestore.presentation.screens.ProductListScreen
 import com.example.phoebestore.presentation.screens.RecordSaleScreen
 import com.example.phoebestore.presentation.screens.StoreDetailScreen
 import com.example.phoebestore.presentation.screens.StoreListScreen
 import com.example.phoebestore.ui.screen.home.HomeScreen
 import com.example.phoebestore.ui.screen.product.CreateProductScreen
+import com.example.phoebestore.ui.screen.product.ProductListScreen
 import com.example.phoebestore.ui.screen.sale.RecordSaleScreen
 import com.example.phoebestore.ui.screen.store.CreateStoreScreen
 import com.example.phoebestore.ui.screen.store.StoreDetailScreen
@@ -37,6 +39,9 @@ fun AppNavigation(
             HomeScreen(
                 onNavigateToStoreList = {
                     navController.navigate(StoreListScreen)
+                },
+                onNavigateToStoreDetail = { storeId ->
+                    navController.navigate(StoreDetailScreen(storeId))
                 }
             )
         }
@@ -59,14 +64,8 @@ fun AppNavigation(
                 onNavigateToEditStore = { storeId ->
                     navController.navigate(CreateStoreScreen(storeId))
                 },
-                onNavigateToCreateProduct = { storeId ->
-                    navController.navigate(CreateProductScreen(storeId))
-                },
-                onNavigateToEditProduct = { storeId, productId ->
-                    navController.navigate(CreateProductScreen(storeId, productId))
-                },
-                onNavigateToRecordSale = { storeId ->
-                    navController.navigate(RecordSaleScreen(storeId))
+                onNavigateToProductList = { storeId ->
+                    navController.navigate(ProductListScreen(storeId))
                 }
             )
         }
@@ -88,6 +87,19 @@ fun AppNavigation(
                 productId = route.productId,
                 onProductSaved = {
                     navController.popBackStack()
+                }
+            )
+        }
+
+        composable<ProductListScreen> { backStackEntry ->
+            val route = backStackEntry.toRoute<ProductListScreen>()
+            ProductListScreen(
+                storeId = route.storeId,
+                onNavigateToCreateProduct = { storeId ->
+                    navController.navigate(CreateProductScreen(storeId))
+                },
+                onNavigateToEditProduct = { storeId, productId ->
+                    navController.navigate(CreateProductScreen(storeId, productId))
                 }
             )
         }

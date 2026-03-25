@@ -38,7 +38,7 @@ Full Material 3 color scheme with light, dark, medium-contrast, and high-contras
 **ViewModel:** `ui/screen/home/HomeViewModel.kt`
 
 ### Purpose
-Entry point of the app. Shows a welcome greeting, a card for the last store the user created, a button to navigate to the store list, and an overview of that store's key metrics.
+Entry point of the app. Shows a welcome greeting, a card for the last store the user created (tapping it navigates to `StoreDetailScreen`), a button to navigate to the store list, and an overview of that store's key metrics.
 
 ### State
 
@@ -50,13 +50,8 @@ Entry point of the app. Shows a welcome greeting, a card for the last store the 
 
 ### Components
 
-#### `LastStoreCard` (`LastStoreCard.kt`)
-Displays the last store in a card spanning almost the full width.
-
-- **With a store:** `AsyncImage` (Coil) fills the card at 180dp height with a vertical gradient scrim (transparent → `surfaceContainerHigh`) so the store name and last-sale label remain legible over any photo. Name and last-sale time are anchored to the bottom-left of the image.
-- **Without a store:** Centered empty-state text prompting the user to create their first store.
-
-Previews: light / dark × with store / empty state (4 total).
+#### `StoreCard` (from `ui/common/StoreCard.kt`)
+Used to display the last store. Accepts `Store?` and `onClick`. See [Common UI Components](#storecard-uicommonstorecard) below.
 
 #### `StoreOverviewPlaceholder` (`StoreOverviewPlaceholder.kt`)
 Only rendered when a store exists. Shows a card with labelled rows for:
@@ -91,15 +86,9 @@ Lists all stores created by the user. Entry point for creating a new store.
 
 ### Layout
 - Title at the top.
-- `LazyColumn` of `StoreCard` items with `Modifier.animateItem()` — new stores animate in automatically when the Flow emits the updated list after creation.
+- `LazyColumn` of `StoreCard` items (from `ui/common`) with `Modifier.animateItem()` — new stores animate in automatically when the Flow emits the updated list after creation.
 - Full-width "Create new store" `Button` pinned at the bottom.
 - Empty state shown when `stores` is empty.
-
-### `StoreCard` (`StoreCard.kt`)
-Clickable `Card` (uses `@ExperimentalMaterial3Api` `Card(onClick)`) that shows:
-- `AsyncImage` at 160dp height with gradient scrim.
-- Currency badge (top-right corner).
-- Store name (bold) and optional description below the image.
 
 ---
 
@@ -160,19 +149,141 @@ ViewModel sends `CreateStoreEvent.StoreSaved` through a `Channel`. The screen co
 
 ---
 
-## Placeholder Screens
+## StoreDetailScreen
 
-The following screens exist as stubs and will be fully implemented in future iterations:
+**File:** `ui/screen/store/StoreDetailScreen.kt`
+**ViewModel:** `ui/screen/store/StoreDetailViewModel.kt`
+
+### Purpose
+Shows a single store's overview: cover photo, logo, key metrics, and analytics placeholder. Entry point to the product list and store editing.
+
+### State
+
+`StoreDetailViewModel` exposes:
+
+| Property | Type | Description |
+|---|---|---|
+| `store` | `StateFlow<Store?>` | The store loaded by ID from `SavedStateHandle`; `null` while loading |
+
+### Layout
+
+#### Header (`StoreDetailHeader`)
+A `Box` with total height of `photoHeight + logoRadius` (240dp = 200dp photo + 40dp overlap):
+
+- **Cover photo**: full-width `AsyncImage` at 200dp height; `surfaceVariant` background shown when no `photoUrl` is set.
+- **Logo circle**: 80dp `Box` with `CircleShape`, centered horizontally, offset so its center sits exactly at the photo's bottom edge (40dp overlap). Shows `AsyncImage` when `logoUrl` is set, otherwise `Icons.Default.Star` placeholder. 2dp `outline` border.
+- **Store name** (`headlineSmall`, Bold) and **currency** (`bodyMedium`, `onSurfaceVariant`) centered in a `Column` directly below the header box.
+
+#### Body
+- Optional description text (hidden when blank).
+- `OverviewCard` — placeholder metrics (Total sales, Revenue, Profit, Products in stock, Low stock alerts) showing `—`.
+- `AnalyticsPlaceholderCard` — "Charts and analytics coming soon" copy.
+- Full-width "Products" `Button` → navigates to `ProductListScreen`.
+- Full-width "Edit store" `OutlinedButton` → navigates to `CreateStoreScreen(storeId)`.
+
+---
+
+## ProductListScreen
+
+**File:** `ui/screen/product/ProductListScreen.kt`
+**ViewModel:** `ui/screen/product/ProductListViewModel.kt`
+
+### Purpose
+Lists all products belonging to a store. Entry point to create or edit products.
+
+### State
+
+`ProductListViewModel` exposes:
+
+| Property | Type | Description |
+|---|---|---|
+| `products` | `StateFlow<List<Product>>` | All products for the store, ordered by `name ASC` |
+
+### Layout
+- Title at the top.
+- `LazyVerticalGrid` with `GridCells.Fixed(2)` and `Modifier.animateItem()` on each cell — products animate in/out when the list changes.
+- Full-width "Add product" `Button` pinned at the bottom.
+- Empty state shown when `products` is empty.
+
+### `ProductCard` (`ProductCard.kt`)
+Square card (`aspectRatio(1f)`) showing:
+- `AsyncImage` filling the top portion with `ContentScale.Crop`; `Icons.Default.ShoppingCart` placeholder when `imageUrl` is blank.
+- Product name (bold), selling price, and stock count below the image.
+
+Previews: light / dark (2 total).
+
+---
+
+## CreateProductScreen
+
+**File:** `ui/screen/product/CreateProductScreen.kt`
+**ViewModel:** `ui/screen/product/CreateProductViewModel.kt`
+
+### Purpose
+Form to create a new product or edit an existing one within a store. Determined by the `productId` route parameter (`null` = create, non-null = edit).
+
+### State
+
+`CreateProductViewModel` exposes:
+
+| Property | Type | Description |
+|---|---|---|
+| `formState` | `CreateProductFormState` | All form field values + validation flags + loading state |
+| `visiblePermissionDialogQueue` | `SnapshotStateList<String>` | Permissions awaiting a dialog |
+| `events` | `Flow<CreateProductEvent>` | One-shot events (e.g. `ProductSaved`) |
+
+`CreateProductFormState` fields:
+
+| Field | Default | Notes |
+|---|---|---|
+| `name` | `""` | Required — `nameError = true` if blank on save |
+| `description` | `""` | Optional |
+| `price` | `""` | Required — `priceError = true` if blank or ≤ 0 |
+| `costPrice` | `""` | Optional — used for profit calculation |
+| `stock` | `"0"` | Optional |
+| `imageUrl` | `""` | Set after camera capture or gallery pick |
+| `isLoading` | `false` | Disables save button and shows progress indicator |
+| `nameError` | `false` | Shows supporting error text under the name field |
+| `priceError` | `false` | Shows supporting error text under the price field |
+
+### Form fields (top to bottom)
+1. Product image section — 60% width square frame centered (`ShoppingCart` placeholder or `AsyncImage`) + "Take photo" / "Choose from gallery" buttons
+2. Product name (`OutlinedTextField`, required)
+3. Description (`OutlinedTextField`, multiline 3–5 lines)
+4. Selling price (`OutlinedTextField`, decimal keyboard, required)
+5. Cost price (`OutlinedTextField`, decimal keyboard, optional)
+6. Stock (`OutlinedTextField`, number keyboard)
+7. `LinearProgressIndicator` (visible only when `isLoading`)
+8. Save `Button` (disabled while loading)
+
+### Camera / photo flow
+Single image field — no `CameraTarget` enum needed. Follows the same `cameraReadyToLaunch` + `LaunchedEffect` bridge pattern as `CreateStoreScreen`. Gallery images are copied to `filesDir` on `Dispatchers.IO`. Camera files are created directly in `filesDir`. See [permission-handling.md](permission-handling.md).
+
+### Edit mode
+When `productId != null` the ViewModel pre-populates `formState` from `productRepository.getById()`. On save, calls `productRepository.update()` instead of `create()`.
+
+### Navigation after save
+ViewModel sends `CreateProductEvent.ProductSaved` via a `Channel`. The screen pops the back stack, and `ProductListScreen`'s grid animates in the new item automatically.
+
+---
+
+## Placeholder Screens
 
 | Screen | File | Planned purpose |
 |---|---|---|
-| `StoreDetailScreen` | `ui/screen/store/StoreDetailScreen.kt` | Store summary: sales history, inventory, products |
-| `CreateProductScreen` | `ui/screen/product/CreateProductScreen.kt` | Form to create or edit a product within a store |
 | `RecordSaleScreen` | `ui/screen/sale/RecordSaleScreen.kt` | Form to log a new sale against a store's products |
 
 ---
 
 ## Common UI Components
+
+### `StoreCard` (`ui/common/StoreCard.kt`)
+Shared clickable card used in both `HomeScreen` and `StoreListScreen`. Accepts `Store?` (null = empty state) and `onClick: () -> Unit = {}`.
+
+- **With a store:** `AsyncImage` at 180dp height with vertical gradient scrim (transparent → `surfaceContainerHigh`). Logo circle (40dp, `CircleShape`) in the top-left corner showing `logoUrl` or `Icons.Default.Star` placeholder. Currency label anchored bottom-right. Store name + optional description bottom-left.
+- **Without a store:** Centered empty-state text prompting the user to create their first store.
+
+Previews: light / dark × with store / empty state (4 total).
 
 ### `PermissionDialog` (`ui/common/PermissionDialog.kt`)
 Reusable `AlertDialog` for runtime permission rationale and permanent-denial flows. See [permission-handling.md](permission-handling.md).
