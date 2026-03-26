@@ -48,6 +48,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
@@ -292,39 +293,43 @@ private fun CreateProductScreenContent(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Selling price
-            OutlinedTextField(
-                value = formState.price,
-                onValueChange = onPriceChange,
-                label = { Text(stringResource(R.string.create_product_price_label)) },
-                placeholder = { Text(stringResource(R.string.create_product_price_placeholder)) },
-                isError = formState.priceError,
-                supportingText = if (formState.priceError) {
-                    { Text(stringResource(R.string.create_product_price_error)) }
-                } else null,
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Decimal,
-                    imeAction = ImeAction.Next
-                ),
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Cost price
-            OutlinedTextField(
-                value = formState.costPrice,
-                onValueChange = onCostPriceChange,
-                label = { Text(stringResource(R.string.create_product_cost_price_label)) },
-                placeholder = { Text(stringResource(R.string.create_product_cost_price_placeholder)) },
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Decimal,
-                    imeAction = ImeAction.Next
-                ),
-                modifier = Modifier.fillMaxWidth()
-            )
+            // Selling price + Cost price side by side
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedTextField(
+                    value = formState.price,
+                    onValueChange = onPriceChange,
+                    label = { Text(stringResource(R.string.create_product_price_label)) },
+                    placeholder = { Text(stringResource(R.string.create_product_price_placeholder)) },
+                    prefix = { Text(formState.currency.name) },
+                    isError = formState.priceError,
+                    supportingText = if (formState.priceError) {
+                        { Text(stringResource(R.string.create_product_price_error)) }
+                    } else null,
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Decimal,
+                        imeAction = ImeAction.Next
+                    ),
+                    modifier = Modifier
+                        .weight(1f)
+                        .onFocusChanged { if (!it.isFocused && formState.price.isNotEmpty()) formState.price.toDoubleOrNull()?.let { v -> onPriceChange("%.2f".format(v)) } }
+                )
+                OutlinedTextField(
+                    value = formState.costPrice,
+                    onValueChange = onCostPriceChange,
+                    label = { Text(stringResource(R.string.create_product_cost_price_label)) },
+                    placeholder = { Text(stringResource(R.string.create_product_cost_price_placeholder)) },
+                    prefix = { Text(formState.currency.name) },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Decimal,
+                        imeAction = ImeAction.Next
+                    ),
+                    modifier = Modifier
+                        .weight(1f)
+                        .onFocusChanged { if (!it.isFocused && formState.costPrice.isNotEmpty()) formState.costPrice.toDoubleOrNull()?.let { v -> onCostPriceChange("%.2f".format(v)) } }
+                )
+            }
 
             Spacer(modifier = Modifier.height(12.dp))
 
@@ -333,12 +338,15 @@ private fun CreateProductScreenContent(
                 value = formState.stock,
                 onValueChange = onStockChange,
                 label = { Text(stringResource(R.string.create_product_stock_label)) },
+                placeholder = { Text(stringResource(R.string.create_product_stock_placeholder)) },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Number,
                     imeAction = ImeAction.Done
                 ),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .onFocusChanged { if (it.isFocused && formState.stock == "0") onStockChange("") }
             )
 
             Spacer(modifier = Modifier.height(24.dp))

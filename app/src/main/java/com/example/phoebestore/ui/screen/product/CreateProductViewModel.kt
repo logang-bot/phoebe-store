@@ -7,8 +7,10 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.phoebestore.domain.model.Currency
 import com.example.phoebestore.domain.model.Product
 import com.example.phoebestore.domain.repository.ProductRepository
+import com.example.phoebestore.domain.repository.StoreRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -18,6 +20,7 @@ import javax.inject.Inject
 @HiltViewModel
 class CreateProductViewModel @Inject constructor(
     private val productRepository: ProductRepository,
+    private val storeRepository: StoreRepository,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -33,29 +36,39 @@ class CreateProductViewModel @Inject constructor(
     val events = _events.receiveAsFlow()
 
     init {
-        productId?.let { loadProduct(it) }
-    }
-
-    private fun loadProduct(id: Long) {
         viewModelScope.launch {
-            productRepository.getById(id)?.let { product ->
-                formState = CreateProductFormState(
-                    name = product.name,
-                    description = product.description,
-                    price = product.price.toString(),
-                    costPrice = if (product.costPrice > 0.0) product.costPrice.toString() else "",
-                    stock = product.stock.toString(),
-                    imageUrl = product.imageUrl
-                )
+            storeRepository.getById(storeId)?.let { store ->
+                formState = formState.copy(currency = store.currency)
+            }
+            productId?.let { id ->
+                productRepository.getById(id)?.let { product ->
+                    formState = formState.copy(
+                        name = product.name,
+                        description = product.description,
+                        price = product.price.toString(),
+                        costPrice = if (product.costPrice > 0.0) product.costPrice.toString() else "",
+                        stock = product.stock.toString(),
+                        imageUrl = product.imageUrl
+                    )
+                }
             }
         }
     }
 
     fun onNameChange(value: String) { formState = formState.copy(name = value, nameError = false) }
     fun onDescriptionChange(value: String) { formState = formState.copy(description = value) }
-    fun onPriceChange(value: String) { formState = formState.copy(price = value, priceError = false) }
-    fun onCostPriceChange(value: String) { formState = formState.copy(costPrice = value) }
-    fun onStockChange(value: String) { formState = formState.copy(stock = value) }
+    fun onPriceChange(value: String) { formState = formState.copy(price = value.toDecimalInput(), priceError = false) }
+    fun onCostPriceChange(value: String) { formState = formState.copy(costPrice = value.toDecimalInput()) }
+    fun onStockChange(value: String) { formState = formState.copy(stock = value.toIntegerInput()) }
+
+    private fun String.toDecimalInput(): String {
+        val filtered = filter { it.isDigit() || it == '.' }
+        val dotIndex = filtered.indexOf('.')
+        return if (dotIndex == -1) filtered
+        else filtered.substring(0, dotIndex + 1) + filtered.substring(dotIndex + 1).filter { it.isDigit() }.take(2)
+    }
+
+    private fun String.toIntegerInput(): String = filter { it.isDigit() }
     fun onImageCaptured(uri: String) { formState = formState.copy(imageUrl = uri) }
 
     fun onPermissionResult(permission: String, isGranted: Boolean) {
@@ -105,6 +118,7 @@ data class CreateProductFormState(
     val costPrice: String = "",
     val stock: String = "0",
     val imageUrl: String = "",
+    val currency: Currency = Currency.USD,
     val isLoading: Boolean = false,
     val nameError: Boolean = false,
     val priceError: Boolean = false

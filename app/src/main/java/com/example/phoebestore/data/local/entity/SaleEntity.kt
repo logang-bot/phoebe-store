@@ -27,6 +27,8 @@ data class SaleEntity(
     val unitPrice: Double,
     val unitCost: Double = 0.0,
     val totalAmount: Double,
+    val saleType: String = "STANDARD",
+    val profitOutcome: String = "NORMAL_PROFIT",
     val notes: String = "",
     val soldAt: Long = System.currentTimeMillis(),
     val createdAt: Long = System.currentTimeMillis()

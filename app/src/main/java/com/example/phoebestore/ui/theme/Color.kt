@@ -2,6 +2,9 @@ package com.example.phoebestore.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
+val warningLight = Color(0xFF8A5100)
+val warningDark = Color(0xFFFFB951)
+
 val primaryLight = Color(0xFF586420)
 val onPrimaryLight = Color(0xFFFFFFFF)
 val primaryContainerLight = Color(0xFFDCEA97)

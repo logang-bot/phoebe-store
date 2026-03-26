@@ -87,6 +87,17 @@
     <string name="record_sale_date_label">Date of sale</string>
     <string name="record_sale_save">Record sale</string>
     <string name="record_sale_total_label">Total</string>
+    <string name="record_sale_date_change">Change</string>
+    <string name="record_sale_date_ok">OK</string>
+    <string name="record_sale_date_cancel">Cancel</string>
+    <string name="record_sale_modification_price_and_cost_changed">Unit price and unit cost have been changed</string>
+    <string name="record_sale_modification_price_changed">Unit price has been changed</string>
+    <string name="record_sale_modification_cost_changed">Unit cost has been changed</string>
+    <string name="record_sale_modification_header">The unit price is now %1$s %2$s, and the unit cost is %1$s %3$s, </string>
+    <string name="record_sale_modification_extra_profit">making an extra profit of </string>
+    <string name="record_sale_modification_smaller_profit">reducing the profit by </string>
+    <string name="record_sale_modification_loss">resulting in a loss of </string>
+    <string name="record_sale_modification_compared_to_standard"> compared to the standard.</string>
 
     <!-- Product Card -->
     <string name="product_card_stock">Stock: %d</string>
@@ -105,6 +116,7 @@
     <string name="create_product_cost_price_label">Cost price</string>
     <string name="create_product_cost_price_placeholder">0.00</string>
     <string name="create_product_stock_label">Stock</string>
+    <string name="create_product_stock_placeholder">0</string>
     <string name="create_product_image_label">Product image</string>
     <string name="create_product_save">Save</string>
 </resources>

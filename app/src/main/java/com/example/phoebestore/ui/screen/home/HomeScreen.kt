@@ -150,7 +150,7 @@ private fun HomeScreenLightPreview() {
             lastStore = previewStore,
             welcomeMessage = "Welcome back!",
             onNavigateToStoreList = {},
-            onNavigateToStoreDetail = {}
+            onNavigateToStoreDetail = { _ -> }
         )
     }
 }
@@ -163,7 +163,7 @@ private fun HomeScreenDarkPreview() {
             lastStore = previewStore,
             welcomeMessage = "Welcome back!",
             onNavigateToStoreList = {},
-            onNavigateToStoreDetail = {}
+            onNavigateToStoreDetail = { _ -> }
         )
     }
 }
@@ -176,7 +176,7 @@ private fun HomeScreenEmptyLightPreview() {
             lastStore = null,
             welcomeMessage = "Ready to manage your stores?",
             onNavigateToStoreList = {},
-            onNavigateToStoreDetail = {}
+            onNavigateToStoreDetail = { _ -> }
         )
     }
 }
@@ -189,7 +189,7 @@ private fun HomeScreenEmptyDarkPreview() {
             lastStore = null,
             welcomeMessage = "Ready to manage your stores?",
             onNavigateToStoreList = {},
-            onNavigateToStoreDetail = {}
+            onNavigateToStoreDetail = { _ -> }
         )
     }
 }

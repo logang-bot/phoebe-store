@@ -13,6 +13,8 @@ data class SaleDto(
     @SerialName("unit_price") val unitPrice: Double,
     @SerialName("unit_cost") val unitCost: Double = 0.0,
     @SerialName("total_amount") val totalAmount: Double,
+    @SerialName("sale_type") val saleType: String = "STANDARD",
+    @SerialName("profit_outcome") val profitOutcome: String = "NORMAL_PROFIT",
     val notes: String = "",
     @SerialName("sold_at") val soldAt: Long,
     @SerialName("created_at") val createdAt: Long
