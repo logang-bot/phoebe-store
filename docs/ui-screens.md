@@ -30,6 +30,15 @@ Both are variable fonts — a single file covers all weights. The italic variabl
 
 Full Material 3 color scheme with light, dark, medium-contrast, and high-contrast variants. Dynamic color is enabled on Android 12+ (API 31+). Below that, the static `lightScheme` / `darkScheme` is used.
 
+Two semantic warning colors are defined for use in profit/loss indicators:
+
+| Token | Value | Used in |
+|---|---|---|
+| `warningLight` | `Color(0xFF8A5100)` | `SMALLER_PROFIT` state in light mode |
+| `warningDark` | `Color(0xFFFFB951)` | `SMALLER_PROFIT` state in dark mode |
+
+These are accessed directly (not via `MaterialTheme.colorScheme`) and selected based on `isSystemInDarkTheme()`.
+
 ---
 
 ## HomeScreen
@@ -38,7 +47,7 @@ Full Material 3 color scheme with light, dark, medium-contrast, and high-contras
 **ViewModel:** `ui/screen/home/HomeViewModel.kt`
 
 ### Purpose
-Entry point of the app. Shows a welcome greeting, a card for the last store the user created (tapping it navigates to `StoreDetailScreen`), a button to navigate to the store list, and an overview of that store's key metrics.
+Entry point of the app. Shows a welcome greeting, a card for the last store the user created (tapping it navigates to `StoreDetailScreen`), a quick "Record a sale" button attached beneath the store card, a button to navigate to the store list, and an overview of that store's key metrics.
 
 ### State
 
@@ -52,6 +61,9 @@ Entry point of the app. Shows a welcome greeting, a card for the last store the 
 
 #### `StoreCard` (from `ui/common/StoreCard.kt`)
 Used to display the last store. Accepts `Store?` and `onClick`. See [Common UI Components](#storecard-uicommonstorecard) below.
+
+#### "Record a sale" button
+Rendered directly beneath the `StoreCard` when a store exists, sharing its horizontal padding. Uses rounded corners only on the bottom (`topStart = 0.dp`, `topEnd = 0.dp`) to visually attach it to the card. Navigates to `RecordSaleScreen(storeId)` for the last store. Uses `tertiary` container colour.
 
 #### `StoreOverviewPlaceholder` (`StoreOverviewPlaceholder.kt`)
 Only rendered when a store exists. Shows a card with labelled rows for:
@@ -240,21 +252,23 @@ Form to create a new product or edit an existing one within a store. Determined 
 | `description` | `""` | Optional |
 | `price` | `""` | Required — `priceError = true` if blank or ≤ 0 |
 | `costPrice` | `""` | Optional — used for profit calculation |
-| `stock` | `"0"` | Optional |
+| `stock` | `"0"` | Optional — empty string is treated as `0` on save |
+| `currency` | `Currency.USD` | Loaded from the parent store; used as field prefix |
 | `imageUrl` | `""` | Set after camera capture or gallery pick |
 | `isLoading` | `false` | Disables save button and shows progress indicator |
 | `nameError` | `false` | Shows supporting error text under the name field |
 | `priceError` | `false` | Shows supporting error text under the price field |
 
+The ViewModel loads the store currency **before** loading the product in a single sequential coroutine — this prevents a race condition where the product data (loaded in a separate coroutine) could reset the currency back to `USD` by creating a fresh `FormState`.
+
 ### Form fields (top to bottom)
 1. Product image section — 60% width square frame centered (`ShoppingCart` placeholder or `AsyncImage`) + "Take photo" / "Choose from gallery" buttons
 2. Product name (`OutlinedTextField`, required)
 3. Description (`OutlinedTextField`, multiline 3–5 lines)
-4. Selling price (`OutlinedTextField`, decimal keyboard, required)
-5. Cost price (`OutlinedTextField`, decimal keyboard, optional)
-6. Stock (`OutlinedTextField`, number keyboard)
-7. `LinearProgressIndicator` (visible only when `isLoading`)
-8. Save `Button` (disabled while loading)
+4. Selling price + Cost price in a side-by-side `Row` (each `weight(1f)`, decimal keyboard) — prefixed with the store's currency code (e.g. `USD`, `BOB`); auto-formats to 2 decimal places on focus loss
+5. Stock (`OutlinedTextField`, number keyboard) — shows `"0"` as a placeholder; the field clears to empty when focused and `value == "0"`, preventing the user from having to delete the default value before typing
+6. `LinearProgressIndicator` (visible only when `isLoading`)
+7. Save `Button` (disabled while loading)
 
 ### Camera / photo flow
 Single image field — no `CameraTarget` enum needed. Follows the same `cameraReadyToLaunch` + `LaunchedEffect` bridge pattern as `CreateStoreScreen`. Gallery images are copied to `filesDir` on `Dispatchers.IO`. Camera files are created directly in `filesDir`. See [permission-handling.md](permission-handling.md).
@@ -267,11 +281,121 @@ ViewModel sends `CreateProductEvent.ProductSaved` via a `Channel`. The screen po
 
 ---
 
-## Placeholder Screens
+## RecordSaleScreen
 
-| Screen | File | Planned purpose |
+**File:** `ui/screen/sale/RecordSaleScreen.kt`
+**ViewModel:** `ui/screen/sale/RecordSaleViewModel.kt`
+
+### Purpose
+Form to log a new sale against a store. Supports selecting an existing product or entering a custom (ad-hoc) product name. Tracks price/cost modifications relative to catalogue values and records the profit outcome.
+
+### State
+
+`RecordSaleViewModel` exposes:
+
+| Property | Type | Description |
 |---|---|---|
-| `RecordSaleScreen` | `ui/screen/sale/RecordSaleScreen.kt` | Form to log a new sale against a store's products |
+| `formState` | `StateFlow<RecordSaleFormState>` | All form field values, computed fields, and validation flags |
+
+`RecordSaleFormState` fields:
+
+| Field | Default | Notes |
+|---|---|---|
+| `products` | `emptyList()` | Store's product catalogue, collected from `ProductRepository` |
+| `selectedProduct` | `null` | Product chosen from the dropdown |
+| `isCustomProduct` | `false` | `true` when the user selects the "Custom product" option |
+| `productName` | `""` | Free-text name; required when no product is selected |
+| `quantity` | `"1"` | Integer; required and must be > 0 |
+| `unitPrice` | `""` | Decimal; required and must be > 0 |
+| `unitCost` | `""` | Decimal; optional — used for profit calculation |
+| `notes` | `""` | Optional free-text |
+| `soldAt` | `now` | Unix timestamp (ms) — defaults to current time |
+| `currency` | `Currency.USD` | Loaded from the parent store |
+| `totalAmount` | `0.0` | Computed: `unitPrice × quantity`; updated reactively |
+| `isPriceModified` | `false` | `true` if `unitPrice ≠ selectedProduct.price` |
+| `isCostModified` | `false` | `true` if `unitCost ≠ selectedProduct.costPrice` |
+| `profitOutcome` | `NORMAL_PROFIT` | Computed by `computeProfitOutcome()` — see below |
+| `profitDelta` | `0.0` | `currentProfit − standardProfit` (can be negative) |
+| `currentProfit` | `0.0` | `unitPrice − unitCost` at the current field values |
+| `isSaving` | `false` | Disables Save button while the coroutine runs |
+| `isSuccess` | `false` | Triggers `onSaleRecorded()` navigation when `true` |
+
+### Profit outcome logic
+
+Computed by `computeProfitOutcome()` in the ViewModel whenever `unitPrice` or `unitCost` changes:
+
+```
+standardProfit = product.price − product.costPrice
+currentProfit  = unitPrice − unitCost
+delta          = currentProfit − standardProfit
+
+LOSS           → currentProfit ≤ 0
+EXTRA_PROFIT   → delta > 0
+SMALLER_PROFIT → delta < 0
+NORMAL_PROFIT  → delta == 0 or no modification
+```
+
+On save, `SaleType.MODIFIED` is stored when either price or cost was changed; `SaleType.STANDARD` otherwise.
+
+### Input sanitisation
+
+All numeric fields reject non-numeric input at the ViewModel level:
+- **Decimal fields** (`unitPrice`, `unitCost`): `toDecimalInput()` strips non-digits except `.`, and caps fractional digits at 2.
+- **Integer fields** (`quantity`): `toIntegerInput()` strips everything except digits.
+
+Money fields also auto-format to `"%.2f"` on focus loss via `onFocusChanged` modifier in `SalePriceRow`.
+
+### Form fields (top to bottom)
+1. `ProductDropdown` — visible only when the store has products
+2. Product name (`OutlinedTextField`) — visible when no products exist or when "Custom product" is selected
+3. Quantity (`OutlinedTextField`, integer keyboard)
+4. `SalePriceRow` — unit price + unit cost side-by-side, prefixed with the store's currency code
+5. `SaleTotalSection` — animated total display
+6. `SaleModificationInfo` — animated modification info block
+7. `DateField` — date picker for the sale date
+8. Notes (`OutlinedTextField`, multiline 3–5 lines)
+9. Save `Button` in the bottom bar (disabled while saving)
+
+### Child composables
+
+#### `ProductDropdown` (`ProductDropdown.kt`)
+`ExposedDropdownMenuBox` listing store products plus a "Custom product" option at the bottom. Read-only `OutlinedTextField` shows the selected item's name. Callbacks: `onProductSelected(Product?)` and `onCustomSelected()`.
+
+Previews: light / dark (2 total).
+
+#### `SalePriceRow` (`SalePriceRow.kt`)
+Side-by-side `Row` of two `OutlinedTextField`s (unit price and unit cost), each with `weight(1f)` and `KeyboardType.Decimal`. Currency code is shown as a prefix. `onFocusChanged` formats to `"%.2f"` when focus leaves a non-empty field.
+
+Previews: light / dark (2 total).
+
+#### `SaleTotalSection` (`SaleTotalSection.kt`)
+`AnimatedVisibility` (fade + expand) wrapping a divider/total/divider layout. Visible when `totalAmount > 0.0`. Displays `"Total: <currency> <amount>"` in `titleMedium` semibold.
+
+Previews: light / dark (2 total).
+
+#### `SaleModificationInfo` (`SaleModificationInfo.kt`)
+`AnimatedVisibility` block shown when a product is selected and at least one price has been modified. Displays:
+- A subtitle naming which fields changed (price, cost, or both)
+- A body paragraph built with `buildAnnotatedString` — the profit delta value is **bold** via `SpanStyle(fontWeight = FontWeight.Bold)`
+
+Color reflects outcome:
+
+| `ProfitOutcome` | Color |
+|---|---|
+| `EXTRA_PROFIT` | `MaterialTheme.colorScheme.tertiary` |
+| `SMALLER_PROFIT` | `warningLight` / `warningDark` |
+| `LOSS` | `MaterialTheme.colorScheme.error` |
+| `NORMAL_PROFIT` | `MaterialTheme.colorScheme.onSurface` |
+
+Previews: light / dark × EXTRA_PROFIT / SMALLER_PROFIT / LOSS (6 total).
+
+#### `DateField` (`DateField.kt`)
+Read-only `OutlinedTextField` displaying the selected date formatted as `"MMM dd, yyyy"`. A "Change" `TextButton` in the trailing slot opens a `DatePickerDialog`. Confirming updates the epoch millis via `onDateSelected`.
+
+Previews: light / dark (2 total).
+
+### Navigation after save
+`isSuccess = true` in `formState` is observed in a `LaunchedEffect` on the screen. When it fires, `onSaleRecorded()` is called, which pops the back stack.
 
 ---
 

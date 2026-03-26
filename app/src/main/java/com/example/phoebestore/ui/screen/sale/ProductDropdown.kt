@@ -1,6 +1,7 @@
 package com.example.phoebestore.ui.screen.sale
 
 import android.content.res.Configuration
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -49,7 +50,7 @@ fun ProductDropdown(
             readOnly = true,
             label = { Text(stringResource(R.string.record_sale_product_label)) },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-            modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable)
+            modifier = Modifier.fillMaxWidth().menuAnchor(MenuAnchorType.PrimaryNotEditable)
         )
 
         ExposedDropdownMenu(

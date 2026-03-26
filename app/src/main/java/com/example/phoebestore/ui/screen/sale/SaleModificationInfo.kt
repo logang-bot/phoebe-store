@@ -73,19 +73,25 @@ fun SaleModificationInfo(
         val boldStyle = SpanStyle(fontWeight = FontWeight.Bold)
         val body = buildAnnotatedString {
             append(header)
+            append(" ")
             when (profitOutcome) {
                 ProfitOutcome.EXTRA_PROFIT -> {
                     append(extraProfitText)
+                    append(" ")
                     withStyle(boldStyle) { append("$currencyName ${"%.2f".format(profitDelta)}") }
+                    append(" ")
                     append(comparedText)
                 }
                 ProfitOutcome.SMALLER_PROFIT -> {
                     append(smallerProfitText)
+                    append(" ")
                     withStyle(boldStyle) { append("$currencyName ${"%.2f".format(abs(profitDelta))}") }
+                    append(" ")
                     append(comparedText)
                 }
                 ProfitOutcome.LOSS -> {
                     append(lossText)
+                    append(" ")
                     withStyle(boldStyle) { append("$currencyName ${"%.2f".format(abs(currentProfit))}") }
                     append(".")
                 }

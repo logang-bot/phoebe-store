@@ -91,30 +91,39 @@ app/src/main/java/com/example/phoebestore/
 │   ├── model/
 │   │   ├── Currency.kt
 │   │   ├── Store.kt
-│   │   └── Product.kt
+│   │   ├── Product.kt
+│   │   ├── Sale.kt
+│   │   ├── SaleType.kt
+│   │   └── ProfitOutcome.kt
 │   └── repository/
 │       ├── StoreRepository.kt
-│       └── ProductRepository.kt
+│       ├── ProductRepository.kt
+│       └── SaleRepository.kt
 ├── data/
 │   ├── local/
-│   │   ├── AppDatabase.kt
+│   │   ├── AppDatabase.kt              ← version 5
 │   │   ├── entity/
 │   │   │   ├── StoreEntity.kt
-│   │   │   └── ProductEntity.kt
+│   │   │   ├── ProductEntity.kt
+│   │   │   └── SaleEntity.kt
 │   │   └── dao/
 │   │       ├── StoreDao.kt
-│   │       └── ProductDao.kt
+│   │       ├── ProductDao.kt
+│   │       └── SaleDao.kt
 │   ├── remote/
 │   │   └── dto/
 │   │       ├── StoreDto.kt
-│   │       └── ProductDto.kt
+│   │       ├── ProductDto.kt
+│   │       └── SaleDto.kt
 │   ├── mapper/
 │   │   ├── StoreMapper.kt
-│   │   └── ProductMapper.kt
+│   │   ├── ProductMapper.kt
+│   │   └── SaleMapper.kt
 │   └── repository/
 │       └── impl/
 │           ├── StoreRepositoryImpl.kt
-│           └── ProductRepositoryImpl.kt
+│           ├── ProductRepositoryImpl.kt
+│           └── SaleRepositoryImpl.kt
 ├── presentation/
 │   ├── navigation/
 │   │   └── AppNavigation.kt
@@ -144,7 +153,13 @@ app/src/main/java/com/example/phoebestore/
 │   │   │   ├── CreateProductScreen.kt
 │   │   │   └── CreateProductViewModel.kt
 │   │   └── sale/
-│   │       └── RecordSaleScreen.kt     ← placeholder
+│   │       ├── RecordSaleScreen.kt
+│   │       ├── RecordSaleViewModel.kt
+│   │       ├── ProductDropdown.kt
+│   │       ├── SalePriceRow.kt
+│   │       ├── SaleTotalSection.kt
+│   │       ├── SaleModificationInfo.kt
+│   │       └── DateField.kt
 │   └── theme/
 │       ├── Color.kt
 │       ├── Theme.kt

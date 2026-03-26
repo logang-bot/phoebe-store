@@ -1,5 +1,6 @@
 package com.example.phoebestore.ui.screen.sale
 
+import android.content.res.Configuration
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -23,10 +24,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.phoebestore.R
+import com.example.phoebestore.domain.model.Currency
+import com.example.phoebestore.domain.model.Product
+import com.example.phoebestore.ui.theme.PhoebeStoreTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -41,6 +46,34 @@ fun RecordSaleScreen(
         if (formState.isSuccess) onSaleRecorded()
     }
 
+    RecordSaleScreenContent(
+        formState = formState,
+        onProductSelected = viewModel::onProductSelected,
+        onCustomProductSelected = viewModel::onCustomProductSelected,
+        onProductNameChange = viewModel::onProductNameChange,
+        onQuantityChange = viewModel::onQuantityChange,
+        onUnitPriceChange = viewModel::onUnitPriceChange,
+        onUnitCostChange = viewModel::onUnitCostChange,
+        onSoldAtChange = viewModel::onSoldAtChange,
+        onNotesChange = viewModel::onNotesChange,
+        onSave = viewModel::save
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun RecordSaleScreenContent(
+    formState: RecordSaleFormState,
+    onProductSelected: (Product?) -> Unit,
+    onCustomProductSelected: () -> Unit,
+    onProductNameChange: (String) -> Unit,
+    onQuantityChange: (String) -> Unit,
+    onUnitPriceChange: (String) -> Unit,
+    onUnitCostChange: (String) -> Unit,
+    onSoldAtChange: (Long) -> Unit,
+    onNotesChange: (String) -> Unit,
+    onSave: () -> Unit
+) {
     Scaffold(
         topBar = {
             TopAppBar(
@@ -60,7 +93,7 @@ fun RecordSaleScreen(
         bottomBar = {
             Box(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
                 Button(
-                    onClick = viewModel::save,
+                    onClick = onSave,
                     enabled = !formState.isSaving,
                     modifier = Modifier.fillMaxWidth()
                 ) {
@@ -81,8 +114,8 @@ fun RecordSaleScreen(
                     products = formState.products,
                     selectedProduct = formState.selectedProduct,
                     isCustomSelected = formState.isCustomProduct,
-                    onProductSelected = viewModel::onProductSelected,
-                    onCustomSelected = viewModel::onCustomProductSelected,
+                    onProductSelected = onProductSelected,
+                    onCustomSelected = onCustomProductSelected,
                     modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(modifier = Modifier.height(12.dp))
@@ -91,7 +124,7 @@ fun RecordSaleScreen(
             if (formState.products.isEmpty() || formState.isCustomProduct) {
                 OutlinedTextField(
                     value = formState.productName,
-                    onValueChange = viewModel::onProductNameChange,
+                    onValueChange = onProductNameChange,
                     label = { Text(stringResource(R.string.record_sale_product_name_label)) },
                     isError = formState.productNameError,
                     supportingText = if (formState.productNameError) {
@@ -105,7 +138,7 @@ fun RecordSaleScreen(
 
             OutlinedTextField(
                 value = formState.quantity,
-                onValueChange = viewModel::onQuantityChange,
+                onValueChange = onQuantityChange,
                 label = { Text(stringResource(R.string.record_sale_quantity_label)) },
                 isError = formState.quantityError,
                 supportingText = if (formState.quantityError) {
@@ -122,8 +155,8 @@ fun RecordSaleScreen(
                 unitPrice = formState.unitPrice,
                 unitCost = formState.unitCost,
                 unitPriceError = formState.unitPriceError,
-                onUnitPriceChange = viewModel::onUnitPriceChange,
-                onUnitCostChange = viewModel::onUnitCostChange,
+                onUnitPriceChange = onUnitPriceChange,
+                onUnitCostChange = onUnitCostChange,
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -149,7 +182,7 @@ fun RecordSaleScreen(
 
             DateField(
                 epochMillis = formState.soldAt,
-                onDateSelected = viewModel::onSoldAtChange,
+                onDateSelected = onSoldAtChange,
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -157,12 +190,71 @@ fun RecordSaleScreen(
 
             OutlinedTextField(
                 value = formState.notes,
-                onValueChange = viewModel::onNotesChange,
+                onValueChange = onNotesChange,
                 label = { Text(stringResource(R.string.record_sale_notes_label)) },
                 minLines = 3,
                 maxLines = 5,
                 modifier = Modifier.fillMaxWidth()
             )
         }
+    }
+}
+
+private val previewProducts = listOf(
+    Product(id = 1L, storeId = 1L, name = "Coffee", price = 5.00, costPrice = 2.00),
+    Product(id = 2L, storeId = 1L, name = "Tea", price = 3.50, costPrice = 1.00),
+)
+
+@Preview(showBackground = true)
+@Composable
+private fun RecordSaleScreenLightPreview() {
+    PhoebeStoreTheme {
+        RecordSaleScreenContent(
+            formState = RecordSaleFormState(
+                products = previewProducts,
+                selectedProduct = previewProducts.first(),
+                unitPrice = "5.00",
+                unitCost = "2.00",
+                quantity = "3",
+                totalAmount = 15.00,
+                currency = Currency.USD
+            ),
+            onProductSelected = {},
+            onCustomProductSelected = {},
+            onProductNameChange = {},
+            onQuantityChange = {},
+            onUnitPriceChange = {},
+            onUnitCostChange = {},
+            onSoldAtChange = {},
+            onNotesChange = {},
+            onSave = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun RecordSaleScreenDarkPreview() {
+    PhoebeStoreTheme {
+        RecordSaleScreenContent(
+            formState = RecordSaleFormState(
+                products = previewProducts,
+                selectedProduct = previewProducts.first(),
+                unitPrice = "5.00",
+                unitCost = "2.00",
+                quantity = "3",
+                totalAmount = 15.00,
+                currency = Currency.BOB
+            ),
+            onProductSelected = {},
+            onCustomProductSelected = {},
+            onProductNameChange = {},
+            onQuantityChange = {},
+            onUnitPriceChange = {},
+            onUnitCostChange = {},
+            onSoldAtChange = {},
+            onNotesChange = {},
+            onSave = {}
+        )
     }
 }
