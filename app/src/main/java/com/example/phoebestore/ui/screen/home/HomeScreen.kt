@@ -2,6 +2,7 @@ package com.example.phoebestore.ui.screen.home
 
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -9,11 +10,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.Typography
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -21,7 +23,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -38,6 +39,7 @@ import com.example.phoebestore.ui.theme.PhoebeStoreTheme
 fun HomeScreen(
     onNavigateToStoreList: () -> Unit,
     onNavigateToStoreDetail: (storeId: Long) -> Unit,
+    onNavigateToCreateSale: (storeId: Long) -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val lastStore by viewModel.lastStore.collectAsStateWithLifecycle()
@@ -48,7 +50,8 @@ fun HomeScreen(
         lastStore = lastStore,
         welcomeMessage = welcomeMessage,
         onNavigateToStoreList = onNavigateToStoreList,
-        onNavigateToStoreDetail = onNavigateToStoreDetail
+        onNavigateToStoreDetail = onNavigateToStoreDetail,
+        onNavigateToCreateSale = { lastStore?.let { onNavigateToCreateSale(it.id) } }
     )
 }
 
@@ -57,7 +60,8 @@ private fun HomeScreenContent(
     lastStore: Store?,
     welcomeMessage: String,
     onNavigateToStoreList: () -> Unit,
-    onNavigateToStoreDetail: (storeId: Long) -> Unit
+    onNavigateToStoreDetail: (storeId: Long) -> Unit,
+    onNavigateToCreateSale: () -> Unit = {}
 ) {
     Scaffold(
         containerColor = MaterialTheme.colorScheme.surfaceContainer
@@ -83,11 +87,37 @@ private fun HomeScreenContent(
 
             StoreCard(
                 store = lastStore,
+                flatBottom = lastStore != null,
                 onClick = { lastStore?.let { onNavigateToStoreDetail(it.id) } },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 4.dp)
             )
+
+            if (lastStore != null) {
+                Button(
+                    onClick = onNavigateToCreateSale,
+                    shape = RoundedCornerShape(
+                        topStart = 0.dp,
+                        topEnd = 0.dp,
+                        bottomStart = 12.dp,
+                        bottomEnd = 12.dp
+                    ),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.tertiary,
+                        contentColor = MaterialTheme.colorScheme.onTertiary
+                    ),
+                    contentPadding = PaddingValues(vertical = 16.dp, horizontal = 24.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 4.dp)
+                ) {
+                    Text(
+                        text = stringResource(R.string.store_detail_create_sale_button),
+                        style = MaterialTheme.typography.titleLarge
+                    )
+                }
+            }
 
             Spacer(modifier = Modifier.height(16.dp))
 

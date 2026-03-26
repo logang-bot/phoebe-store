@@ -18,14 +18,16 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardDefaults
+import com.example.phoebestore.ui.common.ThemedCard
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -51,6 +53,7 @@ fun StoreDetailScreen(
     storeId: Long,
     onNavigateToEditStore: (storeId: Long) -> Unit,
     onNavigateToProductList: (storeId: Long) -> Unit,
+    onNavigateToCreateSale: () -> Unit = {},
     viewModel: StoreDetailViewModel = hiltViewModel()
 ) {
     val store by viewModel.store.collectAsStateWithLifecycle()
@@ -58,7 +61,8 @@ fun StoreDetailScreen(
     StoreDetailScreenContent(
         store = store,
         onNavigateToEditStore = { onNavigateToEditStore(storeId) },
-        onNavigateToProductList = { onNavigateToProductList(storeId) }
+        onNavigateToProductList = { onNavigateToProductList(storeId) },
+        onCreateSale = onNavigateToCreateSale
     )
 }
 
@@ -66,10 +70,21 @@ fun StoreDetailScreen(
 private fun StoreDetailScreenContent(
     store: Store?,
     onNavigateToEditStore: () -> Unit,
-    onNavigateToProductList: () -> Unit
+    onNavigateToProductList: () -> Unit,
+    onCreateSale: () -> Unit = {}
 ) {
     Scaffold(
-        containerColor = MaterialTheme.colorScheme.surfaceContainer
+        containerColor = MaterialTheme.colorScheme.surfaceContainer,
+        bottomBar = {
+            Box(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
+                Button(
+                    onClick = onCreateSale,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(stringResource(R.string.store_detail_create_sale_button))
+                }
+            }
+        }
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -77,7 +92,10 @@ private fun StoreDetailScreenContent(
                 .verticalScroll(rememberScrollState())
                 .padding(innerPadding)
         ) {
-            StoreDetailHeader(store = store)
+            StoreDetailHeader(
+                store = store,
+                onNavigateToEditStore = onNavigateToEditStore
+            )
 
             Column(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp)
@@ -88,8 +106,30 @@ private fun StoreDetailScreenContent(
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+
+                if (store != null) {
+                    Text(
+                        text = stringResource(R.string.home_currency_format, store.currency.name),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                     Spacer(modifier = Modifier.height(16.dp))
                 }
+
+                Button(
+                    onClick = onNavigateToProductList,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.secondary,
+                        contentColor = MaterialTheme.colorScheme.onSecondary
+                    )
+                ) {
+                    Text(stringResource(R.string.store_detail_products_button))
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
 
                 // Overview metrics card
                 OverviewCard()
@@ -98,31 +138,16 @@ private fun StoreDetailScreenContent(
 
                 // Analytics placeholder card
                 AnalyticsPlaceholderCard()
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                Button(
-                    onClick = onNavigateToProductList,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(stringResource(R.string.store_detail_products_button))
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                OutlinedButton(
-                    onClick = onNavigateToEditStore,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(stringResource(R.string.store_detail_edit_button))
-                }
             }
         }
     }
 }
 
 @Composable
-private fun StoreDetailHeader(store: Store?) {
+private fun StoreDetailHeader(
+    store: Store?,
+    onNavigateToEditStore: () -> Unit
+) {
     val photoHeight = 200.dp
     val logoSize = 80.dp
     val logoOffset = logoSize / 2
@@ -146,6 +171,24 @@ private fun StoreDetailHeader(store: Store?) {
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize()
+                )
+            }
+
+            // Edit button at top-left of photo
+            IconButton(
+                onClick = onNavigateToEditStore,
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(8.dp)
+                    .background(
+                        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.85f),
+                        shape = CircleShape
+                    )
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Edit,
+                    contentDescription = stringResource(R.string.store_detail_edit_button),
+                    tint = MaterialTheme.colorScheme.onSurface
                 )
             }
         }
@@ -190,24 +233,16 @@ private fun StoreDetailHeader(store: Store?) {
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurface
         )
-        if (store != null) {
-            Text(
-                text = store.currency.name,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
     }
 }
 
 @Composable
 private fun OverviewCard() {
-    Card(
+    ThemedCard(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        )
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
@@ -250,12 +285,11 @@ private fun OverviewCard() {
 
 @Composable
 private fun AnalyticsPlaceholderCard() {
-    Card(
+    ThemedCard(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        )
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(

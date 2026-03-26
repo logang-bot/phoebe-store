@@ -42,6 +42,9 @@ fun AppNavigation(
                 },
                 onNavigateToStoreDetail = { storeId ->
                     navController.navigate(StoreDetailScreen(storeId))
+                },
+                onNavigateToCreateSale = { storeId ->
+                    navController.navigate(RecordSaleScreen(storeId))
                 }
             )
         }
@@ -66,6 +69,9 @@ fun AppNavigation(
                 },
                 onNavigateToProductList = { storeId ->
                     navController.navigate(ProductListScreen(storeId))
+                },
+                onNavigateToCreateSale = {
+                    navController.navigate(RecordSaleScreen(route.storeId))
                 }
             )
         }

@@ -4,10 +4,13 @@ import android.content.Context
 import androidx.room.Room
 import com.example.phoebestore.data.local.AppDatabase
 import com.example.phoebestore.data.local.dao.ProductDao
+import com.example.phoebestore.data.local.dao.SaleDao
 import com.example.phoebestore.data.local.dao.StoreDao
 import com.example.phoebestore.data.repository.impl.ProductRepositoryImpl
+import com.example.phoebestore.data.repository.impl.SaleRepositoryImpl
 import com.example.phoebestore.data.repository.impl.StoreRepositoryImpl
 import com.example.phoebestore.domain.repository.ProductRepository
+import com.example.phoebestore.domain.repository.SaleRepository
 import com.example.phoebestore.domain.repository.StoreRepository
 import dagger.Binds
 import dagger.Module
@@ -33,6 +36,9 @@ object DatabaseModule {
 
     @Provides
     fun provideProductDao(db: AppDatabase): ProductDao = db.productDao()
+
+    @Provides
+    fun provideSaleDao(db: AppDatabase): SaleDao = db.saleDao()
 }
 
 @Module
@@ -44,4 +50,7 @@ abstract class RepositoryModule {
 
     @Binds
     abstract fun bindProductRepository(impl: ProductRepositoryImpl): ProductRepository
+
+    @Binds
+    abstract fun bindSaleRepository(impl: SaleRepositoryImpl): SaleRepository
 }

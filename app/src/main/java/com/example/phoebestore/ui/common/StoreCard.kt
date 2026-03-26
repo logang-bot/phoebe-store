@@ -11,11 +11,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -38,20 +37,25 @@ import com.example.phoebestore.domain.model.Currency
 import com.example.phoebestore.domain.model.Store
 import com.example.phoebestore.ui.theme.PhoebeStoreTheme
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StoreCard(
     store: Store?,
     modifier: Modifier = Modifier,
+    flatBottom: Boolean = false,
     onClick: () -> Unit = {}
 ) {
     val containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+    val shape = if (flatBottom) {
+        RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp, bottomStart = 0.dp, bottomEnd = 0.dp)
+    } else {
+        CardDefaults.shape
+    }
 
-    Card(
+    ThemedCard(
         onClick = onClick,
         modifier = modifier,
-        colors = CardDefaults.cardColors(containerColor = containerColor),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        shape = shape,
+        colors = CardDefaults.cardColors(containerColor = containerColor)
     ) {
         if (store == null) {
             Box(
@@ -108,7 +112,7 @@ fun StoreCard(
                 Box(
                     modifier = Modifier
                         .padding(12.dp)
-                        .size(40.dp)
+                        .size(56.dp)
                         .clip(CircleShape)
                         .border(1.5.dp, MaterialTheme.colorScheme.outline, CircleShape)
                         .background(MaterialTheme.colorScheme.surfaceContainerHigh)
@@ -127,7 +131,7 @@ fun StoreCard(
                             imageVector = Icons.Default.Star,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.size(20.dp)
+                            modifier = Modifier.size(28.dp)
                         )
                     }
                 }

@@ -64,12 +64,29 @@
     <string name="store_detail_products_button">Products</string>
     <string name="store_detail_analytics_title">Analytics</string>
     <string name="store_detail_analytics_coming_soon">Charts and analytics coming soon</string>
+    <string name="store_detail_create_sale_button">Create sale</string>
 
     <!-- Product List Screen -->
     <string name="product_list_title">Products</string>
     <string name="product_list_empty_title">No products yet</string>
     <string name="product_list_empty_subtitle">Tap the button below to add your first product.</string>
     <string name="product_list_add_button">Add product</string>
+
+    <!-- Record Sale Screen -->
+    <string name="record_sale_title">New sale</string>
+    <string name="record_sale_product_label">Product</string>
+    <string name="record_sale_custom_product">Custom / Other</string>
+    <string name="record_sale_product_name_label">Product name</string>
+    <string name="record_sale_product_required_error">Product name is required</string>
+    <string name="record_sale_quantity_label">Quantity</string>
+    <string name="record_sale_quantity_error">Enter a valid quantity greater than 0</string>
+    <string name="record_sale_unit_price_label">Unit price</string>
+    <string name="record_sale_unit_price_error">Enter a valid price greater than 0</string>
+    <string name="record_sale_unit_cost_label">Unit cost (optional)</string>
+    <string name="record_sale_notes_label">Notes (optional)</string>
+    <string name="record_sale_date_label">Date of sale</string>
+    <string name="record_sale_save">Record sale</string>
+    <string name="record_sale_total_label">Total</string>
 
     <!-- Product Card -->
     <string name="product_card_stock">Stock: %d</string>
