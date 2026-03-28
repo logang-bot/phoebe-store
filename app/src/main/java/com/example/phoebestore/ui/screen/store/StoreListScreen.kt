@@ -40,10 +40,10 @@ fun StoreListScreen(
     onNavigateToCreateStore: () -> Unit,
     viewModel: StoreListViewModel = hiltViewModel()
 ) {
-    val stores by viewModel.stores.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     StoreListScreenContent(
-        stores = stores,
+        stores = uiState.stores,
         onNavigateToStoreDetail = onNavigateToStoreDetail,
         onNavigateToCreateStore = onNavigateToCreateStore
     )

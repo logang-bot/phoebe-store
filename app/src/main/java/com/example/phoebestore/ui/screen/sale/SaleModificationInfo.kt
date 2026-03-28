@@ -27,7 +27,6 @@ import com.example.phoebestore.domain.model.ProfitOutcome
 import com.example.phoebestore.ui.theme.PhoebeStoreTheme
 import com.example.phoebestore.ui.theme.warningDark
 import com.example.phoebestore.ui.theme.warningLight
-import kotlin.math.abs
 
 @Composable
 fun SaleModificationInfo(
@@ -36,10 +35,10 @@ fun SaleModificationInfo(
     isCostModified: Boolean,
     profitOutcome: ProfitOutcome,
     currencyName: String,
-    unitPrice: String,
-    unitCost: String,
-    profitDelta: Double,
-    currentProfit: Double,
+    formattedUnitPrice: String,
+    formattedUnitCost: String,
+    formattedProfitDelta: String,
+    formattedAbsCurrentProfit: String,
     modifier: Modifier = Modifier
 ) {
     AnimatedVisibility(
@@ -63,8 +62,8 @@ fun SaleModificationInfo(
         val header = stringResource(
             R.string.record_sale_modification_header,
             currencyName,
-            "%.2f".format(unitPrice.toDoubleOrNull() ?: 0.0),
-            "%.2f".format(unitCost.toDoubleOrNull() ?: 0.0)
+            formattedUnitPrice,
+            formattedUnitCost
         )
         val extraProfitText = stringResource(R.string.record_sale_modification_extra_profit)
         val smallerProfitText = stringResource(R.string.record_sale_modification_smaller_profit)
@@ -78,21 +77,21 @@ fun SaleModificationInfo(
                 ProfitOutcome.EXTRA_PROFIT -> {
                     append(extraProfitText)
                     append(" ")
-                    withStyle(boldStyle) { append("$currencyName ${"%.2f".format(profitDelta)}") }
+                    withStyle(boldStyle) { append("$currencyName $formattedProfitDelta") }
                     append(" ")
                     append(comparedText)
                 }
                 ProfitOutcome.SMALLER_PROFIT -> {
                     append(smallerProfitText)
                     append(" ")
-                    withStyle(boldStyle) { append("$currencyName ${"%.2f".format(abs(profitDelta))}") }
+                    withStyle(boldStyle) { append("$currencyName $formattedProfitDelta") }
                     append(" ")
                     append(comparedText)
                 }
                 ProfitOutcome.LOSS -> {
                     append(lossText)
                     append(" ")
-                    withStyle(boldStyle) { append("$currencyName ${"%.2f".format(abs(currentProfit))}") }
+                    withStyle(boldStyle) { append("$currencyName $formattedAbsCurrentProfit") }
                     append(".")
                 }
                 ProfitOutcome.NORMAL_PROFIT -> Unit
@@ -126,10 +125,10 @@ private fun SaleModificationInfoExtraProfitLightPreview() {
             isCostModified = false,
             profitOutcome = ProfitOutcome.EXTRA_PROFIT,
             currencyName = "USD",
-            unitPrice = "12.00",
-            unitCost = "5.00",
-            profitDelta = 2.00,
-            currentProfit = 7.00
+            formattedUnitPrice = "12.00",
+            formattedUnitCost = "5.00",
+            formattedProfitDelta = "2.00",
+            formattedAbsCurrentProfit = "7.00"
         )
     }
 }
@@ -144,10 +143,10 @@ private fun SaleModificationInfoExtraProfitDarkPreview() {
             isCostModified = false,
             profitOutcome = ProfitOutcome.EXTRA_PROFIT,
             currencyName = "USD",
-            unitPrice = "12.00",
-            unitCost = "5.00",
-            profitDelta = 2.00,
-            currentProfit = 7.00
+            formattedUnitPrice = "12.00",
+            formattedUnitCost = "5.00",
+            formattedProfitDelta = "2.00",
+            formattedAbsCurrentProfit = "7.00"
         )
     }
 }
@@ -162,10 +161,10 @@ private fun SaleModificationInfoSmallerProfitLightPreview() {
             isCostModified = true,
             profitOutcome = ProfitOutcome.SMALLER_PROFIT,
             currencyName = "BOB",
-            unitPrice = "10.00",
-            unitCost = "7.00",
-            profitDelta = -2.00,
-            currentProfit = 3.00
+            formattedUnitPrice = "10.00",
+            formattedUnitCost = "7.00",
+            formattedProfitDelta = "2.00",
+            formattedAbsCurrentProfit = "3.00"
         )
     }
 }
@@ -180,10 +179,10 @@ private fun SaleModificationInfoSmallerProfitDarkPreview() {
             isCostModified = true,
             profitOutcome = ProfitOutcome.SMALLER_PROFIT,
             currencyName = "BOB",
-            unitPrice = "10.00",
-            unitCost = "7.00",
-            profitDelta = -2.00,
-            currentProfit = 3.00
+            formattedUnitPrice = "10.00",
+            formattedUnitCost = "7.00",
+            formattedProfitDelta = "2.00",
+            formattedAbsCurrentProfit = "3.00"
         )
     }
 }
@@ -198,10 +197,10 @@ private fun SaleModificationInfoLossLightPreview() {
             isCostModified = true,
             profitOutcome = ProfitOutcome.LOSS,
             currencyName = "USD",
-            unitPrice = "4.00",
-            unitCost = "6.00",
-            profitDelta = -4.00,
-            currentProfit = -2.00
+            formattedUnitPrice = "4.00",
+            formattedUnitCost = "6.00",
+            formattedProfitDelta = "4.00",
+            formattedAbsCurrentProfit = "2.00"
         )
     }
 }
@@ -216,10 +215,10 @@ private fun SaleModificationInfoLossDarkPreview() {
             isCostModified = true,
             profitOutcome = ProfitOutcome.LOSS,
             currencyName = "USD",
-            unitPrice = "4.00",
-            unitCost = "6.00",
-            profitDelta = -4.00,
-            currentProfit = -2.00
+            formattedUnitPrice = "4.00",
+            formattedUnitCost = "6.00",
+            formattedProfitDelta = "4.00",
+            formattedAbsCurrentProfit = "2.00"
         )
     }
 }

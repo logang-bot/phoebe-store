@@ -1,9 +1,6 @@
 package com.example.phoebestore.ui.screen.store
 
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -12,7 +9,11 @@ import com.example.phoebestore.domain.model.Store
 import com.example.phoebestore.domain.repository.StoreRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -24,8 +25,8 @@ class CreateStoreViewModel @Inject constructor(
 
     private val storeId: Long? = savedStateHandle["storeId"]
 
-    var formState by mutableStateOf(CreateStoreFormState())
-        private set
+    private val _formState = MutableStateFlow(CreateStoreFormState())
+    val formState: StateFlow<CreateStoreFormState> = _formState.asStateFlow()
 
     val visiblePermissionDialogQueue = mutableStateListOf<String>()
 
@@ -39,7 +40,7 @@ class CreateStoreViewModel @Inject constructor(
     private fun loadStore(id: Long) {
         viewModelScope.launch {
             storeRepository.getById(id)?.let { store ->
-                formState = CreateStoreFormState(
+                _formState.value = CreateStoreFormState(
                     name = store.name,
                     description = store.description,
                     currency = store.currency,
@@ -51,23 +52,23 @@ class CreateStoreViewModel @Inject constructor(
     }
 
     fun onNameChange(value: String) {
-        formState = formState.copy(name = value, nameError = false)
+        _formState.update { it.copy(name = value, nameError = false) }
     }
 
     fun onDescriptionChange(value: String) {
-        formState = formState.copy(description = value)
+        _formState.update { it.copy(description = value) }
     }
 
     fun onCurrencyChange(value: Currency) {
-        formState = formState.copy(currency = value)
+        _formState.update { it.copy(currency = value) }
     }
 
     fun onLogoCaptured(uri: String) {
-        formState = formState.copy(logoUrl = uri)
+        _formState.update { it.copy(logoUrl = uri) }
     }
 
     fun onPhotoCaptured(uri: String) {
-        formState = formState.copy(photoUrl = uri)
+        _formState.update { it.copy(photoUrl = uri) }
     }
 
     fun onPermissionResult(permission: String, isGranted: Boolean) {
@@ -81,40 +82,28 @@ class CreateStoreViewModel @Inject constructor(
     }
 
     fun saveStore() {
-        if (formState.name.isBlank()) {
-            formState = formState.copy(nameError = true)
+        val state = _formState.value
+        if (state.name.isBlank()) {
+            _formState.update { it.copy(nameError = true) }
             return
         }
         viewModelScope.launch {
-            formState = formState.copy(isLoading = true)
+            _formState.update { it.copy(isLoading = true) }
             try {
                 val store = Store(
                     id = storeId ?: 0L,
-                    name = formState.name.trim(),
-                    description = formState.description.trim(),
-                    currency = formState.currency,
-                    logoUrl = formState.logoUrl,
-                    photoUrl = formState.photoUrl
+                    name = state.name.trim(),
+                    description = state.description.trim(),
+                    currency = state.currency,
+                    logoUrl = state.logoUrl,
+                    photoUrl = state.photoUrl
                 )
                 if (storeId == null) storeRepository.create(store) else storeRepository.update(store)
                 _events.send(CreateStoreEvent.StoreSaved)
             } finally {
-                formState = formState.copy(isLoading = false)
+                _formState.update { it.copy(isLoading = false) }
             }
         }
     }
 }
 
-data class CreateStoreFormState(
-    val name: String = "",
-    val description: String = "",
-    val currency: Currency = Currency.USD,
-    val logoUrl: String = "",
-    val photoUrl: String = "",
-    val isLoading: Boolean = false,
-    val nameError: Boolean = false
-)
-
-sealed class CreateStoreEvent {
-    data object StoreSaved : CreateStoreEvent()
-}

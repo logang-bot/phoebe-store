@@ -24,6 +24,8 @@ fun SalePriceRow(
     unitPriceError: Boolean,
     onUnitPriceChange: (String) -> Unit,
     onUnitCostChange: (String) -> Unit,
+    onUnitPriceFocusLost: () -> Unit,
+    onUnitCostFocusLost: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -43,11 +45,7 @@ fun SalePriceRow(
             singleLine = true,
             modifier = Modifier
                 .weight(1f)
-                .onFocusChanged {
-                    if (!it.isFocused && unitPrice.isNotEmpty()) {
-                        unitPrice.toDoubleOrNull()?.let { v -> onUnitPriceChange("%.2f".format(v)) }
-                    }
-                }
+                .onFocusChanged { if (!it.isFocused) onUnitPriceFocusLost() }
         )
         OutlinedTextField(
             value = unitCost,
@@ -58,11 +56,7 @@ fun SalePriceRow(
             singleLine = true,
             modifier = Modifier
                 .weight(1f)
-                .onFocusChanged {
-                    if (!it.isFocused && unitCost.isNotEmpty()) {
-                        unitCost.toDoubleOrNull()?.let { v -> onUnitCostChange("%.2f".format(v)) }
-                    }
-                }
+                .onFocusChanged { if (!it.isFocused) onUnitCostFocusLost() }
         )
     }
 }
@@ -77,7 +71,9 @@ private fun SalePriceRowLightPreview() {
             unitCost = "5.00",
             unitPriceError = false,
             onUnitPriceChange = {},
-            onUnitCostChange = {}
+            onUnitCostChange = {},
+            onUnitPriceFocusLost = {},
+            onUnitCostFocusLost = {}
         )
     }
 }
@@ -92,7 +88,9 @@ private fun SalePriceRowDarkPreview() {
             unitCost = "",
             unitPriceError = true,
             onUnitPriceChange = {},
-            onUnitCostChange = {}
+            onUnitCostChange = {},
+            onUnitPriceFocusLost = {},
+            onUnitCostFocusLost = {}
         )
     }
 }

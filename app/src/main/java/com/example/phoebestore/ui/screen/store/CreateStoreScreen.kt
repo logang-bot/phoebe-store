@@ -44,6 +44,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
@@ -76,7 +77,7 @@ fun CreateStoreScreen(
 ) {
     val context = LocalContext.current
     val activity = context as ComponentActivity
-    val formState = viewModel.formState
+    val formState by viewModel.formState.collectAsStateWithLifecycle()
     val dialogQueue = viewModel.visiblePermissionDialogQueue
 
     val scope = rememberCoroutineScope()

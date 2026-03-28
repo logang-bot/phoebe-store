@@ -42,16 +42,16 @@ fun HomeScreen(
     onNavigateToCreateSale: (storeId: Long) -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
-    val lastStore by viewModel.lastStore.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val welcomeMessages = stringArrayResource(R.array.home_welcome_messages)
     val welcomeMessage = remember { welcomeMessages.random() }
 
     HomeScreenContent(
-        lastStore = lastStore,
+        lastStore = uiState.lastStore,
         welcomeMessage = welcomeMessage,
         onNavigateToStoreList = onNavigateToStoreList,
         onNavigateToStoreDetail = onNavigateToStoreDetail,
-        onNavigateToCreateSale = { lastStore?.let { onNavigateToCreateSale(it.id) } }
+        onNavigateToCreateSale = { uiState.lastStore?.let { onNavigateToCreateSale(it.id) } }
     )
 }
 

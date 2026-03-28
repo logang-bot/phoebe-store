@@ -39,10 +39,10 @@ fun ProductListScreen(
     onNavigateToEditProduct: (storeId: Long, productId: Long) -> Unit,
     viewModel: ProductListViewModel = hiltViewModel()
 ) {
-    val products by viewModel.products.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     ProductListScreenContent(
-        products = products,
+        products = uiState.products,
         onNavigateToCreateProduct = { onNavigateToCreateProduct(storeId) },
         onNavigateToEditProduct = { productId -> onNavigateToEditProduct(storeId, productId) }
     )

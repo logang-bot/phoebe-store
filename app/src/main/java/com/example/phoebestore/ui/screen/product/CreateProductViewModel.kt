@@ -1,9 +1,6 @@
 package com.example.phoebestore.ui.screen.product
 
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -13,7 +10,11 @@ import com.example.phoebestore.domain.repository.ProductRepository
 import com.example.phoebestore.domain.repository.StoreRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -27,8 +28,8 @@ class CreateProductViewModel @Inject constructor(
     private val storeId: Long = checkNotNull(savedStateHandle["storeId"])
     private val productId: Long? = savedStateHandle["productId"]
 
-    var formState by mutableStateOf(CreateProductFormState())
-        private set
+    private val _formState = MutableStateFlow(CreateProductFormState())
+    val formState: StateFlow<CreateProductFormState> = _formState.asStateFlow()
 
     val visiblePermissionDialogQueue = mutableStateListOf<String>()
 
@@ -38,28 +39,62 @@ class CreateProductViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             storeRepository.getById(storeId)?.let { store ->
-                formState = formState.copy(currency = store.currency)
+                _formState.update { it.copy(currency = store.currency) }
             }
             productId?.let { id ->
                 productRepository.getById(id)?.let { product ->
-                    formState = formState.copy(
+                    _formState.update { it.copy(
                         name = product.name,
                         description = product.description,
                         price = product.price.toString(),
                         costPrice = if (product.costPrice > 0.0) product.costPrice.toString() else "",
                         stock = product.stock.toString(),
                         imageUrl = product.imageUrl
-                    )
+                    )}
                 }
             }
         }
     }
 
-    fun onNameChange(value: String) { formState = formState.copy(name = value, nameError = false) }
-    fun onDescriptionChange(value: String) { formState = formState.copy(description = value) }
-    fun onPriceChange(value: String) { formState = formState.copy(price = value.toDecimalInput(), priceError = false) }
-    fun onCostPriceChange(value: String) { formState = formState.copy(costPrice = value.toDecimalInput()) }
-    fun onStockChange(value: String) { formState = formState.copy(stock = value.toIntegerInput()) }
+    fun onNameChange(value: String) {
+        _formState.update { it.copy(name = value, nameError = false) }
+    }
+
+    fun onDescriptionChange(value: String) {
+        _formState.update { it.copy(description = value) }
+    }
+
+    fun onPriceChange(value: String) {
+        _formState.update { it.copy(price = value.toDecimalInput(), priceError = false) }
+    }
+
+    fun onCostPriceChange(value: String) {
+        _formState.update { it.copy(costPrice = value.toDecimalInput()) }
+    }
+
+    fun onStockChange(value: String) {
+        _formState.update { it.copy(stock = value.toIntegerInput()) }
+    }
+
+    fun onPriceFocusLost() {
+        _formState.update { state ->
+            if (state.price.isEmpty()) return@update state
+            state.price.toDoubleOrNull()?.let { state.copy(price = "%.2f".format(it)) } ?: state
+        }
+    }
+
+    fun onCostPriceFocusLost() {
+        _formState.update { state ->
+            if (state.costPrice.isEmpty()) return@update state
+            state.costPrice.toDoubleOrNull()?.let { state.copy(costPrice = "%.2f".format(it)) } ?: state
+        }
+    }
+
+    fun onStockFocused() {
+        _formState.update { state ->
+            if (state.stock == "0") state.copy(stock = "") else state
+        }
+    }
 
     private fun String.toDecimalInput(): String {
         val filtered = filter { it.isDigit() || it == '.' }
@@ -69,7 +104,10 @@ class CreateProductViewModel @Inject constructor(
     }
 
     private fun String.toIntegerInput(): String = filter { it.isDigit() }
-    fun onImageCaptured(uri: String) { formState = formState.copy(imageUrl = uri) }
+
+    fun onImageCaptured(uri: String) {
+        _formState.update { it.copy(imageUrl = uri) }
+    }
 
     fun onPermissionResult(permission: String, isGranted: Boolean) {
         if (!isGranted && !visiblePermissionDialogQueue.contains(permission)) {
@@ -77,53 +115,40 @@ class CreateProductViewModel @Inject constructor(
         }
     }
 
-    fun dismissDialog() { visiblePermissionDialogQueue.removeFirstOrNull() }
+    fun dismissDialog() {
+        visiblePermissionDialogQueue.removeFirstOrNull()
+    }
 
     fun saveProduct() {
-        val price = formState.price.toDoubleOrNull()
-        if (formState.name.isBlank()) {
-            formState = formState.copy(nameError = true)
+        val state = _formState.value
+        val price = state.price.toDoubleOrNull()
+        if (state.name.isBlank()) {
+            _formState.update { it.copy(nameError = true) }
             return
         }
         if (price == null || price <= 0.0) {
-            formState = formState.copy(priceError = true)
+            _formState.update { it.copy(priceError = true) }
             return
         }
         viewModelScope.launch {
-            formState = formState.copy(isLoading = true)
+            _formState.update { it.copy(isLoading = true) }
             try {
                 val product = Product(
                     id = productId ?: 0L,
                     storeId = storeId,
-                    name = formState.name.trim(),
-                    description = formState.description.trim(),
+                    name = state.name.trim(),
+                    description = state.description.trim(),
                     price = price,
-                    costPrice = formState.costPrice.toDoubleOrNull() ?: 0.0,
-                    stock = formState.stock.toIntOrNull() ?: 0,
-                    imageUrl = formState.imageUrl
+                    costPrice = state.costPrice.toDoubleOrNull() ?: 0.0,
+                    stock = state.stock.toIntOrNull() ?: 0,
+                    imageUrl = state.imageUrl
                 )
                 if (productId == null) productRepository.create(product) else productRepository.update(product)
                 _events.send(CreateProductEvent.ProductSaved)
             } finally {
-                formState = formState.copy(isLoading = false)
+                _formState.update { it.copy(isLoading = false) }
             }
         }
     }
 }
 
-data class CreateProductFormState(
-    val name: String = "",
-    val description: String = "",
-    val price: String = "",
-    val costPrice: String = "",
-    val stock: String = "0",
-    val imageUrl: String = "",
-    val currency: Currency = Currency.USD,
-    val isLoading: Boolean = false,
-    val nameError: Boolean = false,
-    val priceError: Boolean = false
-)
-
-sealed class CreateProductEvent {
-    data object ProductSaved : CreateProductEvent()
-}

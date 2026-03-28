@@ -3,11 +3,11 @@ package com.example.phoebestore.ui.screen.product
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.phoebestore.domain.model.Product
 import com.example.phoebestore.domain.repository.ProductRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
@@ -19,11 +19,12 @@ class ProductListViewModel @Inject constructor(
 
     val storeId: Long = checkNotNull(savedStateHandle["storeId"])
 
-    val products: StateFlow<List<Product>> = productRepository
+    val uiState: StateFlow<ProductListUiState> = productRepository
         .getByStore(storeId)
+        .map { ProductListUiState(products = it) }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = emptyList()
+            initialValue = ProductListUiState()
         )
 }

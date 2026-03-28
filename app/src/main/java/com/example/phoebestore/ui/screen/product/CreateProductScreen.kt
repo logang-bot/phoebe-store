@@ -41,6 +41,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -75,7 +76,7 @@ fun CreateProductScreen(
 ) {
     val context = LocalContext.current
     val activity = context as ComponentActivity
-    val formState = viewModel.formState
+    val formState by viewModel.formState.collectAsStateWithLifecycle()
     val dialogQueue = viewModel.visiblePermissionDialogQueue
 
     val scope = rememberCoroutineScope()
@@ -162,6 +163,9 @@ fun CreateProductScreen(
         onPriceChange = viewModel::onPriceChange,
         onCostPriceChange = viewModel::onCostPriceChange,
         onStockChange = viewModel::onStockChange,
+        onPriceFocusLost = viewModel::onPriceFocusLost,
+        onCostPriceFocusLost = viewModel::onCostPriceFocusLost,
+        onStockFocused = viewModel::onStockFocused,
         onTakePhoto = ::onTakePhotoClick,
         onChooseFromGallery = {
             galleryLauncher.launch(
@@ -181,6 +185,9 @@ private fun CreateProductScreenContent(
     onPriceChange: (String) -> Unit,
     onCostPriceChange: (String) -> Unit,
     onStockChange: (String) -> Unit,
+    onPriceFocusLost: () -> Unit,
+    onCostPriceFocusLost: () -> Unit,
+    onStockFocused: () -> Unit,
     onTakePhoto: () -> Unit,
     onChooseFromGallery: () -> Unit,
     onSave: () -> Unit
@@ -312,7 +319,7 @@ private fun CreateProductScreenContent(
                     ),
                     modifier = Modifier
                         .weight(1f)
-                        .onFocusChanged { if (!it.isFocused && formState.price.isNotEmpty()) formState.price.toDoubleOrNull()?.let { v -> onPriceChange("%.2f".format(v)) } }
+                        .onFocusChanged { if (!it.isFocused) onPriceFocusLost() }
                 )
                 OutlinedTextField(
                     value = formState.costPrice,
@@ -327,7 +334,7 @@ private fun CreateProductScreenContent(
                     ),
                     modifier = Modifier
                         .weight(1f)
-                        .onFocusChanged { if (!it.isFocused && formState.costPrice.isNotEmpty()) formState.costPrice.toDoubleOrNull()?.let { v -> onCostPriceChange("%.2f".format(v)) } }
+                        .onFocusChanged { if (!it.isFocused) onCostPriceFocusLost() }
                 )
             }
 
@@ -346,7 +353,7 @@ private fun CreateProductScreenContent(
                 ),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .onFocusChanged { if (it.isFocused && formState.stock == "0") onStockChange("") }
+                    .onFocusChanged { if (it.isFocused) onStockFocused() }
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -379,6 +386,9 @@ private fun CreateProductScreenLightPreview() {
             onPriceChange = {},
             onCostPriceChange = {},
             onStockChange = {},
+            onPriceFocusLost = {},
+            onCostPriceFocusLost = {},
+            onStockFocused = {},
             onTakePhoto = {},
             onChooseFromGallery = {},
             onSave = {}
@@ -398,6 +408,9 @@ private fun CreateProductScreenDarkPreview() {
             onPriceChange = {},
             onCostPriceChange = {},
             onStockChange = {},
+            onPriceFocusLost = {},
+            onCostPriceFocusLost = {},
+            onStockFocused = {},
             onTakePhoto = {},
             onChooseFromGallery = {},
             onSave = {}

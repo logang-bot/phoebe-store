@@ -56,10 +56,10 @@ fun StoreDetailScreen(
     onNavigateToCreateSale: () -> Unit = {},
     viewModel: StoreDetailViewModel = hiltViewModel()
 ) {
-    val store by viewModel.store.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     StoreDetailScreenContent(
-        store = store,
+        store = uiState.store,
         onNavigateToEditStore = { onNavigateToEditStore(storeId) },
         onNavigateToProductList = { onNavigateToProductList(storeId) },
         onCreateSale = onNavigateToCreateSale

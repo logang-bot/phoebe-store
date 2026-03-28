@@ -23,12 +23,12 @@ import com.example.phoebestore.ui.theme.PhoebeStoreTheme
 
 @Composable
 fun SaleTotalSection(
-    totalAmount: Double,
+    formattedTotalAmount: String,
     currencyName: String,
     modifier: Modifier = Modifier
 ) {
     AnimatedVisibility(
-        visible = totalAmount > 0.0,
+        visible = formattedTotalAmount.isNotEmpty(),
         enter = fadeIn() + expandVertically(),
         exit = fadeOut() + shrinkVertically(),
         modifier = modifier
@@ -38,7 +38,7 @@ fun SaleTotalSection(
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "${stringResource(R.string.record_sale_total_label)}: $currencyName ${"%.2f".format(totalAmount)}",
+                text = "${stringResource(R.string.record_sale_total_label)}: $currencyName $formattedTotalAmount",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onSurface
@@ -54,7 +54,7 @@ fun SaleTotalSection(
 private fun SaleTotalSectionLightPreview() {
     PhoebeStoreTheme {
         SaleTotalSection(
-            totalAmount = 35.50,
+            formattedTotalAmount = "35.50",
             currencyName = "USD"
         )
     }
@@ -65,7 +65,7 @@ private fun SaleTotalSectionLightPreview() {
 private fun SaleTotalSectionDarkPreview() {
     PhoebeStoreTheme {
         SaleTotalSection(
-            totalAmount = 35.50,
+            formattedTotalAmount = "35.50",
             currencyName = "BOB"
         )
     }

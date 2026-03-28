@@ -19,23 +19,20 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.phoebestore.R
 import com.example.phoebestore.ui.theme.PhoebeStoreTheme
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DateField(
     epochMillis: Long,
+    formattedDate: String,
     onDateSelected: (Long) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var showPicker by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState(initialSelectedDateMillis = epochMillis)
-    val dateFormat = remember { SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()) }
 
     OutlinedTextField(
-        value = dateFormat.format(Date(epochMillis)),
+        value = formattedDate,
         onValueChange = {},
         readOnly = true,
         label = { Text(stringResource(R.string.record_sale_date_label)) },
@@ -78,6 +75,7 @@ private fun DateFieldLightPreview() {
     PhoebeStoreTheme {
         DateField(
             epochMillis = System.currentTimeMillis(),
+            formattedDate = "Mar 28, 2026",
             onDateSelected = {}
         )
     }
@@ -89,6 +87,7 @@ private fun DateFieldDarkPreview() {
     PhoebeStoreTheme {
         DateField(
             epochMillis = System.currentTimeMillis(),
+            formattedDate = "Mar 28, 2026",
             onDateSelected = {}
         )
     }

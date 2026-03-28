@@ -54,6 +54,8 @@ fun RecordSaleScreen(
         onQuantityChange = viewModel::onQuantityChange,
         onUnitPriceChange = viewModel::onUnitPriceChange,
         onUnitCostChange = viewModel::onUnitCostChange,
+        onUnitPriceFocusLost = viewModel::onUnitPriceFocusLost,
+        onUnitCostFocusLost = viewModel::onUnitCostFocusLost,
         onSoldAtChange = viewModel::onSoldAtChange,
         onNotesChange = viewModel::onNotesChange,
         onSave = viewModel::save
@@ -70,6 +72,8 @@ private fun RecordSaleScreenContent(
     onQuantityChange: (String) -> Unit,
     onUnitPriceChange: (String) -> Unit,
     onUnitCostChange: (String) -> Unit,
+    onUnitPriceFocusLost: () -> Unit,
+    onUnitCostFocusLost: () -> Unit,
     onSoldAtChange: (Long) -> Unit,
     onNotesChange: (String) -> Unit,
     onSave: () -> Unit
@@ -157,31 +161,33 @@ private fun RecordSaleScreenContent(
                 unitPriceError = formState.unitPriceError,
                 onUnitPriceChange = onUnitPriceChange,
                 onUnitCostChange = onUnitCostChange,
+                onUnitPriceFocusLost = onUnitPriceFocusLost,
+                onUnitCostFocusLost = onUnitCostFocusLost,
                 modifier = Modifier.fillMaxWidth()
             )
 
             SaleTotalSection(
-                totalAmount = formState.totalAmount,
+                formattedTotalAmount = formState.formattedTotalAmount,
                 currencyName = formState.currency.name
             )
 
             SaleModificationInfo(
-                visible = formState.selectedProduct != null &&
-                        (formState.isPriceModified || formState.isCostModified),
+                visible = formState.showModificationInfo,
                 isPriceModified = formState.isPriceModified,
                 isCostModified = formState.isCostModified,
                 profitOutcome = formState.profitOutcome,
                 currencyName = formState.currency.name,
-                unitPrice = formState.unitPrice,
-                unitCost = formState.unitCost,
-                profitDelta = formState.profitDelta,
-                currentProfit = formState.currentProfit
+                formattedUnitPrice = formState.formattedUnitPrice,
+                formattedUnitCost = formState.formattedUnitCost,
+                formattedProfitDelta = formState.formattedProfitDelta,
+                formattedAbsCurrentProfit = formState.formattedAbsCurrentProfit
             )
 
             Spacer(modifier = Modifier.height(12.dp))
 
             DateField(
                 epochMillis = formState.soldAt,
+                formattedDate = formState.formattedSoldAt,
                 onDateSelected = onSoldAtChange,
                 modifier = Modifier.fillMaxWidth()
             )
@@ -217,7 +223,11 @@ private fun RecordSaleScreenLightPreview() {
                 unitCost = "2.00",
                 quantity = "3",
                 totalAmount = 15.00,
-                currency = Currency.USD
+                currency = Currency.USD,
+                formattedTotalAmount = "15.00",
+                formattedSoldAt = "Mar 28, 2026",
+                formattedUnitPrice = "5.00",
+                formattedUnitCost = "2.00"
             ),
             onProductSelected = {},
             onCustomProductSelected = {},
@@ -225,6 +235,8 @@ private fun RecordSaleScreenLightPreview() {
             onQuantityChange = {},
             onUnitPriceChange = {},
             onUnitCostChange = {},
+            onUnitPriceFocusLost = {},
+            onUnitCostFocusLost = {},
             onSoldAtChange = {},
             onNotesChange = {},
             onSave = {}
@@ -244,7 +256,11 @@ private fun RecordSaleScreenDarkPreview() {
                 unitCost = "2.00",
                 quantity = "3",
                 totalAmount = 15.00,
-                currency = Currency.BOB
+                currency = Currency.BOB,
+                formattedTotalAmount = "15.00",
+                formattedSoldAt = "Mar 28, 2026",
+                formattedUnitPrice = "5.00",
+                formattedUnitCost = "2.00"
             ),
             onProductSelected = {},
             onCustomProductSelected = {},
@@ -252,6 +268,8 @@ private fun RecordSaleScreenDarkPreview() {
             onQuantityChange = {},
             onUnitPriceChange = {},
             onUnitCostChange = {},
+            onUnitPriceFocusLost = {},
+            onUnitCostFocusLost = {},
             onSoldAtChange = {},
             onNotesChange = {},
             onSave = {}

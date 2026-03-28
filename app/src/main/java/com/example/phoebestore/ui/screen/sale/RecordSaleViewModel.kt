@@ -17,31 +17,11 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import javax.inject.Inject
-
-data class RecordSaleFormState(
-    val products: List<Product> = emptyList(),
-    val selectedProduct: Product? = null,
-    val isCustomProduct: Boolean = false,
-    val productName: String = "",
-    val quantity: String = "1",
-    val unitPrice: String = "",
-    val unitCost: String = "",
-    val notes: String = "",
-    val soldAt: Long = System.currentTimeMillis(),
-    val currency: Currency = Currency.USD,
-    val totalAmount: Double = 0.0,
-    val isPriceModified: Boolean = false,
-    val isCostModified: Boolean = false,
-    val profitOutcome: ProfitOutcome = ProfitOutcome.NORMAL_PROFIT,
-    val profitDelta: Double = 0.0,
-    val currentProfit: Double = 0.0,
-    val isSaving: Boolean = false,
-    val isSuccess: Boolean = false,
-    val productNameError: Boolean = false,
-    val quantityError: Boolean = false,
-    val unitPriceError: Boolean = false
-)
+import kotlin.math.abs
 
 @HiltViewModel
 class RecordSaleViewModel @Inject constructor(
@@ -53,7 +33,11 @@ class RecordSaleViewModel @Inject constructor(
 
     private val storeId: Long = checkNotNull(savedStateHandle["storeId"])
 
-    private val _formState = MutableStateFlow(RecordSaleFormState())
+    private val dateFormat = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
+
+    private val _formState = MutableStateFlow(
+        RecordSaleFormState().withComputedDisplayFields()
+    )
     val formState: StateFlow<RecordSaleFormState> = _formState.asStateFlow()
 
     init {
@@ -85,7 +69,7 @@ class RecordSaleViewModel @Inject constructor(
                 currentProfit = currentProfit,
                 productNameError = false,
                 unitPriceError = false
-            )
+            ).withComputedDisplayFields()
         }
     }
 
@@ -105,7 +89,7 @@ class RecordSaleViewModel @Inject constructor(
                 currentProfit = 0.0,
                 productNameError = false,
                 unitPriceError = false
-            )
+            ).withComputedDisplayFields()
         }
     }
 
@@ -118,6 +102,7 @@ class RecordSaleViewModel @Inject constructor(
             val input = value.toIntegerInput()
             val total = (input.toIntOrNull() ?: 0) * (state.unitPrice.toDoubleOrNull() ?: 0.0)
             state.copy(quantity = input, quantityError = false, totalAmount = total)
+                .withComputedDisplayFields()
         }
     }
 
@@ -139,7 +124,7 @@ class RecordSaleViewModel @Inject constructor(
                 currentProfit = currentProfit,
                 profitDelta = profitDelta,
                 totalAmount = total
-            )
+            ).withComputedDisplayFields()
         }
     }
 
@@ -158,44 +143,34 @@ class RecordSaleViewModel @Inject constructor(
                 profitOutcome = outcome,
                 currentProfit = currentProfit,
                 profitDelta = profitDelta
-            )
+            ).withComputedDisplayFields()
         }
     }
 
-    private fun computeProfitOutcome(
-        product: Product?,
-        unitPrice: Double?,
-        unitCost: Double?,
-        isPriceModified: Boolean,
-        isCostModified: Boolean
-    ): ProfitOutcome {
-        if (product == null || (!isPriceModified && !isCostModified)) return ProfitOutcome.NORMAL_PROFIT
-        val standardProfit = product.price - product.costPrice
-        val currentProfit = (unitPrice ?: 0.0) - (unitCost ?: 0.0)
-        val delta = currentProfit - standardProfit
-        return when {
-            currentProfit <= 0.0 -> ProfitOutcome.LOSS
-            delta > 0.0 -> ProfitOutcome.EXTRA_PROFIT
-            delta < 0.0 -> ProfitOutcome.SMALLER_PROFIT
-            else -> ProfitOutcome.NORMAL_PROFIT
+    fun onUnitPriceFocusLost() {
+        _formState.update { state ->
+            if (state.unitPrice.isEmpty()) return@update state
+            state.unitPrice.toDoubleOrNull()?.let { v ->
+                state.copy(unitPrice = "%.2f".format(v)).withComputedDisplayFields()
+            } ?: state
         }
     }
 
-    private fun String.toDecimalInput(): String {
-        val filtered = filter { it.isDigit() || it == '.' }
-        val dotIndex = filtered.indexOf('.')
-        return if (dotIndex == -1) filtered
-        else filtered.substring(0, dotIndex + 1) + filtered.substring(dotIndex + 1).filter { it.isDigit() }.take(2)
+    fun onUnitCostFocusLost() {
+        _formState.update { state ->
+            if (state.unitCost.isEmpty()) return@update state
+            state.unitCost.toDoubleOrNull()?.let { v ->
+                state.copy(unitCost = "%.2f".format(v)).withComputedDisplayFields()
+            } ?: state
+        }
     }
-
-    private fun String.toIntegerInput(): String = filter { it.isDigit() }
 
     fun onNotesChange(value: String) {
         _formState.update { it.copy(notes = value) }
     }
 
     fun onSoldAtChange(epochMillis: Long) {
-        _formState.update { it.copy(soldAt = epochMillis) }
+        _formState.update { it.copy(soldAt = epochMillis).withComputedDisplayFields() }
     }
 
     fun save() {
@@ -240,4 +215,42 @@ class RecordSaleViewModel @Inject constructor(
             _formState.update { it.copy(isSaving = false, isSuccess = true) }
         }
     }
+
+    private fun computeProfitOutcome(
+        product: Product?,
+        unitPrice: Double?,
+        unitCost: Double?,
+        isPriceModified: Boolean,
+        isCostModified: Boolean
+    ): ProfitOutcome {
+        if (product == null || (!isPriceModified && !isCostModified)) return ProfitOutcome.NORMAL_PROFIT
+        val standardProfit = product.price - product.costPrice
+        val currentProfit = (unitPrice ?: 0.0) - (unitCost ?: 0.0)
+        val delta = currentProfit - standardProfit
+        return when {
+            currentProfit <= 0.0 -> ProfitOutcome.LOSS
+            delta > 0.0 -> ProfitOutcome.EXTRA_PROFIT
+            delta < 0.0 -> ProfitOutcome.SMALLER_PROFIT
+            else -> ProfitOutcome.NORMAL_PROFIT
+        }
+    }
+
+    private fun RecordSaleFormState.withComputedDisplayFields(): RecordSaleFormState = copy(
+        formattedSoldAt = dateFormat.format(Date(soldAt)),
+        formattedTotalAmount = if (totalAmount > 0.0) "%.2f".format(totalAmount) else "",
+        formattedUnitPrice = "%.2f".format(unitPrice.toDoubleOrNull() ?: 0.0),
+        formattedUnitCost = "%.2f".format(unitCost.toDoubleOrNull() ?: 0.0),
+        formattedProfitDelta = "%.2f".format(abs(profitDelta)),
+        formattedAbsCurrentProfit = "%.2f".format(abs(currentProfit)),
+        showModificationInfo = selectedProduct != null && (isPriceModified || isCostModified)
+    )
+
+    private fun String.toDecimalInput(): String {
+        val filtered = filter { it.isDigit() || it == '.' }
+        val dotIndex = filtered.indexOf('.')
+        return if (dotIndex == -1) filtered
+        else filtered.substring(0, dotIndex + 1) + filtered.substring(dotIndex + 1).filter { it.isDigit() }.take(2)
+    }
+
+    private fun String.toIntegerInput(): String = filter { it.isDigit() }
 }
