@@ -60,6 +60,9 @@ fun StoreDetailScreen(
 
     StoreDetailScreenContent(
         store = uiState.store,
+        totalSales = uiState.totalSales,
+        formattedRevenue = uiState.formattedRevenue,
+        formattedProfit = uiState.formattedProfit,
         onNavigateToEditStore = { onNavigateToEditStore(storeId) },
         onNavigateToProductList = { onNavigateToProductList(storeId) },
         onCreateSale = onNavigateToCreateSale
@@ -69,6 +72,9 @@ fun StoreDetailScreen(
 @Composable
 private fun StoreDetailScreenContent(
     store: Store?,
+    totalSales: Int,
+    formattedRevenue: String,
+    formattedProfit: String,
     onNavigateToEditStore: () -> Unit,
     onNavigateToProductList: () -> Unit,
     onCreateSale: () -> Unit = {}
@@ -132,7 +138,11 @@ private fun StoreDetailScreenContent(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Overview metrics card
-                OverviewCard()
+                OverviewCard(
+                    totalSales = totalSales,
+                    formattedRevenue = formattedRevenue,
+                    formattedProfit = formattedProfit
+                )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
@@ -237,7 +247,19 @@ private fun StoreDetailHeader(
 }
 
 @Composable
-private fun OverviewCard() {
+private fun OverviewCard(
+    totalSales: Int,
+    formattedRevenue: String,
+    formattedProfit: String
+) {
+    val placeholder = stringResource(R.string.home_overview_placeholder_value)
+    val rows = listOf(
+        stringResource(R.string.home_overview_total_sales) to "$totalSales",
+        stringResource(R.string.home_overview_revenue) to formattedRevenue,
+        stringResource(R.string.home_overview_profit) to formattedProfit,
+        stringResource(R.string.home_overview_products_in_stock) to placeholder,
+        stringResource(R.string.home_overview_low_stock_alerts) to placeholder
+    )
     ThemedCard(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
@@ -254,25 +276,19 @@ private fun OverviewCard() {
             Spacer(modifier = Modifier.height(12.dp))
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
             Spacer(modifier = Modifier.height(12.dp))
-            listOf(
-                R.string.home_overview_total_sales,
-                R.string.home_overview_revenue,
-                R.string.home_overview_profit,
-                R.string.home_overview_products_in_stock,
-                R.string.home_overview_low_stock_alerts
-            ).forEachIndexed { index, labelRes ->
+            rows.forEachIndexed { index, (label, value) ->
                 if (index > 0) Spacer(modifier = Modifier.height(8.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        text = stringResource(labelRes),
+                        text = label,
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
-                        text = stringResource(R.string.home_overview_placeholder_value),
+                        text = value,
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.onSurface
@@ -324,6 +340,9 @@ private fun StoreDetailScreenLightPreview() {
     PhoebeStoreTheme {
         StoreDetailScreenContent(
             store = previewStore,
+            totalSales = 12,
+            formattedRevenue = "350.00",
+            formattedProfit = "120.00",
             onNavigateToEditStore = {},
             onNavigateToProductList = {}
         )
@@ -336,6 +355,9 @@ private fun StoreDetailScreenDarkPreview() {
     PhoebeStoreTheme {
         StoreDetailScreenContent(
             store = previewStore,
+            totalSales = 12,
+            formattedRevenue = "350.00",
+            formattedProfit = "120.00",
             onNavigateToEditStore = {},
             onNavigateToProductList = {}
         )

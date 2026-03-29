@@ -27,9 +27,21 @@ import com.example.phoebestore.ui.theme.PhoebeStoreTheme
 @Composable
 internal fun StoreOverviewPlaceholder(
     store: Store?,
+    totalSales: Int,
+    formattedRevenue: String,
+    formattedProfit: String,
     modifier: Modifier = Modifier
 ) {
     if (store == null) return
+
+    val placeholder = stringResource(R.string.home_overview_placeholder_value)
+    val rows = listOf(
+        stringResource(R.string.home_overview_total_sales) to "$totalSales",
+        stringResource(R.string.home_overview_revenue) to formattedRevenue,
+        stringResource(R.string.home_overview_profit) to formattedProfit,
+        stringResource(R.string.home_overview_products_in_stock) to placeholder,
+        stringResource(R.string.home_overview_low_stock_alerts) to placeholder
+    )
 
     ThemedCard(
         modifier = modifier.fillMaxWidth(),
@@ -49,15 +61,10 @@ internal fun StoreOverviewPlaceholder(
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
             Spacer(modifier = Modifier.height(12.dp))
 
-            OverviewRow(stringResource(R.string.home_overview_total_sales), stringResource(R.string.home_overview_placeholder_value))
-            Spacer(modifier = Modifier.height(8.dp))
-            OverviewRow(stringResource(R.string.home_overview_revenue), stringResource(R.string.home_overview_placeholder_value))
-            Spacer(modifier = Modifier.height(8.dp))
-            OverviewRow(stringResource(R.string.home_overview_profit), stringResource(R.string.home_overview_placeholder_value))
-            Spacer(modifier = Modifier.height(8.dp))
-            OverviewRow(stringResource(R.string.home_overview_products_in_stock), stringResource(R.string.home_overview_placeholder_value))
-            Spacer(modifier = Modifier.height(8.dp))
-            OverviewRow(stringResource(R.string.home_overview_low_stock_alerts), stringResource(R.string.home_overview_placeholder_value))
+            rows.forEachIndexed { index, (label, value) ->
+                if (index > 0) Spacer(modifier = Modifier.height(8.dp))
+                OverviewRow(label, value)
+            }
         }
     }
 }
@@ -92,7 +99,12 @@ private val previewStore = Store(
 @Composable
 private fun StoreOverviewPlaceholderLightPreview() {
     PhoebeStoreTheme {
-        StoreOverviewPlaceholder(store = previewStore)
+        StoreOverviewPlaceholder(
+            store = previewStore,
+            totalSales = 8,
+            formattedRevenue = "240.00",
+            formattedProfit = "90.00"
+        )
     }
 }
 
@@ -100,6 +112,11 @@ private fun StoreOverviewPlaceholderLightPreview() {
 @Composable
 private fun StoreOverviewPlaceholderDarkPreview() {
     PhoebeStoreTheme {
-        StoreOverviewPlaceholder(store = previewStore)
+        StoreOverviewPlaceholder(
+            store = previewStore,
+            totalSales = 8,
+            formattedRevenue = "240.00",
+            formattedProfit = "90.00"
+        )
     }
 }

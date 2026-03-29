@@ -51,7 +51,7 @@ The outermost layer. Owns everything the user sees.
 
 | Package | Contents |
 |---|---|
-| `ui/screen/<feature>/` | Screen composable + ViewModel per feature |
+| `ui/screen/<feature>/` | Screen composable, ViewModel, and state file(s) per feature |
 | `ui/common/` | Shared composables and utilities (e.g. `PermissionDialog`) |
 | `ui/theme/` | Material 3 theme — colors, typography, shapes |
 | `presentation/navigation/` | Single `NavHost` graph wiring all screens |
@@ -138,23 +138,30 @@ app/src/main/java/com/example/phoebestore/
 │   │   ├── home/
 │   │   │   ├── HomeScreen.kt
 │   │   │   ├── HomeViewModel.kt
+│   │   │   ├── HomeUiState.kt
 │   │   │   └── StoreOverviewPlaceholder.kt
 │   │   ├── store/
 │   │   │   ├── StoreListScreen.kt
 │   │   │   ├── StoreListViewModel.kt
+│   │   │   ├── StoreListUiState.kt
 │   │   │   ├── StoreDetailScreen.kt
 │   │   │   ├── StoreDetailViewModel.kt
+│   │   │   ├── StoreDetailUiState.kt
 │   │   │   ├── CreateStoreScreen.kt
-│   │   │   └── CreateStoreViewModel.kt
+│   │   │   ├── CreateStoreViewModel.kt
+│   │   │   └── CreateStoreFormState.kt     ← FormState + CreateStoreEvent
 │   │   ├── product/
 │   │   │   ├── ProductListScreen.kt
 │   │   │   ├── ProductListViewModel.kt
+│   │   │   ├── ProductListUiState.kt
 │   │   │   ├── ProductCard.kt
 │   │   │   ├── CreateProductScreen.kt
-│   │   │   └── CreateProductViewModel.kt
+│   │   │   ├── CreateProductViewModel.kt
+│   │   │   └── CreateProductFormState.kt  ← FormState + CreateProductEvent
 │   │   └── sale/
 │   │       ├── RecordSaleScreen.kt
 │   │       ├── RecordSaleViewModel.kt
+│   │       ├── RecordSaleFormState.kt
 │   │       ├── ProductDropdown.kt
 │   │       ├── SalePriceRow.kt
 │   │       ├── SaleTotalSection.kt
@@ -181,4 +188,4 @@ app/src/main/java/com/example/phoebestore/
 5. Room inserts the row and returns the new ID.
 6. The ViewModel emits a `StoreSaved` event via a `Channel`.
 7. The screen collects the event and calls `onStoreSaved()`, which pops the back stack.
-8. `StoreListScreen` is now visible. Its `StateFlow<List<Store>>` (backed by `StoreDao.getAll()`) automatically emits the updated list, and the new `StoreCard` appears with a `animateItem()` fade-in.
+8. `StoreListScreen` is now visible. Its `StateFlow<StoreListUiState>` (backed by `StoreDao.getAll()`) automatically emits the updated list, and the new `StoreCard` appears with a `animateItem()` fade-in.

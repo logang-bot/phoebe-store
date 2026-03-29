@@ -23,6 +23,7 @@ data class RecordSaleFormState(
     val currentProfit: Double = 0.0,
     val isSaving: Boolean = false,
     val isSuccess: Boolean = false,
+    val showConfirmDialog: Boolean = false,
     val productNameError: Boolean = false,
     val quantityError: Boolean = false,
     val unitPriceError: Boolean = false,
@@ -33,5 +34,6 @@ data class RecordSaleFormState(
     val formattedUnitCost: String = "",
     val formattedProfitDelta: String = "",
     val formattedAbsCurrentProfit: String = "",
-    val showModificationInfo: Boolean = false
+    val showModificationInfo: Boolean = false,
+    val canSave: Boolean = false
 )

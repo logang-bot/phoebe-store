@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -18,6 +17,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -31,6 +31,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.phoebestore.R
 import com.example.phoebestore.domain.model.Currency
 import com.example.phoebestore.domain.model.Product
+import com.example.phoebestore.ui.common.LoadingButton
 import com.example.phoebestore.ui.theme.PhoebeStoreTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -46,6 +47,21 @@ fun RecordSaleScreen(
         if (formState.isSuccess) onSaleRecorded()
     }
 
+    if (formState.showConfirmDialog) {
+        SaleConfirmDialog(
+            currencyName = formState.currency.name,
+            productName = formState.productName,
+            quantity = formState.quantity,
+            formattedUnitPrice = formState.formattedUnitPrice,
+            formattedUnitCost = formState.formattedUnitCost,
+            formattedTotalAmount = formState.formattedTotalAmount,
+            formattedSoldAt = formState.formattedSoldAt,
+            notes = formState.notes,
+            onConfirm = viewModel::confirmSave,
+            onDismiss = viewModel::onDismissConfirmDialog
+        )
+    }
+
     RecordSaleScreenContent(
         formState = formState,
         onProductSelected = viewModel::onProductSelected,
@@ -58,7 +74,7 @@ fun RecordSaleScreen(
         onUnitCostFocusLost = viewModel::onUnitCostFocusLost,
         onSoldAtChange = viewModel::onSoldAtChange,
         onNotesChange = viewModel::onNotesChange,
-        onSave = viewModel::save
+        onSave = viewModel::onSaveClicked
     )
 }
 
@@ -96,13 +112,13 @@ private fun RecordSaleScreenContent(
         containerColor = MaterialTheme.colorScheme.surfaceContainer,
         bottomBar = {
             Box(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
-                Button(
+                LoadingButton(
+                    text = stringResource(R.string.record_sale_save),
                     onClick = onSave,
-                    enabled = !formState.isSaving,
+                    enabled = formState.canSave,
+                    isLoading = formState.isSaving,
                     modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(stringResource(R.string.record_sale_save))
-                }
+                )
             }
         }
     ) { innerPadding ->
@@ -225,7 +241,7 @@ private fun RecordSaleScreenLightPreview() {
                 totalAmount = 15.00,
                 currency = Currency.USD,
                 formattedTotalAmount = "15.00",
-                formattedSoldAt = "Mar 28, 2026",
+                formattedSoldAt = "Mar 28, 2026 - 3:45 PM",
                 formattedUnitPrice = "5.00",
                 formattedUnitCost = "2.00"
             ),
@@ -258,7 +274,7 @@ private fun RecordSaleScreenDarkPreview() {
                 totalAmount = 15.00,
                 currency = Currency.BOB,
                 formattedTotalAmount = "15.00",
-                formattedSoldAt = "Mar 28, 2026",
+                formattedSoldAt = "Mar 28, 2026 - 3:45 PM",
                 formattedUnitPrice = "5.00",
                 formattedUnitCost = "2.00"
             ),

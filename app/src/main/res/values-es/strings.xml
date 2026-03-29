@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">PhoebeStore</string>
+
+    <!-- Home Screen -->
+    <string-array name="home_welcome_messages">
+        <item>¡Bienvenido de nuevo!</item>
+        <item>¡Qué bueno verte otra vez!</item>
+        <item>¿Listo para gestionar tus tiendas?</item>
+        <item>Veamos cómo va tu negocio hoy.</item>
+        <item>¡Nos alegra tenerte aquí!</item>
+        <item>Tu panel de tiendas te espera.</item>
+        <item>¡Hola! Echemos un vistazo a tus tiendas.</item>
+    </string-array>
+    <string name="home_view_all_stores">Ver todas las tiendas</string>
+
+    <!-- Last Store Card -->
+    <string name="home_last_sale_placeholder">Última venta: —</string>
+    <string name="home_last_store_label">Última tienda</string>
+    <string name="home_no_stores_title">Aún no hay tiendas</string>
+    <string name="home_no_stores_subtitle">Crea tu primera tienda para empezar.</string>
+    <string name="home_currency_format">Moneda: %s</string>
+
+    <!-- Permissions -->
+    <string name="permission_required">Permiso requerido</string>
+    <string name="permission_ok">Aceptar</string>
+    <string name="permission_grant">Conceder permiso</string>
+    <string name="camera_permission_rationale">Se necesita acceso a la cámara para tomar una foto de portada de tu tienda.</string>
+    <string name="camera_permission_permanently_declined">Has denegado permanentemente el permiso de cámara. Ve a la configuración de la app para concederlo y poder agregar una foto a tu tienda.</string>
+
+    <!-- Create / Edit Store Screen -->
+    <string name="create_store_title_create">Nueva tienda</string>
+    <string name="create_store_title_edit">Editar tienda</string>
+    <string name="create_store_name_label">Nombre de la tienda</string>
+    <string name="create_store_name_placeholder">Mi tienda increíble</string>
+    <string name="create_store_name_required_error">El nombre de la tienda es obligatorio</string>
+    <string name="create_store_description_label">Descripción</string>
+    <string name="create_store_description_placeholder">¿Qué vende tu tienda?</string>
+    <string name="create_store_currency_label">Moneda</string>
+    <string name="create_store_logo_label">Logo de la tienda</string>
+    <string name="create_store_photo_label">Foto de portada</string>
+    <string name="create_store_take_photo">Tomar foto</string>
+    <string name="create_store_retake_photo">Retomar foto</string>
+    <string name="create_store_choose_from_gallery">Elegir de la galería</string>
+    <string name="create_store_save">Guardar</string>
+
+    <!-- Store List Screen -->
+    <string name="store_list_title">Tus tiendas</string>
+    <string name="store_list_empty_title">Aún no hay tiendas</string>
+    <string name="store_list_empty_subtitle">Toca el botón de abajo para crear tu primera tienda.</string>
+    <string name="store_list_create_button">Crear nueva tienda</string>
+    <string name="store_card_currency_format">%s</string>
+
+    <!-- Store Overview -->
+    <string name="home_overview_title">Resumen de la tienda</string>
+    <string name="home_overview_total_sales">Total de ventas</string>
+    <string name="home_overview_revenue">Ingresos</string>
+    <string name="home_overview_profit">Ganancia</string>
+    <string name="home_overview_products_in_stock">Productos en stock</string>
+    <string name="home_overview_low_stock_alerts">Alertas de stock bajo</string>
+    <string name="home_overview_placeholder_value">—</string>
+
+    <!-- Store Detail Screen -->
+    <string name="store_detail_edit_button">Editar tienda</string>
+    <string name="store_detail_products_button">Productos</string>
+    <string name="store_detail_analytics_title">Analíticas</string>
+    <string name="store_detail_analytics_coming_soon">Gráficos y analíticas próximamente</string>
+    <string name="store_detail_create_sale_button">Registrar venta</string>
+
+    <!-- Product List Screen -->
+    <string name="product_list_title">Productos</string>
+    <string name="product_list_empty_title">Aún no hay productos</string>
+    <string name="product_list_empty_subtitle">Toca el botón de abajo para agregar tu primer producto.</string>
+    <string name="product_list_add_button">Agregar producto</string>
+
+    <!-- Record Sale Screen -->
+    <string name="record_sale_title">Nueva venta</string>
+    <string name="record_sale_confirm_title">Confirmar venta</string>
+    <string name="record_sale_product_label">Producto</string>
+    <string name="record_sale_custom_product">Personalizado / Otro</string>
+    <string name="record_sale_product_name_label">Nombre del producto</string>
+    <string name="record_sale_product_required_error">El nombre del producto es obligatorio</string>
+    <string name="record_sale_quantity_label">Cantidad</string>
+    <string name="record_sale_quantity_error">Ingresa una cantidad válida mayor a 0</string>
+    <string name="record_sale_unit_price_label">Precio unitario</string>
+    <string name="record_sale_unit_price_error">Ingresa un precio válido mayor a 0</string>
+    <string name="record_sale_unit_cost_label">Costo unitario (opcional)</string>
+    <string name="record_sale_notes_label">Notas (opcional)</string>
+    <string name="record_sale_date_label">Fecha de la venta</string>
+    <string name="record_sale_save">Registrar venta</string>
+    <string name="record_sale_total_label">Total</string>
+    <string name="record_sale_date_change">Cambiar</string>
+    <string name="record_sale_date_ok">Aceptar</string>
+    <string name="record_sale_date_cancel">Cancelar</string>
+    <string name="record_sale_modification_price_and_cost_changed">El precio unitario y el costo unitario han sido modificados</string>
+    <string name="record_sale_modification_price_changed">El precio unitario ha sido modificado</string>
+    <string name="record_sale_modification_cost_changed">El costo unitario ha sido modificado</string>
+    <string name="record_sale_modification_header">El precio unitario es ahora %1$s %2$s, y el costo unitario es %1$s %3$s, </string>
+    <string name="record_sale_modification_extra_profit">generando una ganancia adicional de </string>
+    <string name="record_sale_modification_smaller_profit">reduciendo la ganancia en </string>
+    <string name="record_sale_modification_loss">resultando en una pérdida de </string>
+    <string name="record_sale_modification_compared_to_standard"> en comparación con el precio estándar.</string>
+
+    <!-- Product Card -->
+    <string name="product_card_stock">Stock: %d</string>
+
+    <!-- Create / Edit Product Screen -->
+    <string name="create_product_title_create">Nuevo producto</string>
+    <string name="create_product_title_edit">Editar producto</string>
+    <string name="create_product_name_label">Nombre del producto</string>
+    <string name="create_product_name_placeholder">Mi producto</string>
+    <string name="create_product_name_required_error">El nombre del producto es obligatorio</string>
+    <string name="create_product_description_label">Descripción</string>
+    <string name="create_product_description_placeholder">¿Qué es este producto?</string>
+    <string name="create_product_price_label">Precio de venta</string>
+    <string name="create_product_price_placeholder">0.00</string>
+    <string name="create_product_price_error">Ingresa un precio válido mayor a 0</string>
+    <string name="create_product_cost_price_label">Precio de costo</string>
+    <string name="create_product_cost_price_placeholder">0.00</string>
+    <string name="create_product_stock_label">Stock</string>
+    <string name="create_product_stock_placeholder">0</string>
+    <string name="create_product_image_label">Imagen del producto</string>
+    <string name="create_product_save">Guardar</string>
+</resources>

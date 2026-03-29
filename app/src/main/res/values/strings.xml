@@ -74,6 +74,7 @@
 
     <!-- Record Sale Screen -->
     <string name="record_sale_title">New sale</string>
+    <string name="record_sale_confirm_title">Confirm sale</string>
     <string name="record_sale_product_label">Product</string>
     <string name="record_sale_custom_product">Custom / Other</string>
     <string name="record_sale_product_name_label">Product name</string>

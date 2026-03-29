@@ -13,6 +13,18 @@ Strings are never hardcoded in composables — all user-visible text lives in `r
 
 Colors are always taken from `MaterialTheme.colorScheme`. No hardcoded color values in UI code.
 
+### State / event class conventions
+
+Every ViewModel exposes a single `StateFlow<XxxState>` (never raw `StateFlow<List<T>>` or `StateFlow<T?>`). Each state class and event sealed class lives in its **own file**, co-located with the ViewModel in the same feature package:
+
+| Pattern | File | Example |
+|---|---|---|
+| Read-only list / detail screen | `XxxUiState.kt` | `StoreListUiState.kt` |
+| Form screen | `XxxFormState.kt` | `CreateStoreFormState.kt` |
+| One-shot navigation events | Defined in `XxxFormState.kt` | `sealed class CreateStoreEvent` |
+
+State is collected in screens via `collectAsStateWithLifecycle()`. No `mutableStateOf` is used in ViewModels — all mutable state is `MutableStateFlow`.
+
 ---
 
 ## Theme
@@ -55,7 +67,9 @@ Entry point of the app. Shows a welcome greeting, a card for the last store the 
 
 | Property | Type | Description |
 |---|---|---|
-| `lastStore` | `StateFlow<Store?>` | Most recently created store; `null` if no stores exist yet |
+| `uiState` | `StateFlow<HomeUiState>` | Wraps `lastStore: Store?` — the most recently created store; `null` if none exist |
+
+State class: `HomeUiState.kt`
 
 ### Components
 
@@ -94,13 +108,15 @@ Lists all stores created by the user. Entry point for creating a new store.
 
 | Property | Type | Description |
 |---|---|---|
-| `stores` | `StateFlow<List<Store>>` | All stores, ordered by `createdAt DESC` |
+| `uiState` | `StateFlow<StoreListUiState>` | Wraps `stores: List<Store>` — all stores, ordered by `createdAt DESC` |
+
+State class: `StoreListUiState.kt`
 
 ### Layout
 - Title at the top.
 - `LazyColumn` of `StoreCard` items (from `ui/common`) with `Modifier.animateItem()` — new stores animate in automatically when the Flow emits the updated list after creation.
 - Full-width "Create new store" `Button` pinned at the bottom.
-- Empty state shown when `stores` is empty.
+- Empty state shown when `uiState.stores` is empty.
 
 ---
 
@@ -118,9 +134,11 @@ Form to create a new store or edit an existing one. Determined by the `storeId` 
 
 | Property | Type | Description |
 |---|---|---|
-| `formState` | `CreateStoreFormState` | All form field values + validation flags + loading state |
+| `formState` | `StateFlow<CreateStoreFormState>` | All form field values + validation flags + loading state |
 | `visiblePermissionDialogQueue` | `SnapshotStateList<String>` | Permissions awaiting a dialog |
 | `events` | `Flow<CreateStoreEvent>` | One-shot events (e.g. `StoreSaved`) |
+
+State + event classes: `CreateStoreFormState.kt`
 
 `CreateStoreFormState` fields:
 
@@ -175,7 +193,9 @@ Shows a single store's overview: cover photo, logo, key metrics, and analytics p
 
 | Property | Type | Description |
 |---|---|---|
-| `store` | `StateFlow<Store?>` | The store loaded by ID from `SavedStateHandle`; `null` while loading |
+| `uiState` | `StateFlow<StoreDetailUiState>` | Wraps `store: Store?` — loaded by ID from `SavedStateHandle`; `null` while loading |
+
+State class: `StoreDetailUiState.kt`
 
 ### Layout
 
@@ -209,13 +229,15 @@ Lists all products belonging to a store. Entry point to create or edit products.
 
 | Property | Type | Description |
 |---|---|---|
-| `products` | `StateFlow<List<Product>>` | All products for the store, ordered by `name ASC` |
+| `uiState` | `StateFlow<ProductListUiState>` | Wraps `products: List<Product>` — all products for the store, ordered by `name ASC` |
+
+State class: `ProductListUiState.kt`
 
 ### Layout
 - Title at the top.
 - `LazyVerticalGrid` with `GridCells.Fixed(2)` and `Modifier.animateItem()` on each cell — products animate in/out when the list changes.
 - Full-width "Add product" `Button` pinned at the bottom.
-- Empty state shown when `products` is empty.
+- Empty state shown when `uiState.products` is empty.
 
 ### `ProductCard` (`ProductCard.kt`)
 Square card (`aspectRatio(1f)`) showing:
@@ -240,9 +262,19 @@ Form to create a new product or edit an existing one within a store. Determined 
 
 | Property | Type | Description |
 |---|---|---|
-| `formState` | `CreateProductFormState` | All form field values + validation flags + loading state |
+| `formState` | `StateFlow<CreateProductFormState>` | All form field values + validation flags + loading state |
 | `visiblePermissionDialogQueue` | `SnapshotStateList<String>` | Permissions awaiting a dialog |
 | `events` | `Flow<CreateProductEvent>` | One-shot events (e.g. `ProductSaved`) |
+
+State + event classes: `CreateProductFormState.kt`
+
+Focus-event methods on `CreateProductViewModel`:
+
+| Method | Trigger | Effect |
+|---|---|---|
+| `onPriceFocusLost()` | Price field loses focus | Formats `price` to `"%.2f"` if non-empty and parseable |
+| `onCostPriceFocusLost()` | Cost price field loses focus | Formats `costPrice` to `"%.2f"` if non-empty and parseable |
+| `onStockFocused()` | Stock field gains focus | Clears `stock` when its current value is `"0"` |
 
 `CreateProductFormState` fields:
 
@@ -297,6 +329,8 @@ Form to log a new sale against a store. Supports selecting an existing product o
 |---|---|---|
 | `formState` | `StateFlow<RecordSaleFormState>` | All form field values, computed fields, and validation flags |
 
+State class: `RecordSaleFormState.kt`
+
 `RecordSaleFormState` fields:
 
 | Field | Default | Notes |
@@ -319,6 +353,27 @@ Form to log a new sale against a store. Supports selecting an existing product o
 | `currentProfit` | `0.0` | `unitPrice − unitCost` at the current field values |
 | `isSaving` | `false` | Disables Save button while the coroutine runs |
 | `isSuccess` | `false` | Triggers `onSaleRecorded()` navigation when `true` |
+
+**Derived display fields** (pre-formatted strings, computed in the ViewModel):
+
+| Field | Derived from | Format |
+|---|---|---|
+| `formattedSoldAt` | `soldAt` | `"MMM dd, yyyy"` via `SimpleDateFormat` |
+| `formattedTotalAmount` | `totalAmount` | `"%.2f"` — empty string when `totalAmount == 0.0` |
+| `formattedUnitPrice` | `unitPrice` | `"%.2f"` of parsed double (0.0 if blank) |
+| `formattedUnitCost` | `unitCost` | `"%.2f"` of parsed double (0.0 if blank) |
+| `formattedProfitDelta` | `profitDelta` | `"%.2f"` of `abs(profitDelta)` |
+| `formattedAbsCurrentProfit` | `currentProfit` | `"%.2f"` of `abs(currentProfit)` |
+| `showModificationInfo` | `selectedProduct`, `isPriceModified`, `isCostModified` | `true` when a product is selected and at least one price was changed |
+
+All derived fields are recomputed by the private `withComputedDisplayFields()` extension on `RecordSaleFormState` every time any of `unitPrice`, `unitCost`, `quantity`, or `soldAt` changes. Composables receive only pre-formatted strings — no formatting logic in UI code.
+
+Focus-event methods on `RecordSaleViewModel`:
+
+| Method | Trigger | Effect |
+|---|---|---|
+| `onUnitPriceFocusLost()` | Unit price field loses focus | Formats `unitPrice` to `"%.2f"` and recomputes display fields |
+| `onUnitCostFocusLost()` | Unit cost field loses focus | Formats `unitCost` to `"%.2f"` and recomputes display fields |
 
 ### Profit outcome logic
 
@@ -343,7 +398,7 @@ All numeric fields reject non-numeric input at the ViewModel level:
 - **Decimal fields** (`unitPrice`, `unitCost`): `toDecimalInput()` strips non-digits except `.`, and caps fractional digits at 2.
 - **Integer fields** (`quantity`): `toIntegerInput()` strips everything except digits.
 
-Money fields also auto-format to `"%.2f"` on focus loss via `onFocusChanged` modifier in `SalePriceRow`.
+Money fields also auto-format to `"%.2f"` on focus loss. The `onFocusChanged` modifier in `SalePriceRow` calls `onUnitPriceFocusLost()` / `onUnitCostFocusLost()` on the ViewModel — all formatting happens there, not in the composable.
 
 ### Form fields (top to bottom)
 1. `ProductDropdown` — visible only when the store has products
@@ -364,19 +419,21 @@ Money fields also auto-format to `"%.2f"` on focus loss via `onFocusChanged` mod
 Previews: light / dark (2 total).
 
 #### `SalePriceRow` (`SalePriceRow.kt`)
-Side-by-side `Row` of two `OutlinedTextField`s (unit price and unit cost), each with `weight(1f)` and `KeyboardType.Decimal`. Currency code is shown as a prefix. `onFocusChanged` formats to `"%.2f"` when focus leaves a non-empty field.
+Side-by-side `Row` of two `OutlinedTextField`s (unit price and unit cost), each with `weight(1f)` and `KeyboardType.Decimal`. Currency code is shown as a prefix. `onFocusChanged` delegates to `onUnitPriceFocusLost` / `onUnitCostFocusLost` callbacks — no formatting logic inside the composable.
 
 Previews: light / dark (2 total).
 
 #### `SaleTotalSection` (`SaleTotalSection.kt`)
-`AnimatedVisibility` (fade + expand) wrapping a divider/total/divider layout. Visible when `totalAmount > 0.0`. Displays `"Total: <currency> <amount>"` in `titleMedium` semibold.
+`AnimatedVisibility` (fade + expand) wrapping a divider/total/divider layout. Accepts `formattedTotalAmount: String`; visible when the string is non-empty. Displays `"Total: <currency> <formattedTotalAmount>"` in `titleMedium` semibold.
 
 Previews: light / dark (2 total).
 
 #### `SaleModificationInfo` (`SaleModificationInfo.kt`)
-`AnimatedVisibility` block shown when a product is selected and at least one price has been modified. Displays:
+`AnimatedVisibility` block driven by `showModificationInfo: Boolean`. When visible, displays:
 - A subtitle naming which fields changed (price, cost, or both)
-- A body paragraph built with `buildAnnotatedString` — the profit delta value is **bold** via `SpanStyle(fontWeight = FontWeight.Bold)`
+- A body paragraph built with `buildAnnotatedString` — the profit delta value (`formattedProfitDelta`) is **bold** via `SpanStyle(fontWeight = FontWeight.Bold)`
+
+Accepts pre-formatted strings: `formattedUnitPrice`, `formattedUnitCost`, `formattedProfitDelta`, `formattedAbsCurrentProfit`. No formatting or `abs()` logic inside the composable.
 
 Color reflects outcome:
 
@@ -390,7 +447,7 @@ Color reflects outcome:
 Previews: light / dark × EXTRA_PROFIT / SMALLER_PROFIT / LOSS (6 total).
 
 #### `DateField` (`DateField.kt`)
-Read-only `OutlinedTextField` displaying the selected date formatted as `"MMM dd, yyyy"`. A "Change" `TextButton` in the trailing slot opens a `DatePickerDialog`. Confirming updates the epoch millis via `onDateSelected`.
+Read-only `OutlinedTextField` displaying the selected date. Accepts `epochMillis: Long` (used to seed `rememberDatePickerState`) and `formattedDate: String` (pre-formatted by the ViewModel, displayed as-is). A "Change" `TextButton` in the trailing slot opens a `DatePickerDialog`. Confirming updates the epoch millis via `onDateSelected`. No date formatting inside the composable.
 
 Previews: light / dark (2 total).
 

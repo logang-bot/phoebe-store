@@ -33,7 +33,7 @@ class RecordSaleViewModel @Inject constructor(
 
     private val storeId: Long = checkNotNull(savedStateHandle["storeId"])
 
-    private val dateFormat = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
+    private val dateFormat = SimpleDateFormat("MMM dd, yyyy - h:mm a", Locale.getDefault())
 
     private val _formState = MutableStateFlow(
         RecordSaleFormState().withComputedDisplayFields()
@@ -173,37 +173,30 @@ class RecordSaleViewModel @Inject constructor(
         _formState.update { it.copy(soldAt = epochMillis).withComputedDisplayFields() }
     }
 
-    fun save() {
+    fun onSaveClicked() {
+        _formState.update { it.copy(showConfirmDialog = true) }
+    }
+
+    fun onDismissConfirmDialog() {
+        _formState.update { it.copy(showConfirmDialog = false) }
+    }
+
+    fun confirmSave() {
         val state = _formState.value
         val productName = state.productName.trim()
-        val quantity = state.quantity.toIntOrNull()
-        val unitPrice = state.unitPrice.toDoubleOrNull()
-
-        val nameInvalid = productName.isBlank()
-        val quantityInvalid = quantity == null || quantity <= 0
-        val priceInvalid = unitPrice == null || unitPrice <= 0.0
-
-        if (nameInvalid || quantityInvalid || priceInvalid) {
-            _formState.update {
-                it.copy(
-                    productNameError = nameInvalid,
-                    quantityError = quantityInvalid,
-                    unitPriceError = priceInvalid
-                )
-            }
-            return
-        }
+        val quantity = state.quantity.toIntOrNull() ?: return
+        val unitPrice = state.unitPrice.toDoubleOrNull() ?: return
 
         viewModelScope.launch {
-            _formState.update { it.copy(isSaving = true) }
+            _formState.update { it.copy(showConfirmDialog = false, isSaving = true) }
             val saleType = if (state.isPriceModified || state.isCostModified) SaleType.MODIFIED else SaleType.STANDARD
             saleRepository.create(
                 Sale(
                     storeId = storeId,
                     productId = state.selectedProduct?.id,
                     productName = productName,
-                    quantity = quantity!!,
-                    unitPrice = unitPrice!!,
+                    quantity = quantity,
+                    unitPrice = unitPrice,
                     unitCost = state.unitCost.toDoubleOrNull() ?: 0.0,
                     totalAmount = state.totalAmount,
                     saleType = saleType,
@@ -242,7 +235,10 @@ class RecordSaleViewModel @Inject constructor(
         formattedUnitCost = "%.2f".format(unitCost.toDoubleOrNull() ?: 0.0),
         formattedProfitDelta = "%.2f".format(abs(profitDelta)),
         formattedAbsCurrentProfit = "%.2f".format(abs(currentProfit)),
-        showModificationInfo = selectedProduct != null && (isPriceModified || isCostModified)
+        showModificationInfo = selectedProduct != null && (isPriceModified || isCostModified),
+        canSave = (selectedProduct != null || productName.isNotBlank()) &&
+                (quantity.toIntOrNull()?.let { it > 0 } == true) &&
+                (unitPrice.toDoubleOrNull()?.let { it > 0.0 } == true)
     )
 
     private fun String.toDecimalInput(): String {

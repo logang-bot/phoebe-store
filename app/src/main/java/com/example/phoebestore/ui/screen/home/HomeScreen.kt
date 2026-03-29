@@ -48,6 +48,9 @@ fun HomeScreen(
 
     HomeScreenContent(
         lastStore = uiState.lastStore,
+        totalSales = uiState.totalSales,
+        formattedRevenue = uiState.formattedRevenue,
+        formattedProfit = uiState.formattedProfit,
         welcomeMessage = welcomeMessage,
         onNavigateToStoreList = onNavigateToStoreList,
         onNavigateToStoreDetail = onNavigateToStoreDetail,
@@ -58,6 +61,9 @@ fun HomeScreen(
 @Composable
 private fun HomeScreenContent(
     lastStore: Store?,
+    totalSales: Int,
+    formattedRevenue: String,
+    formattedProfit: String,
     welcomeMessage: String,
     onNavigateToStoreList: () -> Unit,
     onNavigateToStoreDetail: (storeId: Long) -> Unit,
@@ -130,7 +136,12 @@ private fun HomeScreenContent(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            StoreOverviewPlaceholder(store = lastStore)
+            StoreOverviewPlaceholder(
+                store = lastStore,
+                totalSales = totalSales,
+                formattedRevenue = formattedRevenue,
+                formattedProfit = formattedProfit
+            )
         }
     }
 }
@@ -148,6 +159,9 @@ private fun HomeScreenLightPreview() {
     PhoebeStoreTheme {
         HomeScreenContent(
             lastStore = previewStore,
+            totalSales = 8,
+            formattedRevenue = "240.00",
+            formattedProfit = "90.00",
             welcomeMessage = "Welcome back!",
             onNavigateToStoreList = {},
             onNavigateToStoreDetail = { _ -> }
@@ -161,6 +175,9 @@ private fun HomeScreenDarkPreview() {
     PhoebeStoreTheme {
         HomeScreenContent(
             lastStore = previewStore,
+            totalSales = 8,
+            formattedRevenue = "240.00",
+            formattedProfit = "90.00",
             welcomeMessage = "Welcome back!",
             onNavigateToStoreList = {},
             onNavigateToStoreDetail = { _ -> }
@@ -174,6 +191,9 @@ private fun HomeScreenEmptyLightPreview() {
     PhoebeStoreTheme {
         HomeScreenContent(
             lastStore = null,
+            totalSales = 0,
+            formattedRevenue = "0.00",
+            formattedProfit = "0.00",
             welcomeMessage = "Ready to manage your stores?",
             onNavigateToStoreList = {},
             onNavigateToStoreDetail = { _ -> }
@@ -187,6 +207,9 @@ private fun HomeScreenEmptyDarkPreview() {
     PhoebeStoreTheme {
         HomeScreenContent(
             lastStore = null,
+            totalSales = 0,
+            formattedRevenue = "0.00",
+            formattedProfit = "0.00",
             welcomeMessage = "Ready to manage your stores?",
             onNavigateToStoreList = {},
             onNavigateToStoreDetail = { _ -> }
