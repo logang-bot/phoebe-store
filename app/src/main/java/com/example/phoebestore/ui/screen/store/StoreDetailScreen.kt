@@ -53,6 +53,7 @@ fun StoreDetailScreen(
     storeId: Long,
     onNavigateToEditStore: (storeId: Long) -> Unit,
     onNavigateToProductList: (storeId: Long) -> Unit,
+    onNavigateToSalesList: (storeId: Long) -> Unit,
     onNavigateToCreateSale: () -> Unit = {},
     viewModel: StoreDetailViewModel = hiltViewModel()
 ) {
@@ -65,6 +66,7 @@ fun StoreDetailScreen(
         formattedProfit = uiState.formattedProfit,
         onNavigateToEditStore = { onNavigateToEditStore(storeId) },
         onNavigateToProductList = { onNavigateToProductList(storeId) },
+        onNavigateToSalesList = { onNavigateToSalesList(storeId) },
         onCreateSale = onNavigateToCreateSale
     )
 }
@@ -77,6 +79,7 @@ private fun StoreDetailScreenContent(
     formattedProfit: String,
     onNavigateToEditStore: () -> Unit,
     onNavigateToProductList: () -> Unit,
+    onNavigateToSalesList: () -> Unit,
     onCreateSale: () -> Unit = {}
 ) {
     Scaffold(
@@ -123,6 +126,19 @@ private fun StoreDetailScreenContent(
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                 }
+
+                Button(
+                    onClick = onNavigateToSalesList,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.secondary,
+                        contentColor = MaterialTheme.colorScheme.onSecondary
+                    )
+                ) {
+                    Text(stringResource(R.string.store_detail_sales_button))
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
 
                 Button(
                     onClick = onNavigateToProductList,
@@ -344,7 +360,8 @@ private fun StoreDetailScreenLightPreview() {
             formattedRevenue = "350.00",
             formattedProfit = "120.00",
             onNavigateToEditStore = {},
-            onNavigateToProductList = {}
+            onNavigateToProductList = {},
+            onNavigateToSalesList = {}
         )
     }
 }
@@ -359,7 +376,8 @@ private fun StoreDetailScreenDarkPreview() {
             formattedRevenue = "350.00",
             formattedProfit = "120.00",
             onNavigateToEditStore = {},
-            onNavigateToProductList = {}
+            onNavigateToProductList = {},
+            onNavigateToSalesList = {}
         )
     }
 }

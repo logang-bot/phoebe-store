@@ -58,6 +58,9 @@ class RecordSaleViewModel @Inject constructor(
             state.copy(
                 selectedProduct = product,
                 isCustomProduct = product == null,
+                isSearchSelected = false,
+                searchQuery = "",
+                filteredProducts = emptyList(),
                 productName = product?.name ?: "",
                 unitPrice = product?.price?.toString() ?: "",
                 unitCost = product?.costPrice?.toString() ?: "",
@@ -78,6 +81,9 @@ class RecordSaleViewModel @Inject constructor(
             it.copy(
                 selectedProduct = null,
                 isCustomProduct = true,
+                isSearchSelected = false,
+                searchQuery = "",
+                filteredProducts = emptyList(),
                 productName = "",
                 unitPrice = "",
                 unitCost = "",
@@ -90,6 +96,37 @@ class RecordSaleViewModel @Inject constructor(
                 productNameError = false,
                 unitPriceError = false
             ).withComputedDisplayFields()
+        }
+    }
+
+    fun onSearchSelected() {
+        _formState.update {
+            it.copy(
+                selectedProduct = null,
+                isCustomProduct = false,
+                isSearchSelected = true,
+                searchQuery = "",
+                filteredProducts = it.products,
+                productName = "",
+                unitPrice = "",
+                unitCost = "",
+                totalAmount = 0.0,
+                isPriceModified = false,
+                isCostModified = false,
+                profitOutcome = ProfitOutcome.NORMAL_PROFIT,
+                profitDelta = 0.0,
+                currentProfit = 0.0,
+                productNameError = false,
+                unitPriceError = false
+            ).withComputedDisplayFields()
+        }
+    }
+
+    fun onSearchQueryChange(query: String) {
+        _formState.update { state ->
+            val filtered = if (query.isBlank()) state.products
+            else state.products.filter { it.name.contains(query, ignoreCase = true) }
+            state.copy(searchQuery = query, filteredProducts = filtered)
         }
     }
 

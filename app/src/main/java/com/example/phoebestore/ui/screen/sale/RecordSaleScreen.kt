@@ -1,8 +1,10 @@
 package com.example.phoebestore.ui.screen.sale
 
 import android.content.res.Configuration
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -15,6 +17,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 
@@ -66,6 +69,8 @@ fun RecordSaleScreen(
         formState = formState,
         onProductSelected = viewModel::onProductSelected,
         onCustomProductSelected = viewModel::onCustomProductSelected,
+        onSearchSelected = viewModel::onSearchSelected,
+        onSearchQueryChange = viewModel::onSearchQueryChange,
         onProductNameChange = viewModel::onProductNameChange,
         onQuantityChange = viewModel::onQuantityChange,
         onUnitPriceChange = viewModel::onUnitPriceChange,
@@ -84,6 +89,8 @@ private fun RecordSaleScreenContent(
     formState: RecordSaleFormState,
     onProductSelected: (Product?) -> Unit,
     onCustomProductSelected: () -> Unit,
+    onSearchSelected: () -> Unit,
+    onSearchQueryChange: (String) -> Unit,
     onProductNameChange: (String) -> Unit,
     onQuantityChange: (String) -> Unit,
     onUnitPriceChange: (String) -> Unit,
@@ -134,11 +141,56 @@ private fun RecordSaleScreenContent(
                     products = formState.products,
                     selectedProduct = formState.selectedProduct,
                     isCustomSelected = formState.isCustomProduct,
+                    isSearchSelected = formState.isSearchSelected,
                     onProductSelected = onProductSelected,
                     onCustomSelected = onCustomProductSelected,
+                    onSearchSelected = onSearchSelected,
                     modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(modifier = Modifier.height(12.dp))
+            }
+
+            if (formState.isSearchSelected) {
+                OutlinedTextField(
+                    value = formState.searchQuery,
+                    onValueChange = onSearchQueryChange,
+                    label = { Text(stringResource(R.string.record_sale_search_label)) },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                if (formState.filteredProducts.isEmpty()) {
+                    Text(
+                        text = stringResource(R.string.record_sale_search_no_results),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                } else {
+                    formState.filteredProducts.forEach { product ->
+                        TextButton(
+                            onClick = { onProductSelected(product) },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(
+                                    text = product.name,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Text(
+                                    text = "%.2f".format(product.price),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.height(4.dp))
             }
 
             if (formState.products.isEmpty() || formState.isCustomProduct) {
@@ -247,6 +299,8 @@ private fun RecordSaleScreenLightPreview() {
             ),
             onProductSelected = {},
             onCustomProductSelected = {},
+            onSearchSelected = {},
+            onSearchQueryChange = {},
             onProductNameChange = {},
             onQuantityChange = {},
             onUnitPriceChange = {},
@@ -280,6 +334,8 @@ private fun RecordSaleScreenDarkPreview() {
             ),
             onProductSelected = {},
             onCustomProductSelected = {},
+            onSearchSelected = {},
+            onSearchQueryChange = {},
             onProductNameChange = {},
             onQuantityChange = {},
             onUnitPriceChange = {},

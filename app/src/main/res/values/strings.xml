@@ -62,9 +62,31 @@
     <!-- Store Detail Screen -->
     <string name="store_detail_edit_button">Edit store</string>
     <string name="store_detail_products_button">Products</string>
+    <string name="store_detail_sales_button">Sales</string>
     <string name="store_detail_analytics_title">Analytics</string>
     <string name="store_detail_analytics_coming_soon">Charts and analytics coming soon</string>
     <string name="store_detail_create_sale_button">Create sale</string>
+
+    <!-- Sales List Screen -->
+    <string name="sales_list_title">Sales</string>
+    <string name="sales_list_empty_title">No sales yet</string>
+    <string name="sales_list_empty_subtitle">Record your first sale to see it here.</string>
+    <string name="sales_list_filter_from">From</string>
+    <string name="sales_list_filter_to">To</string>
+    <string name="sales_list_date_ok">OK</string>
+    <string name="sales_list_date_cancel">Cancel</string>
+
+    <!-- Sale Detail Screen -->
+    <string name="sale_detail_title">Sale detail</string>
+    <string name="sale_detail_product">Product</string>
+    <string name="sale_detail_quantity">Quantity</string>
+    <string name="sale_detail_unit_price">Unit price</string>
+    <string name="sale_detail_unit_cost">Unit cost</string>
+    <string name="sale_detail_total">Total</string>
+    <string name="sale_detail_profit">Profit</string>
+    <string name="sale_detail_date">Date</string>
+    <string name="sale_detail_notes">Notes</string>
+    <string name="sale_detail_back">Back</string>
 
     <!-- Product List Screen -->
     <string name="product_list_title">Products</string>
@@ -76,6 +98,10 @@
     <string name="record_sale_title">New sale</string>
     <string name="record_sale_confirm_title">Confirm sale</string>
     <string name="record_sale_product_label">Product</string>
+    <string name="record_sale_search_product">Search product</string>
+    <string name="record_sale_search_label">Search by name</string>
+    <string name="record_sale_search_button">Search</string>
+    <string name="record_sale_search_no_results">No products match your search</string>
     <string name="record_sale_custom_product">Custom / Other</string>
     <string name="record_sale_product_name_label">Product name</string>
     <string name="record_sale_product_required_error">Product name is required</string>

@@ -27,13 +27,16 @@ fun ProductDropdown(
     products: List<Product>,
     selectedProduct: Product?,
     isCustomSelected: Boolean,
+    isSearchSelected: Boolean,
     onProductSelected: (Product?) -> Unit,
     onCustomSelected: () -> Unit,
+    onSearchSelected: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var expanded by remember { mutableStateOf(false) }
 
     val displayText = when {
+        isSearchSelected -> stringResource(R.string.record_sale_search_product)
         isCustomSelected -> stringResource(R.string.record_sale_custom_product)
         selectedProduct != null -> selectedProduct.name
         else -> ""
@@ -57,6 +60,20 @@ fun ProductDropdown(
             expanded = expanded,
             onDismissRequest = { expanded = false }
         ) {
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.record_sale_search_product)) },
+                onClick = {
+                    onSearchSelected()
+                    expanded = false
+                }
+            )
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.record_sale_custom_product)) },
+                onClick = {
+                    onCustomSelected()
+                    expanded = false
+                }
+            )
             products.forEach { product ->
                 DropdownMenuItem(
                     text = { Text(product.name) },
@@ -66,13 +83,6 @@ fun ProductDropdown(
                     }
                 )
             }
-            DropdownMenuItem(
-                text = { Text(stringResource(R.string.record_sale_custom_product)) },
-                onClick = {
-                    onCustomSelected()
-                    expanded = false
-                }
-            )
         }
     }
 }
@@ -90,8 +100,10 @@ private fun ProductDropdownLightPreview() {
             products = previewProducts,
             selectedProduct = previewProducts.first(),
             isCustomSelected = false,
+            isSearchSelected = false,
             onProductSelected = {},
-            onCustomSelected = {}
+            onCustomSelected = {},
+            onSearchSelected = {}
         )
     }
 }
@@ -104,8 +116,10 @@ private fun ProductDropdownDarkPreview() {
             products = previewProducts,
             selectedProduct = previewProducts.first(),
             isCustomSelected = false,
+            isSearchSelected = false,
             onProductSelected = {},
-            onCustomSelected = {}
+            onCustomSelected = {},
+            onSearchSelected = {}
         )
     }
 }

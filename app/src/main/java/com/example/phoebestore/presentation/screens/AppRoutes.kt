@@ -22,3 +22,9 @@ data class RecordSaleScreen(val storeId: Long)
 
 @Serializable
 data class ProductListScreen(val storeId: Long)
+
+@Serializable
+data class SalesListScreen(val storeId: Long)
+
+@Serializable
+data class SaleDetailScreen(val saleId: Long)

@@ -13,12 +13,16 @@ import com.example.phoebestore.presentation.screens.CreateStoreScreen
 import com.example.phoebestore.presentation.screens.HomeScreen
 import com.example.phoebestore.presentation.screens.ProductListScreen
 import com.example.phoebestore.presentation.screens.RecordSaleScreen
+import com.example.phoebestore.presentation.screens.SaleDetailScreen
+import com.example.phoebestore.presentation.screens.SalesListScreen
 import com.example.phoebestore.presentation.screens.StoreDetailScreen
 import com.example.phoebestore.presentation.screens.StoreListScreen
 import com.example.phoebestore.ui.screen.home.HomeScreen
 import com.example.phoebestore.ui.screen.product.CreateProductScreen
 import com.example.phoebestore.ui.screen.product.ProductListScreen
 import com.example.phoebestore.ui.screen.sale.RecordSaleScreen
+import com.example.phoebestore.ui.screen.sale.SaleDetailScreen
+import com.example.phoebestore.ui.screen.sale.SalesListScreen
 import com.example.phoebestore.ui.screen.store.CreateStoreScreen
 import com.example.phoebestore.ui.screen.store.StoreDetailScreen
 import com.example.phoebestore.ui.screen.store.StoreListScreen
@@ -70,8 +74,29 @@ fun AppNavigation(
                 onNavigateToProductList = { storeId ->
                     navController.navigate(ProductListScreen(storeId))
                 },
+                onNavigateToSalesList = { storeId ->
+                    navController.navigate(SalesListScreen(storeId))
+                },
                 onNavigateToCreateSale = {
                     navController.navigate(RecordSaleScreen(route.storeId))
+                }
+            )
+        }
+
+        composable<SalesListScreen> { backStackEntry ->
+            val route = backStackEntry.toRoute<SalesListScreen>()
+            SalesListScreen(
+                storeId = route.storeId,
+                onNavigateToSaleDetail = { saleId ->
+                    navController.navigate(SaleDetailScreen(saleId))
+                }
+            )
+        }
+
+        composable<SaleDetailScreen> {
+            SaleDetailScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
                 }
             )
         }
