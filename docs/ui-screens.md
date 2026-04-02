@@ -336,9 +336,13 @@ State class: `RecordSaleFormState.kt`
 | Field | Default | Notes |
 |---|---|---|
 | `products` | `emptyList()` | Store's product catalogue, collected from `ProductRepository` |
-| `selectedProduct` | `null` | Product chosen from the dropdown |
-| `isCustomProduct` | `false` | `true` when the user selects the "Custom product" option |
-| `productName` | `""` | Free-text name; required when no product is selected |
+| `selectedProduct` | `null` | Product chosen from the dropdown or search |
+| `isCustomProduct` | `false` | `true` when the user selects the "Custom / Other" option |
+| `isSearchSelected` | `false` | `true` while the search option is active |
+| `isSearchExpanded` | `false` | `true` while the full-screen search UI is shown |
+| `searchQuery` | `""` | Current text in the search field |
+| `filteredProducts` | `emptyList()` | Products matching the current query (debounced, 1 s) |
+| `productName` | `""` | Free-text name; required when no catalogue product is selected |
 | `quantity` | `"1"` | Integer; required and must be > 0 |
 | `unitPrice` | `""` | Decimal; required and must be > 0 |
 | `unitCost` | `""` | Decimal; optional — used for profit calculation |
@@ -351,8 +355,10 @@ State class: `RecordSaleFormState.kt`
 | `profitOutcome` | `NORMAL_PROFIT` | Computed by `computeProfitOutcome()` — see below |
 | `profitDelta` | `0.0` | `currentProfit − standardProfit` (can be negative) |
 | `currentProfit` | `0.0` | `unitPrice − unitCost` at the current field values |
+| `showConfirmDialog` | `false` | Shows `SaleConfirmDialog` when `true` |
 | `isSaving` | `false` | Disables Save button while the coroutine runs |
 | `isSuccess` | `false` | Triggers `onSaleRecorded()` navigation when `true` |
+| `canSave` | `false` | Derived: product + quantity + price valid and stock not exceeded |
 
 **Derived display fields** (pre-formatted strings, computed in the ViewModel):
 

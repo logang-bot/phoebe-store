@@ -129,6 +129,13 @@
 
     <!-- Product Card -->
     <string name="product_card_stock">Stock: %d</string>
+    <string name="product_card_update_stock_button">Update stock</string>
+
+    <!-- Update Stock Dialog -->
+    <string name="update_stock_dialog_current_stock">Current stock: %d</string>
+    <string name="update_stock_dialog_new_stock_label">New stock</string>
+    <string name="update_stock_dialog_save">Save</string>
+    <string name="update_stock_dialog_cancel">Cancel</string>
 
     <!-- Create / Edit Product Screen -->
     <string name="create_product_title_create">New product</string>

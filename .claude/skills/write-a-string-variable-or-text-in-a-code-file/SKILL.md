@@ -1,6 +1,6 @@
 ---
-name: write-a-plain-text
-description: Guidelines when writing plain texts
+name: write-a-string-variable-or-text-in-a-code-file
+description: Guidelines when writing strings or text inside of any file that is considered code base
 ---
 
 1. **If the string is meant to appear in the UI move it to the strings.xml file**: When creating a plain text or string move it to the strings.xml file.

@@ -41,10 +41,24 @@ fun ProductListScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
+    uiState.stockDialogProduct?.let { product ->
+        UpdateStockDialog(
+            product = product,
+            stockInput = uiState.stockDialogInput,
+            isSaving = uiState.isSavingStock,
+            onStockInputChange = viewModel::onStockInputChange,
+            onIncrement = viewModel::onStockIncrement,
+            onDecrement = viewModel::onStockDecrement,
+            onSave = viewModel::onSaveStock,
+            onDismiss = viewModel::onDismissStockDialog
+        )
+    }
+
     ProductListScreenContent(
         products = uiState.products,
         onNavigateToCreateProduct = { onNavigateToCreateProduct(storeId) },
-        onNavigateToEditProduct = { productId -> onNavigateToEditProduct(storeId, productId) }
+        onNavigateToEditProduct = { productId -> onNavigateToEditProduct(storeId, productId) },
+        onUpdateStockClick = viewModel::onUpdateStockClick
     )
 }
 
@@ -52,7 +66,8 @@ fun ProductListScreen(
 private fun ProductListScreenContent(
     products: List<Product>,
     onNavigateToCreateProduct: () -> Unit,
-    onNavigateToEditProduct: (productId: Long) -> Unit
+    onNavigateToEditProduct: (productId: Long) -> Unit,
+    onUpdateStockClick: (Product) -> Unit
 ) {
     Scaffold(
         containerColor = MaterialTheme.colorScheme.surfaceContainer
@@ -106,6 +121,7 @@ private fun ProductListScreenContent(
                         ProductCard(
                             product = product,
                             onClick = { onNavigateToEditProduct(product.id) },
+                            onUpdateStockClick = { onUpdateStockClick(product) },
                             modifier = Modifier.animateItem()
                         )
                     }
@@ -137,7 +153,8 @@ private fun ProductListScreenLightPreview() {
         ProductListScreenContent(
             products = previewProducts,
             onNavigateToCreateProduct = {},
-            onNavigateToEditProduct = {}
+            onNavigateToEditProduct = {},
+            onUpdateStockClick = {}
         )
     }
 }
@@ -149,7 +166,8 @@ private fun ProductListScreenDarkPreview() {
         ProductListScreenContent(
             products = previewProducts,
             onNavigateToCreateProduct = {},
-            onNavigateToEditProduct = {}
+            onNavigateToEditProduct = {},
+            onUpdateStockClick = {}
         )
     }
 }
@@ -161,7 +179,8 @@ private fun ProductListScreenEmptyLightPreview() {
         ProductListScreenContent(
             products = emptyList(),
             onNavigateToCreateProduct = {},
-            onNavigateToEditProduct = {}
+            onNavigateToEditProduct = {},
+            onUpdateStockClick = {}
         )
     }
 }
@@ -173,7 +192,8 @@ private fun ProductListScreenEmptyDarkPreview() {
         ProductListScreenContent(
             products = emptyList(),
             onNavigateToCreateProduct = {},
-            onNavigateToEditProduct = {}
+            onNavigateToEditProduct = {},
+            onUpdateStockClick = {}
         )
     }
 }

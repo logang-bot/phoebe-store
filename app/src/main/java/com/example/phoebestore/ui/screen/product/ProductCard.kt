@@ -13,14 +13,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.CardDefaults
-import com.example.phoebestore.ui.common.ThemedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -29,12 +30,14 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.example.phoebestore.R
 import com.example.phoebestore.domain.model.Product
+import com.example.phoebestore.ui.common.ThemedCard
 import com.example.phoebestore.ui.theme.PhoebeStoreTheme
 
 @Composable
 fun ProductCard(
     product: Product,
     onClick: () -> Unit,
+    onUpdateStockClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     ThemedCard(
@@ -49,8 +52,7 @@ fun ProductCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .aspectRatio(1f)
-                    .background(MaterialTheme.colorScheme.surfaceVariant),
-                contentAlignment = Alignment.Center
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
             ) {
                 if (product.imageUrl.isNotBlank()) {
                     AsyncImage(
@@ -64,7 +66,24 @@ fun ProductCard(
                         imageVector = Icons.Default.Share,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(24.dp).fillMaxSize()
+                        modifier = Modifier
+                            .padding(24.dp)
+                            .fillMaxSize()
+                            .align(Alignment.Center)
+                    )
+                }
+
+                SmallFloatingActionButton(
+                    onClick = onUpdateStockClick,
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(8.dp),
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_box_add),
+                        contentDescription = stringResource(R.string.product_card_update_stock_button)
                     )
                 }
             }
@@ -110,7 +129,7 @@ private fun ProductCardLightPreview() {
         ProductCard(
             product = previewProduct,
             onClick = {},
-            modifier = Modifier
+            onUpdateStockClick = {}
         )
     }
 }
@@ -122,7 +141,7 @@ private fun ProductCardDarkPreview() {
         ProductCard(
             product = previewProduct,
             onClick = {},
-            modifier = Modifier
+            onUpdateStockClick = {}
         )
     }
 }
