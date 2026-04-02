@@ -9,9 +9,11 @@ import com.example.phoebestore.domain.model.ProfitOutcome
 import com.example.phoebestore.domain.model.Sale
 import com.example.phoebestore.domain.model.SaleType
 import com.example.phoebestore.domain.repository.ProductRepository
-import com.example.phoebestore.domain.repository.SaleRepository
 import com.example.phoebestore.domain.repository.StoreRepository
+import com.example.phoebestore.domain.usecase.RecordSaleUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -26,7 +28,7 @@ import kotlin.math.abs
 @HiltViewModel
 class RecordSaleViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    private val saleRepository: SaleRepository,
+    private val recordSaleUseCase: RecordSaleUseCase,
     private val productRepository: ProductRepository,
     private val storeRepository: StoreRepository
 ) : ViewModel() {
@@ -40,6 +42,8 @@ class RecordSaleViewModel @Inject constructor(
     )
     val formState: StateFlow<RecordSaleFormState> = _formState.asStateFlow()
 
+    private var searchJob: Job? = null
+
     init {
         viewModelScope.launch {
             storeRepository.getById(storeId)?.let { store ->
@@ -52,6 +56,7 @@ class RecordSaleViewModel @Inject constructor(
     }
 
     fun onProductSelected(product: Product?) {
+        searchJob?.cancel()
         _formState.update { state ->
             val total = (state.quantity.toIntOrNull() ?: 0) * (product?.price ?: 0.0)
             val currentProfit = (product?.price ?: 0.0) - (product?.costPrice ?: 0.0)
@@ -59,6 +64,7 @@ class RecordSaleViewModel @Inject constructor(
                 selectedProduct = product,
                 isCustomProduct = product == null,
                 isSearchSelected = false,
+                isSearchExpanded = false,
                 searchQuery = "",
                 filteredProducts = emptyList(),
                 productName = product?.name ?: "",
@@ -77,11 +83,13 @@ class RecordSaleViewModel @Inject constructor(
     }
 
     fun onCustomProductSelected() {
+        searchJob?.cancel()
         _formState.update {
             it.copy(
                 selectedProduct = null,
                 isCustomProduct = true,
                 isSearchSelected = false,
+                isSearchExpanded = false,
                 searchQuery = "",
                 filteredProducts = emptyList(),
                 productName = "",
@@ -105,6 +113,7 @@ class RecordSaleViewModel @Inject constructor(
                 selectedProduct = null,
                 isCustomProduct = false,
                 isSearchSelected = true,
+                isSearchExpanded = true,
                 searchQuery = "",
                 filteredProducts = it.products,
                 productName = "",
@@ -123,10 +132,46 @@ class RecordSaleViewModel @Inject constructor(
     }
 
     fun onSearchQueryChange(query: String) {
+        _formState.update { it.copy(searchQuery = query) }
+        searchJob?.cancel()
+        searchJob = viewModelScope.launch {
+            delay(1_000)
+            _formState.update { state ->
+                val filtered = if (query.isBlank()) state.products
+                else state.products.filter { it.name.contains(query, ignoreCase = true) }
+                state.copy(filteredProducts = filtered)
+            }
+        }
+    }
+
+    fun onSearchConfirmed() {
+        searchJob?.cancel()
         _formState.update { state ->
-            val filtered = if (query.isBlank()) state.products
-            else state.products.filter { it.name.contains(query, ignoreCase = true) }
-            state.copy(searchQuery = query, filteredProducts = filtered)
+            state.copy(
+                isSearchSelected = false,
+                isSearchExpanded = false,
+                filteredProducts = emptyList()
+            )
+        }
+    }
+
+    fun onQuantityIncrement() {
+        _formState.update { state ->
+            val newQty = (state.quantity.toIntOrNull() ?: 0) + 1
+            val total = newQty * (state.unitPrice.toDoubleOrNull() ?: 0.0)
+            state.copy(quantity = newQty.toString(), quantityError = false, totalAmount = total)
+                .withComputedDisplayFields()
+        }
+    }
+
+    fun onQuantityDecrement() {
+        _formState.update { state ->
+            val current = state.quantity.toIntOrNull() ?: 0
+            if (current <= 1) return@update state
+            val newQty = current - 1
+            val total = newQty * (state.unitPrice.toDoubleOrNull() ?: 0.0)
+            state.copy(quantity = newQty.toString(), quantityError = false, totalAmount = total)
+                .withComputedDisplayFields()
         }
     }
 
@@ -227,8 +272,8 @@ class RecordSaleViewModel @Inject constructor(
         viewModelScope.launch {
             _formState.update { it.copy(showConfirmDialog = false, isSaving = true) }
             val saleType = if (state.isPriceModified || state.isCostModified) SaleType.MODIFIED else SaleType.STANDARD
-            saleRepository.create(
-                Sale(
+            recordSaleUseCase(
+                sale = Sale(
                     storeId = storeId,
                     productId = state.selectedProduct?.id,
                     productName = productName,
@@ -240,7 +285,8 @@ class RecordSaleViewModel @Inject constructor(
                     profitOutcome = state.profitOutcome,
                     notes = state.notes.trim(),
                     soldAt = state.soldAt
-                )
+                ),
+                selectedProduct = state.selectedProduct
             )
             _formState.update { it.copy(isSaving = false, isSuccess = true) }
         }
@@ -265,18 +311,24 @@ class RecordSaleViewModel @Inject constructor(
         }
     }
 
-    private fun RecordSaleFormState.withComputedDisplayFields(): RecordSaleFormState = copy(
-        formattedSoldAt = dateFormat.format(Date(soldAt)),
-        formattedTotalAmount = if (totalAmount > 0.0) "%.2f".format(totalAmount) else "",
-        formattedUnitPrice = "%.2f".format(unitPrice.toDoubleOrNull() ?: 0.0),
-        formattedUnitCost = "%.2f".format(unitCost.toDoubleOrNull() ?: 0.0),
-        formattedProfitDelta = "%.2f".format(abs(profitDelta)),
-        formattedAbsCurrentProfit = "%.2f".format(abs(currentProfit)),
-        showModificationInfo = selectedProduct != null && (isPriceModified || isCostModified),
-        canSave = (selectedProduct != null || productName.isNotBlank()) &&
-                (quantity.toIntOrNull()?.let { it > 0 } == true) &&
-                (unitPrice.toDoubleOrNull()?.let { it > 0.0 } == true)
-    )
+    private fun RecordSaleFormState.withComputedDisplayFields(): RecordSaleFormState {
+        val qty = quantity.toIntOrNull() ?: 0
+        val exceedsStock = selectedProduct != null && qty > selectedProduct.stock
+        return copy(
+            formattedSoldAt = dateFormat.format(Date(soldAt)),
+            formattedTotalAmount = if (totalAmount > 0.0) "%.2f".format(totalAmount) else "",
+            formattedUnitPrice = "%.2f".format(unitPrice.toDoubleOrNull() ?: 0.0),
+            formattedUnitCost = "%.2f".format(unitCost.toDoubleOrNull() ?: 0.0),
+            formattedProfitDelta = "%.2f".format(abs(profitDelta)),
+            formattedAbsCurrentProfit = "%.2f".format(abs(currentProfit)),
+            showModificationInfo = selectedProduct != null && (isPriceModified || isCostModified),
+            quantityExceedsStock = exceedsStock,
+            canSave = (selectedProduct != null || productName.isNotBlank()) &&
+                    (qty > 0) &&
+                    (unitPrice.toDoubleOrNull()?.let { it > 0.0 } == true) &&
+                    !exceedsStock
+        )
+    }
 
     private fun String.toDecimalInput(): String {
         val filtered = filter { it.isDigit() || it == '.' }

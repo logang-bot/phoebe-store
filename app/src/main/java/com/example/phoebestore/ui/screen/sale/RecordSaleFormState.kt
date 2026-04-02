@@ -9,6 +9,7 @@ data class RecordSaleFormState(
     val selectedProduct: Product? = null,
     val isCustomProduct: Boolean = false,
     val isSearchSelected: Boolean = false,
+    val isSearchExpanded: Boolean = false,
     val searchQuery: String = "",
     val filteredProducts: List<Product> = emptyList(),
     val productName: String = "",
@@ -29,6 +30,7 @@ data class RecordSaleFormState(
     val showConfirmDialog: Boolean = false,
     val productNameError: Boolean = false,
     val quantityError: Boolean = false,
+    val quantityExceedsStock: Boolean = false,
     val unitPriceError: Boolean = false,
     // Derived display fields — computed by the ViewModel, never set by callers
     val formattedSoldAt: String = "",

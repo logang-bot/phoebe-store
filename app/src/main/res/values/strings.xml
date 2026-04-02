@@ -100,13 +100,14 @@
     <string name="record_sale_product_label">Product</string>
     <string name="record_sale_search_product">Search product</string>
     <string name="record_sale_search_label">Search by name</string>
-    <string name="record_sale_search_button">Search</string>
+    <string name="record_sale_search_button">Close</string>
     <string name="record_sale_search_no_results">No products match your search</string>
     <string name="record_sale_custom_product">Custom / Other</string>
     <string name="record_sale_product_name_label">Product name</string>
     <string name="record_sale_product_required_error">Product name is required</string>
     <string name="record_sale_quantity_label">Quantity</string>
     <string name="record_sale_quantity_error">Enter a valid quantity greater than 0</string>
+    <string name="record_sale_quantity_exceeds_stock">Quantity exceeds available stock</string>
     <string name="record_sale_unit_price_label">Unit price</string>
     <string name="record_sale_unit_price_error">Enter a valid price greater than 0</string>
     <string name="record_sale_unit_cost_label">Unit cost (optional)</string>

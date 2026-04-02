@@ -77,11 +77,16 @@
     <string name="record_sale_title">Nueva venta</string>
     <string name="record_sale_confirm_title">Confirmar venta</string>
     <string name="record_sale_product_label">Producto</string>
+    <string name="record_sale_search_product">Buscar producto</string>
+    <string name="record_sale_search_label">Buscar por nombre</string>
+    <string name="record_sale_search_button">Cerrar</string>
+    <string name="record_sale_search_no_results">Ningún producto coincide con tu búsqueda</string>
     <string name="record_sale_custom_product">Personalizado / Otro</string>
     <string name="record_sale_product_name_label">Nombre del producto</string>
     <string name="record_sale_product_required_error">El nombre del producto es obligatorio</string>
     <string name="record_sale_quantity_label">Cantidad</string>
     <string name="record_sale_quantity_error">Ingresa una cantidad válida mayor a 0</string>
+    <string name="record_sale_quantity_exceeds_stock">La cantidad supera el stock disponible</string>
     <string name="record_sale_unit_price_label">Precio unitario</string>
     <string name="record_sale_unit_price_error">Ingresa un precio válido mayor a 0</string>
     <string name="record_sale_unit_cost_label">Costo unitario (opcional)</string>

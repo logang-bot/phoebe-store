@@ -1,30 +1,27 @@
 package com.example.phoebestore.ui.screen.sale
 
 import android.content.res.Configuration
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -71,8 +68,11 @@ fun RecordSaleScreen(
         onCustomProductSelected = viewModel::onCustomProductSelected,
         onSearchSelected = viewModel::onSearchSelected,
         onSearchQueryChange = viewModel::onSearchQueryChange,
+        onSearchConfirmed = viewModel::onSearchConfirmed,
         onProductNameChange = viewModel::onProductNameChange,
         onQuantityChange = viewModel::onQuantityChange,
+        onQuantityIncrement = viewModel::onQuantityIncrement,
+        onQuantityDecrement = viewModel::onQuantityDecrement,
         onUnitPriceChange = viewModel::onUnitPriceChange,
         onUnitCostChange = viewModel::onUnitCostChange,
         onUnitPriceFocusLost = viewModel::onUnitPriceFocusLost,
@@ -91,8 +91,11 @@ private fun RecordSaleScreenContent(
     onCustomProductSelected: () -> Unit,
     onSearchSelected: () -> Unit,
     onSearchQueryChange: (String) -> Unit,
+    onSearchConfirmed: () -> Unit,
     onProductNameChange: (String) -> Unit,
     onQuantityChange: (String) -> Unit,
+    onQuantityIncrement: () -> Unit,
+    onQuantityDecrement: () -> Unit,
     onUnitPriceChange: (String) -> Unit,
     onUnitCostChange: (String) -> Unit,
     onUnitPriceFocusLost: () -> Unit,
@@ -101,182 +104,96 @@ private fun RecordSaleScreenContent(
     onNotesChange: (String) -> Unit,
     onSave: () -> Unit
 ) {
+    val focusRequester = remember { FocusRequester() }
+
+    LaunchedEffect(formState.isSearchExpanded) {
+        if (formState.isSearchExpanded) focusRequester.requestFocus()
+    }
+
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = stringResource(R.string.record_sale_title),
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.SemiBold
-                    )
+            AnimatedContent(
+                targetState = formState.isSearchExpanded,
+                transitionSpec = {
+                    (slideInVertically { -it } + fadeIn()) togetherWith (slideOutVertically { -it } + fadeOut())
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainer
-                )
-            )
+                label = "TopBarContent"
+            ) { isExpanded ->
+                if (isExpanded) {
+                    SearchTopBar(
+                        query = formState.searchQuery,
+                        onQueryChange = onSearchQueryChange,
+                        onSearchConfirmed = onSearchConfirmed,
+                        focusRequester = focusRequester
+                    )
+                } else {
+                    TopAppBar(
+                        title = {
+                            Text(
+                                text = stringResource(R.string.record_sale_title),
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        },
+                        colors = TopAppBarDefaults.topAppBarColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceContainer
+                        )
+                    )
+                }
+            }
         },
         containerColor = MaterialTheme.colorScheme.surfaceContainer,
         bottomBar = {
-            Box(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
-                LoadingButton(
-                    text = stringResource(R.string.record_sale_save),
-                    onClick = onSave,
-                    enabled = formState.canSave,
-                    isLoading = formState.isSaving,
-                    modifier = Modifier.fillMaxWidth()
-                )
+            if (!formState.isSearchExpanded) {
+                Box(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
+                    LoadingButton(
+                        text = stringResource(R.string.record_sale_save),
+                        onClick = onSave,
+                        enabled = formState.canSave,
+                        isLoading = formState.isSaving,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
             }
         }
     ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(innerPadding)
-                .padding(horizontal = 16.dp, vertical = 16.dp)
-        ) {
-            if (formState.products.isNotEmpty()) {
-                ProductDropdown(
-                    products = formState.products,
-                    selectedProduct = formState.selectedProduct,
-                    isCustomSelected = formState.isCustomProduct,
-                    isSearchSelected = formState.isSearchSelected,
+        AnimatedContent(
+            targetState = formState.isSearchExpanded,
+            transitionSpec = { fadeIn() togetherWith fadeOut() },
+            label = "MainContent",
+            modifier = Modifier.padding(innerPadding)
+        ) { isExpanded ->
+            if (isExpanded) {
+                SearchResultsContent(
+                    filteredProducts = formState.filteredProducts,
+                    searchQuery = formState.searchQuery,
+                    onProductSelected = onProductSelected
+                )
+            } else {
+                SaleFormContent(
+                    formState = formState,
                     onProductSelected = onProductSelected,
-                    onCustomSelected = onCustomProductSelected,
+                    onCustomProductSelected = onCustomProductSelected,
                     onSearchSelected = onSearchSelected,
-                    modifier = Modifier.fillMaxWidth()
+                    onProductNameChange = onProductNameChange,
+                    onQuantityChange = onQuantityChange,
+                    onQuantityIncrement = onQuantityIncrement,
+                    onQuantityDecrement = onQuantityDecrement,
+                    onUnitPriceChange = onUnitPriceChange,
+                    onUnitCostChange = onUnitCostChange,
+                    onUnitPriceFocusLost = onUnitPriceFocusLost,
+                    onUnitCostFocusLost = onUnitCostFocusLost,
+                    onSoldAtChange = onSoldAtChange,
+                    onNotesChange = onNotesChange
                 )
-                Spacer(modifier = Modifier.height(12.dp))
             }
-
-            if (formState.isSearchSelected) {
-                OutlinedTextField(
-                    value = formState.searchQuery,
-                    onValueChange = onSearchQueryChange,
-                    label = { Text(stringResource(R.string.record_sale_search_label)) },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                if (formState.filteredProducts.isEmpty()) {
-                    Text(
-                        text = stringResource(R.string.record_sale_search_no_results),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                } else {
-                    formState.filteredProducts.forEach { product ->
-                        TextButton(
-                            onClick = { onProductSelected(product) },
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text(
-                                    text = product.name,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                                Text(
-                                    text = "%.2f".format(product.price),
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                        }
-                    }
-                }
-                Spacer(modifier = Modifier.height(4.dp))
-            }
-
-            if (formState.products.isEmpty() || formState.isCustomProduct) {
-                OutlinedTextField(
-                    value = formState.productName,
-                    onValueChange = onProductNameChange,
-                    label = { Text(stringResource(R.string.record_sale_product_name_label)) },
-                    isError = formState.productNameError,
-                    supportingText = if (formState.productNameError) {
-                        { Text(stringResource(R.string.record_sale_product_required_error)) }
-                    } else null,
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-            }
-
-            OutlinedTextField(
-                value = formState.quantity,
-                onValueChange = onQuantityChange,
-                label = { Text(stringResource(R.string.record_sale_quantity_label)) },
-                isError = formState.quantityError,
-                supportingText = if (formState.quantityError) {
-                    { Text(stringResource(R.string.record_sale_quantity_error)) }
-                } else null,
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            SalePriceRow(
-                currencyName = formState.currency.name,
-                unitPrice = formState.unitPrice,
-                unitCost = formState.unitCost,
-                unitPriceError = formState.unitPriceError,
-                onUnitPriceChange = onUnitPriceChange,
-                onUnitCostChange = onUnitCostChange,
-                onUnitPriceFocusLost = onUnitPriceFocusLost,
-                onUnitCostFocusLost = onUnitCostFocusLost,
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            SaleTotalSection(
-                formattedTotalAmount = formState.formattedTotalAmount,
-                currencyName = formState.currency.name
-            )
-
-            SaleModificationInfo(
-                visible = formState.showModificationInfo,
-                isPriceModified = formState.isPriceModified,
-                isCostModified = formState.isCostModified,
-                profitOutcome = formState.profitOutcome,
-                currencyName = formState.currency.name,
-                formattedUnitPrice = formState.formattedUnitPrice,
-                formattedUnitCost = formState.formattedUnitCost,
-                formattedProfitDelta = formState.formattedProfitDelta,
-                formattedAbsCurrentProfit = formState.formattedAbsCurrentProfit
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            DateField(
-                epochMillis = formState.soldAt,
-                formattedDate = formState.formattedSoldAt,
-                onDateSelected = onSoldAtChange,
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            OutlinedTextField(
-                value = formState.notes,
-                onValueChange = onNotesChange,
-                label = { Text(stringResource(R.string.record_sale_notes_label)) },
-                minLines = 3,
-                maxLines = 5,
-                modifier = Modifier.fillMaxWidth()
-            )
         }
     }
 }
 
 private val previewProducts = listOf(
-    Product(id = 1L, storeId = 1L, name = "Coffee", price = 5.00, costPrice = 2.00),
-    Product(id = 2L, storeId = 1L, name = "Tea", price = 3.50, costPrice = 1.00),
+    Product(id = 1L, storeId = 1L, name = "Coffee", price = 5.00, costPrice = 2.00, stock = 10),
+    Product(id = 2L, storeId = 1L, name = "Tea", price = 3.50, costPrice = 1.00, stock = 5),
 )
 
 @Preview(showBackground = true)
@@ -301,8 +218,11 @@ private fun RecordSaleScreenLightPreview() {
             onCustomProductSelected = {},
             onSearchSelected = {},
             onSearchQueryChange = {},
+            onSearchConfirmed = {},
             onProductNameChange = {},
             onQuantityChange = {},
+            onQuantityIncrement = {},
+            onQuantityDecrement = {},
             onUnitPriceChange = {},
             onUnitCostChange = {},
             onUnitPriceFocusLost = {},
@@ -336,8 +256,45 @@ private fun RecordSaleScreenDarkPreview() {
             onCustomProductSelected = {},
             onSearchSelected = {},
             onSearchQueryChange = {},
+            onSearchConfirmed = {},
             onProductNameChange = {},
             onQuantityChange = {},
+            onQuantityIncrement = {},
+            onQuantityDecrement = {},
+            onUnitPriceChange = {},
+            onUnitCostChange = {},
+            onUnitPriceFocusLost = {},
+            onUnitCostFocusLost = {},
+            onSoldAtChange = {},
+            onNotesChange = {},
+            onSave = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun RecordSaleSearchExpandedPreview() {
+    PhoebeStoreTheme {
+        RecordSaleScreenContent(
+            formState = RecordSaleFormState(
+                products = previewProducts,
+                isSearchSelected = true,
+                isSearchExpanded = true,
+                searchQuery = "Cof",
+                filteredProducts = previewProducts.filter { it.name.contains("Cof", ignoreCase = true) },
+                currency = Currency.USD,
+                formattedSoldAt = "Mar 28, 2026 - 3:45 PM"
+            ),
+            onProductSelected = {},
+            onCustomProductSelected = {},
+            onSearchSelected = {},
+            onSearchQueryChange = {},
+            onSearchConfirmed = {},
+            onProductNameChange = {},
+            onQuantityChange = {},
+            onQuantityIncrement = {},
+            onQuantityDecrement = {},
             onUnitPriceChange = {},
             onUnitCostChange = {},
             onUnitPriceFocusLost = {},
