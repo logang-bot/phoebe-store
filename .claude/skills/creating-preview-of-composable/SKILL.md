@@ -1,6 +1,6 @@
 ---
-name: create-preview-of-composable
-description: Guidelines to create a preview composable
+name: creating-preview-of-composable
+description: When creating a preview for a composable take into account the guidelines described here
 ---
 
 When create a new preview composable follow these guidelines

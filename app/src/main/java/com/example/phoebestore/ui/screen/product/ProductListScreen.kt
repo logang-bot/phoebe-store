@@ -13,10 +13,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -35,6 +42,7 @@ import com.example.phoebestore.ui.theme.PhoebeStoreTheme
 @Composable
 fun ProductListScreen(
     storeId: Long,
+    onNavigateBack: () -> Unit,
     onNavigateToCreateProduct: (storeId: Long) -> Unit,
     onNavigateToEditProduct: (storeId: Long, productId: Long) -> Unit,
     viewModel: ProductListViewModel = hiltViewModel()
@@ -56,20 +64,45 @@ fun ProductListScreen(
 
     ProductListScreenContent(
         products = uiState.products,
+        onNavigateBack = onNavigateBack,
         onNavigateToCreateProduct = { onNavigateToCreateProduct(storeId) },
         onNavigateToEditProduct = { productId -> onNavigateToEditProduct(storeId, productId) },
         onUpdateStockClick = viewModel::onUpdateStockClick
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ProductListScreenContent(
     products: List<Product>,
+    onNavigateBack: () -> Unit,
     onNavigateToCreateProduct: () -> Unit,
     onNavigateToEditProduct: (productId: Long) -> Unit,
     onUpdateStockClick: (Product) -> Unit
 ) {
     Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = stringResource(R.string.product_list_title),
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                },
+                navigationIcon = {
+                    IconButton(onClick = onNavigateBack) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.navigate_back)
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer
+                )
+            )
+        },
         containerColor = MaterialTheme.colorScheme.surfaceContainer
     ) { innerPadding ->
         Column(
@@ -77,14 +110,6 @@ private fun ProductListScreenContent(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            Text(
-                text = stringResource(R.string.product_list_title),
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 24.dp)
-            )
-
             if (products.isEmpty()) {
                 Box(
                     modifier = Modifier
@@ -152,6 +177,7 @@ private fun ProductListScreenLightPreview() {
     PhoebeStoreTheme {
         ProductListScreenContent(
             products = previewProducts,
+            onNavigateBack = {},
             onNavigateToCreateProduct = {},
             onNavigateToEditProduct = {},
             onUpdateStockClick = {}
@@ -165,6 +191,7 @@ private fun ProductListScreenDarkPreview() {
     PhoebeStoreTheme {
         ProductListScreenContent(
             products = previewProducts,
+            onNavigateBack = {},
             onNavigateToCreateProduct = {},
             onNavigateToEditProduct = {},
             onUpdateStockClick = {}
@@ -180,7 +207,8 @@ private fun ProductListScreenEmptyLightPreview() {
             products = emptyList(),
             onNavigateToCreateProduct = {},
             onNavigateToEditProduct = {},
-            onUpdateStockClick = {}
+            onUpdateStockClick = {},
+            onNavigateBack = {}
         )
     }
 }
@@ -193,7 +221,8 @@ private fun ProductListScreenEmptyDarkPreview() {
             products = emptyList(),
             onNavigateToCreateProduct = {},
             onNavigateToEditProduct = {},
-            onUpdateStockClick = {}
+            onUpdateStockClick = {},
+            onNavigateBack = {}
         )
     }
 }

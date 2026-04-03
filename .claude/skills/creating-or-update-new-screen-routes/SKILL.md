@@ -1,6 +1,6 @@
 ---
-name: create-or-update-new-screen-routes
-description: Guidelines to create or update new screen routes in any navigation composable
+name: creating-or-update-new-screen-routes
+description: When creating or updating new screen routes in any navigation composable
 ---
 
 When create a new route to a new screen or when an existing route is being created follow these guidelines 

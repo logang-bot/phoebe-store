@@ -12,15 +12,27 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.Button
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -38,45 +50,143 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.phoebestore.R
+import com.example.phoebestore.domain.model.Product
 import com.example.phoebestore.domain.model.Sale
 import com.example.phoebestore.ui.common.ThemedCard
 import com.example.phoebestore.ui.theme.PhoebeStoreTheme
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import java.util.TimeZone
 
 @Composable
 fun SalesListScreen(
     storeId: Long,
+    onNavigateBack: () -> Unit,
     onNavigateToSaleDetail: (saleId: Long) -> Unit,
+    onNavigateToReport: (fromDate: Long, toDate: Long, productId: Long?) -> Unit,
     viewModel: SalesListViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     SalesListScreenContent(
         sales = uiState.sales,
+        products = uiState.products,
+        selectedProduct = uiState.selectedProduct,
         fromDate = uiState.fromDate,
         toDate = uiState.toDate,
         formattedFromDate = uiState.formattedFromDate,
         formattedToDate = uiState.formattedToDate,
+        isLoading = uiState.isLoading,
+        hasMore = uiState.hasMore,
+        onNavigateBack = onNavigateBack,
+        onProductSelected = viewModel::onProductSelected,
         onFromDateChange = viewModel::onFromDateChange,
         onToDateChange = viewModel::onToDateChange,
-        onNavigateToSaleDetail = onNavigateToSaleDetail
+        onLoadMore = viewModel::loadMore,
+        onResetFilters = viewModel::resetFilters,
+        onNavigateToSaleDetail = onNavigateToSaleDetail,
+        onNavigateToReport = onNavigateToReport
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun SalesListScreenContent(
     sales: List<Sale>,
+    products: List<Product>,
+    selectedProduct: Product?,
     fromDate: Long,
     toDate: Long,
     formattedFromDate: String,
     formattedToDate: String,
+    isLoading: Boolean,
+    hasMore: Boolean,
+    onNavigateBack: () -> Unit,
+    onProductSelected: (Product?) -> Unit,
     onFromDateChange: (Long) -> Unit,
     onToDateChange: (Long) -> Unit,
-    onNavigateToSaleDetail: (saleId: Long) -> Unit
+    onLoadMore: () -> Unit,
+    onResetFilters: () -> Unit,
+    onNavigateToSaleDetail: (saleId: Long) -> Unit,
+    onNavigateToReport: (fromDate: Long, toDate: Long, productId: Long?) -> Unit
 ) {
+    var showMenu by remember { mutableStateOf(false) }
+    val todayStart = remember {
+        Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }.timeInMillis
+    }
+    val todayEnd = remember {
+        Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, 23)
+            set(Calendar.MINUTE, 59)
+            set(Calendar.SECOND, 59)
+            set(Calendar.MILLISECOND, 999)
+        }.timeInMillis
+    }
+
     Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = stringResource(R.string.sales_list_title),
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                },
+                navigationIcon = {
+                    IconButton(onClick = onNavigateBack) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.navigate_back)
+                        )
+                    }
+                },
+                actions = {
+                    IconButton(onClick = { showMenu = true }) {
+                        Icon(
+                            imageVector = Icons.Default.MoreVert,
+                            contentDescription = stringResource(R.string.more_options)
+                        )
+                    }
+                    DropdownMenu(
+                        expanded = showMenu,
+                        onDismissRequest = { showMenu = false }
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.sales_list_menu_reset_filters)) },
+                            onClick = {
+                                showMenu = false
+                                onResetFilters()
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.sales_list_menu_today_report)) },
+                            onClick = {
+                                showMenu = false
+                                onNavigateToReport(todayStart, todayEnd, null)
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.sales_list_menu_filtered_report)) },
+                            onClick = {
+                                showMenu = false
+                                onNavigateToReport(fromDate, toDate, selectedProduct?.id)
+                            }
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer
+                )
+            )
+        },
         containerColor = MaterialTheme.colorScheme.surfaceContainer
     ) { innerPadding ->
         Column(
@@ -84,13 +194,21 @@ private fun SalesListScreenContent(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            Text(
-                text = stringResource(R.string.sales_list_title),
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 24.dp)
-            )
+
+            if (products.isNotEmpty()) {
+                ProductDropdown(
+                    products = products,
+                    selectedProduct = selectedProduct,
+                    onProductSelected = onProductSelected,
+                    allProductsLabel = stringResource(R.string.sales_list_filter_all_products),
+                    showCustomOption = false,
+                    showSearchOption = false,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+            }
 
             DateRangeFilter(
                 fromDate = fromDate,
@@ -106,43 +224,80 @@ private fun SalesListScreenContent(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            if (sales.isEmpty()) {
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = stringResource(R.string.sales_list_empty_title),
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.SemiBold,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = stringResource(R.string.sales_list_empty_subtitle),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.padding(horizontal = 32.dp)
-                        )
+            when {
+                isLoading -> {
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxWidth(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
                     }
                 }
-            } else {
-                LazyColumn(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(horizontal = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    items(sales, key = { it.id }) { sale ->
-                        SaleListItem(
-                            sale = sale,
-                            onClick = { onNavigateToSaleDetail(sale.id) },
-                            modifier = Modifier.animateItem()
-                        )
+
+                sales.isEmpty() -> {
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxWidth(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(
+                                text = stringResource(R.string.sales_list_empty_title),
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = stringResource(R.string.sales_list_empty_subtitle),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.padding(horizontal = 32.dp)
+                            )
+                        }
+                    }
+                }
+
+                else -> {
+                    LazyColumn(
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(horizontal = 16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        items(sales, key = { it.id }) { sale ->
+                            SaleListItem(
+                                sale = sale,
+                                onClick = { onNavigateToSaleDetail(sale.id) },
+                                modifier = Modifier.animateItem()
+                            )
+                        }
+                        item(key = "pagination_footer") {
+                            if (hasMore) {
+                                Button(
+                                    onClick = onLoadMore,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 8.dp)
+                                ) {
+                                    Text(stringResource(R.string.sales_list_load_more))
+                                }
+                            } else {
+                                Text(
+                                    text = stringResource(R.string.sales_list_end_of_entries),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    textAlign = TextAlign.Center,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 16.dp)
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -203,7 +358,9 @@ private fun DateRangeFilter(
     }
 
     if (showFromPicker) {
-        val datePickerState = rememberDatePickerState(initialSelectedDateMillis = fromDate)
+        val datePickerState = rememberDatePickerState(
+            initialSelectedDateMillis = remember(fromDate) { toUtcMidnight(fromDate) }
+        )
         DatePickerDialog(
             onDismissRequest = { showFromPicker = false },
             confirmButton = {
@@ -225,7 +382,16 @@ private fun DateRangeFilter(
     }
 
     if (showToPicker) {
-        val datePickerState = rememberDatePickerState(initialSelectedDateMillis = toDate)
+        val fromUtcMidnight = remember(fromDate) { toUtcMidnight(fromDate) }
+        val toSelectableDates = remember(fromUtcMidnight) {
+            object : SelectableDates {
+                override fun isSelectableDate(utcTimeMillis: Long) = utcTimeMillis >= fromUtcMidnight
+            }
+        }
+        val datePickerState = rememberDatePickerState(
+            initialSelectedDateMillis = remember(toDate) { toUtcMidnight(toDate) },
+            selectableDates = toSelectableDates
+        )
         DatePickerDialog(
             onDismissRequest = { showToPicker = false },
             confirmButton = {
@@ -248,6 +414,14 @@ private fun DateRangeFilter(
 }
 
 private val dateTimeFormat = SimpleDateFormat("MMM dd, yyyy - h:mm a", Locale.getDefault())
+
+private fun toUtcMidnight(localEpochMillis: Long): Long {
+    val local = Calendar.getInstance().apply { timeInMillis = localEpochMillis }
+    return Calendar.getInstance(TimeZone.getTimeZone("UTC")).apply {
+        set(local.get(Calendar.YEAR), local.get(Calendar.MONTH), local.get(Calendar.DAY_OF_MONTH), 0, 0, 0)
+        set(Calendar.MILLISECOND, 0)
+    }.timeInMillis
+}
 
 @Composable
 private fun SaleListItem(
@@ -309,19 +483,34 @@ private val previewSales = listOf(
     Sale(id = 3L, storeId = 1L, productName = "Sun Hat", quantity = 3, unitPrice = 14.99, totalAmount = 44.97)
 )
 
+private val previewProducts = listOf(
+    Product(id = 1L, storeId = 1L, name = "Summer Dress", price = 29.99),
+    Product(id = 2L, storeId = 1L, name = "Leather Bag", price = 89.99),
+    Product(id = 3L, storeId = 1L, name = "Sun Hat", price = 14.99)
+)
+
 @Preview(showBackground = true)
 @Composable
 private fun SalesListScreenLightPreview() {
     PhoebeStoreTheme {
         SalesListScreenContent(
             sales = previewSales,
+            products = previewProducts,
+            selectedProduct = null,
             fromDate = System.currentTimeMillis(),
             toDate = System.currentTimeMillis(),
-            formattedFromDate = "Mar 31, 2026",
-            formattedToDate = "Mar 31, 2026",
+            formattedFromDate = "Apr 03, 2026",
+            formattedToDate = "Apr 03, 2026",
+            isLoading = false,
+            hasMore = true,
+            onNavigateBack = {},
+            onProductSelected = {},
             onFromDateChange = {},
             onToDateChange = {},
-            onNavigateToSaleDetail = {}
+            onLoadMore = {},
+            onResetFilters = {},
+            onNavigateToSaleDetail = {},
+            onNavigateToReport = { _, _, _ -> }
         )
     }
 }
@@ -332,13 +521,48 @@ private fun SalesListScreenDarkPreview() {
     PhoebeStoreTheme {
         SalesListScreenContent(
             sales = previewSales,
+            products = previewProducts,
+            selectedProduct = null,
             fromDate = System.currentTimeMillis(),
             toDate = System.currentTimeMillis(),
-            formattedFromDate = "Mar 31, 2026",
-            formattedToDate = "Mar 31, 2026",
+            formattedFromDate = "Apr 03, 2026",
+            formattedToDate = "Apr 03, 2026",
+            isLoading = false,
+            hasMore = false,
+            onNavigateBack = {},
+            onProductSelected = {},
             onFromDateChange = {},
             onToDateChange = {},
-            onNavigateToSaleDetail = {}
+            onLoadMore = {},
+            onResetFilters = {},
+            onNavigateToSaleDetail = {},
+            onNavigateToReport = { _, _, _ -> }
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun SalesListScreenLoadingPreview() {
+    PhoebeStoreTheme {
+        SalesListScreenContent(
+            sales = emptyList(),
+            products = emptyList(),
+            selectedProduct = null,
+            fromDate = System.currentTimeMillis(),
+            toDate = System.currentTimeMillis(),
+            formattedFromDate = "Apr 03, 2026",
+            formattedToDate = "Apr 03, 2026",
+            isLoading = true,
+            hasMore = false,
+            onNavigateBack = {},
+            onProductSelected = {},
+            onFromDateChange = {},
+            onToDateChange = {},
+            onLoadMore = {},
+            onResetFilters = {},
+            onNavigateToSaleDetail = {},
+            onNavigateToReport = { _, _, _ -> }
         )
     }
 }
@@ -349,13 +573,22 @@ private fun SalesListScreenEmptyLightPreview() {
     PhoebeStoreTheme {
         SalesListScreenContent(
             sales = emptyList(),
+            products = previewProducts,
+            selectedProduct = null,
             fromDate = System.currentTimeMillis(),
             toDate = System.currentTimeMillis(),
-            formattedFromDate = "Mar 31, 2026",
-            formattedToDate = "Mar 31, 2026",
+            formattedFromDate = "Apr 03, 2026",
+            formattedToDate = "Apr 03, 2026",
+            isLoading = false,
+            hasMore = false,
+            onNavigateBack = {},
+            onProductSelected = {},
             onFromDateChange = {},
             onToDateChange = {},
-            onNavigateToSaleDetail = {}
+            onLoadMore = {},
+            onResetFilters = {},
+            onNavigateToSaleDetail = {},
+            onNavigateToReport = { _, _, _ -> }
         )
     }
 }
@@ -366,13 +599,22 @@ private fun SalesListScreenEmptyDarkPreview() {
     PhoebeStoreTheme {
         SalesListScreenContent(
             sales = emptyList(),
+            products = previewProducts,
+            selectedProduct = null,
             fromDate = System.currentTimeMillis(),
             toDate = System.currentTimeMillis(),
-            formattedFromDate = "Mar 31, 2026",
-            formattedToDate = "Mar 31, 2026",
+            formattedFromDate = "Apr 03, 2026",
+            formattedToDate = "Apr 03, 2026",
+            isLoading = false,
+            hasMore = false,
+            onNavigateBack = {},
+            onProductSelected = {},
             onFromDateChange = {},
             onToDateChange = {},
-            onNavigateToSaleDetail = {}
+            onLoadMore = {},
+            onResetFilters = {},
+            onNavigateToSaleDetail = {},
+            onNavigateToReport = { _, _, _ -> }
         )
     }
 }

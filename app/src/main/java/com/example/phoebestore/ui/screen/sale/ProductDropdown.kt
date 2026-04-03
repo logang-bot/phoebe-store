@@ -26,12 +26,15 @@ import com.example.phoebestore.ui.theme.PhoebeStoreTheme
 fun ProductDropdown(
     products: List<Product>,
     selectedProduct: Product?,
-    isCustomSelected: Boolean,
-    isSearchSelected: Boolean,
     onProductSelected: (Product?) -> Unit,
-    onCustomSelected: () -> Unit,
-    onSearchSelected: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isCustomSelected: Boolean = false,
+    isSearchSelected: Boolean = false,
+    showCustomOption: Boolean = true,
+    showSearchOption: Boolean = true,
+    allProductsLabel: String? = null,
+    onCustomSelected: () -> Unit = {},
+    onSearchSelected: () -> Unit = {}
 ) {
     var expanded by remember { mutableStateOf(false) }
 
@@ -39,6 +42,7 @@ fun ProductDropdown(
         isSearchSelected -> stringResource(R.string.record_sale_search_product)
         isCustomSelected -> stringResource(R.string.record_sale_custom_product)
         selectedProduct != null -> selectedProduct.name
+        allProductsLabel != null -> allProductsLabel
         else -> ""
     }
 
@@ -53,27 +57,42 @@ fun ProductDropdown(
             readOnly = true,
             label = { Text(stringResource(R.string.record_sale_product_label)) },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-            modifier = Modifier.fillMaxWidth().menuAnchor(MenuAnchorType.PrimaryNotEditable)
+            modifier = Modifier
+                .fillMaxWidth()
+                .menuAnchor(MenuAnchorType.PrimaryNotEditable)
         )
 
         ExposedDropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false }
         ) {
-            DropdownMenuItem(
-                text = { Text(stringResource(R.string.record_sale_search_product)) },
-                onClick = {
-                    onSearchSelected()
-                    expanded = false
-                }
-            )
-            DropdownMenuItem(
-                text = { Text(stringResource(R.string.record_sale_custom_product)) },
-                onClick = {
-                    onCustomSelected()
-                    expanded = false
-                }
-            )
+            if (showSearchOption) {
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.record_sale_search_product)) },
+                    onClick = {
+                        onSearchSelected()
+                        expanded = false
+                    }
+                )
+            }
+            if (showCustomOption) {
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.record_sale_custom_product)) },
+                    onClick = {
+                        onCustomSelected()
+                        expanded = false
+                    }
+                )
+            }
+            if (allProductsLabel != null) {
+                DropdownMenuItem(
+                    text = { Text(allProductsLabel) },
+                    onClick = {
+                        onProductSelected(null)
+                        expanded = false
+                    }
+                )
+            }
             products.forEach { product ->
                 DropdownMenuItem(
                     text = { Text(product.name) },
@@ -120,6 +139,21 @@ private fun ProductDropdownDarkPreview() {
             onProductSelected = {},
             onCustomSelected = {},
             onSearchSelected = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun ProductDropdownFilterPreview() {
+    PhoebeStoreTheme {
+        ProductDropdown(
+            products = previewProducts,
+            selectedProduct = null,
+            onProductSelected = {},
+            allProductsLabel = "All products",
+            showCustomOption = false,
+            showSearchOption = false
         )
     }
 }

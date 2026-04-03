@@ -25,15 +25,20 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -72,6 +77,7 @@ fun CreateProductScreen(
     storeId: Long,
     productId: Long?,
     onProductSaved: () -> Unit,
+    onNavigateBack: () -> Unit,
     viewModel: CreateProductViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
@@ -157,6 +163,7 @@ fun CreateProductScreen(
 
     CreateProductScreenContent(
         productId = productId,
+        onNavigateBack = onNavigateBack,
         formState = formState,
         onNameChange = viewModel::onNameChange,
         onDescriptionChange = viewModel::onDescriptionChange,
@@ -176,9 +183,11 @@ fun CreateProductScreen(
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun CreateProductScreenContent(
     productId: Long?,
+    onNavigateBack: () -> Unit,
     formState: CreateProductFormState,
     onNameChange: (String) -> Unit,
     onDescriptionChange: (String) -> Unit,
@@ -193,6 +202,31 @@ private fun CreateProductScreenContent(
     onSave: () -> Unit
 ) {
     Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = stringResource(
+                            if (productId == null) R.string.create_product_title_create
+                            else R.string.create_product_title_edit
+                        ),
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                },
+                navigationIcon = {
+                    IconButton(onClick = onNavigateBack) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.navigate_back)
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer
+                )
+            )
+        },
         containerColor = MaterialTheme.colorScheme.surfaceContainer
     ) { innerPadding ->
         Column(
@@ -202,18 +236,6 @@ private fun CreateProductScreenContent(
                 .padding(innerPadding)
                 .padding(horizontal = 16.dp, vertical = 24.dp)
         ) {
-            Text(
-                text = stringResource(
-                    if (productId == null) R.string.create_product_title_create
-                    else R.string.create_product_title_edit
-                ),
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
-
             // Product image
             Text(
                 text = stringResource(R.string.create_product_image_label),
@@ -379,7 +401,8 @@ private fun CreateProductScreenContent(
 private fun CreateProductScreenLightPreview() {
     PhoebeStoreTheme {
         CreateProductScreenContent(
-            productId = null,
+            onNavigateBack = {},
+            productId =null,
             formState = CreateProductFormState(),
             onNameChange = {},
             onDescriptionChange = {},
@@ -401,7 +424,8 @@ private fun CreateProductScreenLightPreview() {
 private fun CreateProductScreenDarkPreview() {
     PhoebeStoreTheme {
         CreateProductScreenContent(
-            productId = null,
+            onNavigateBack = {},
+            productId =null,
             formState = CreateProductFormState(),
             onNameChange = {},
             onDescriptionChange = {},

@@ -1,6 +1,6 @@
 ---
-name: create-methods-or-functions
-description: Guidelines to create methods or functions
+name: creating-methods-or-functions
+description: When creating new methods or functions follow the guidelines described here
 ---
 
 When create a method, function take into consideration these guidelines

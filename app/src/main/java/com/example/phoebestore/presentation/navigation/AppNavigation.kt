@@ -15,6 +15,7 @@ import com.example.phoebestore.presentation.screens.ProductListScreen
 import com.example.phoebestore.presentation.screens.RecordSaleScreen
 import com.example.phoebestore.presentation.screens.SaleDetailScreen
 import com.example.phoebestore.presentation.screens.SalesListScreen
+import com.example.phoebestore.presentation.screens.SalesReportScreen
 import com.example.phoebestore.presentation.screens.StoreDetailScreen
 import com.example.phoebestore.presentation.screens.StoreListScreen
 import com.example.phoebestore.ui.screen.home.HomeScreen
@@ -23,6 +24,7 @@ import com.example.phoebestore.ui.screen.product.ProductListScreen
 import com.example.phoebestore.ui.screen.sale.RecordSaleScreen
 import com.example.phoebestore.ui.screen.sale.SaleDetailScreen
 import com.example.phoebestore.ui.screen.sale.SalesListScreen
+import com.example.phoebestore.ui.screen.sale.SalesReportScreen
 import com.example.phoebestore.ui.screen.store.CreateStoreScreen
 import com.example.phoebestore.ui.screen.store.StoreDetailScreen
 import com.example.phoebestore.ui.screen.store.StoreListScreen
@@ -55,6 +57,7 @@ fun AppNavigation(
 
         composable<StoreListScreen> {
             StoreListScreen(
+                onNavigateBack = { navController.popBackStack() },
                 onNavigateToStoreDetail = { storeId ->
                     navController.navigate(StoreDetailScreen(storeId))
                 },
@@ -87,8 +90,12 @@ fun AppNavigation(
             val route = backStackEntry.toRoute<SalesListScreen>()
             SalesListScreen(
                 storeId = route.storeId,
+                onNavigateBack = { navController.popBackStack() },
                 onNavigateToSaleDetail = { saleId ->
                     navController.navigate(SaleDetailScreen(saleId))
+                },
+                onNavigateToReport = { fromDate, toDate, productId ->
+                    navController.navigate(SalesReportScreen(fromDate, toDate, productId))
                 }
             )
         }
@@ -105,9 +112,8 @@ fun AppNavigation(
             val route = backStackEntry.toRoute<CreateStoreScreen>()
             CreateStoreScreen(
                 storeId = route.storeId,
-                onStoreSaved = {
-                    navController.popBackStack()
-                }
+                onStoreSaved = { navController.popBackStack() },
+                onNavigateBack = { navController.popBackStack() }
             )
         }
 
@@ -116,9 +122,8 @@ fun AppNavigation(
             CreateProductScreen(
                 storeId = route.storeId,
                 productId = route.productId,
-                onProductSaved = {
-                    navController.popBackStack()
-                }
+                onProductSaved = { navController.popBackStack() },
+                onNavigateBack = { navController.popBackStack() }
             )
         }
 
@@ -126,6 +131,7 @@ fun AppNavigation(
             val route = backStackEntry.toRoute<ProductListScreen>()
             ProductListScreen(
                 storeId = route.storeId,
+                onNavigateBack = { navController.popBackStack() },
                 onNavigateToCreateProduct = { storeId ->
                     navController.navigate(CreateProductScreen(storeId))
                 },
@@ -139,9 +145,18 @@ fun AppNavigation(
             val route = backStackEntry.toRoute<RecordSaleScreen>()
             RecordSaleScreen(
                 storeId = route.storeId,
-                onSaleRecorded = {
-                    navController.popBackStack()
-                }
+                onSaleRecorded = { navController.popBackStack() },
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        composable<SalesReportScreen> { backStackEntry ->
+            val route = backStackEntry.toRoute<SalesReportScreen>()
+            SalesReportScreen(
+                fromDate = route.fromDate,
+                toDate = route.toDate,
+                productId = route.productId,
+                onNavigateBack = { navController.popBackStack() }
             )
         }
     }

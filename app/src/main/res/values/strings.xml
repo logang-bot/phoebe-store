@@ -71,6 +71,19 @@
     <string name="sales_list_title">Sales</string>
     <string name="sales_list_empty_title">No sales yet</string>
     <string name="sales_list_empty_subtitle">Record your first sale to see it here.</string>
+    <string name="sales_list_filter_all_products">All products</string>
+    <string name="sales_list_load_more">Load more</string>
+    <string name="sales_list_end_of_entries">End of entries</string>
+    <string name="sales_list_menu_reset_filters">Reset filters</string>
+    <string name="sales_list_menu_today_report">Get today\'s sales report</string>
+    <string name="sales_list_menu_filtered_report">Get sales report</string>
+
+    <!-- Sales Report Screen -->
+    <string name="sales_report_title">Sales report</string>
+
+    <!-- Common -->
+    <string name="navigate_back">Back</string>
+    <string name="more_options">More options</string>
     <string name="sales_list_filter_from">From</string>
     <string name="sales_list_filter_to">To</string>
     <string name="sales_list_date_ok">OK</string>

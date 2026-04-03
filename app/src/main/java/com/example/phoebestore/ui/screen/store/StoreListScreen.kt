@@ -13,10 +13,17 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -36,6 +43,7 @@ import com.example.phoebestore.ui.theme.PhoebeStoreTheme
 
 @Composable
 fun StoreListScreen(
+    onNavigateBack: () -> Unit,
     onNavigateToStoreDetail: (storeId: Long) -> Unit,
     onNavigateToCreateStore: () -> Unit,
     viewModel: StoreListViewModel = hiltViewModel()
@@ -44,18 +52,43 @@ fun StoreListScreen(
 
     StoreListScreenContent(
         stores = uiState.stores,
+        onNavigateBack = onNavigateBack,
         onNavigateToStoreDetail = onNavigateToStoreDetail,
         onNavigateToCreateStore = onNavigateToCreateStore
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun StoreListScreenContent(
     stores: List<Store>,
+    onNavigateBack: () -> Unit,
     onNavigateToStoreDetail: (storeId: Long) -> Unit,
     onNavigateToCreateStore: () -> Unit
 ) {
     Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = stringResource(R.string.store_list_title),
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                },
+                navigationIcon = {
+                    IconButton(onClick = onNavigateBack) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.navigate_back)
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer
+                )
+            )
+        },
         containerColor = MaterialTheme.colorScheme.surfaceContainer
     ) { innerPadding ->
         Column(
@@ -63,13 +96,6 @@ private fun StoreListScreenContent(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            Text(
-                text = stringResource(R.string.store_list_title),
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 24.dp)
-            )
 
             if (stores.isEmpty()) {
                 Box(
@@ -136,7 +162,8 @@ private val previewStores = listOf(
 private fun StoreListScreenLightPreview() {
     PhoebeStoreTheme {
         StoreListScreenContent(
-            stores = previewStores,
+            onNavigateBack = {},
+            stores =previewStores,
             onNavigateToStoreDetail = {},
             onNavigateToCreateStore = {}
         )
@@ -148,7 +175,8 @@ private fun StoreListScreenLightPreview() {
 private fun StoreListScreenDarkPreview() {
     PhoebeStoreTheme {
         StoreListScreenContent(
-            stores = previewStores,
+            onNavigateBack = {},
+            stores =previewStores,
             onNavigateToStoreDetail = {},
             onNavigateToCreateStore = {}
         )
@@ -160,7 +188,8 @@ private fun StoreListScreenDarkPreview() {
 private fun StoreListScreenEmptyLightPreview() {
     PhoebeStoreTheme {
         StoreListScreenContent(
-            stores = emptyList(),
+            onNavigateBack = {},
+            stores =emptyList(),
             onNavigateToStoreDetail = {},
             onNavigateToCreateStore = {}
         )
@@ -172,7 +201,8 @@ private fun StoreListScreenEmptyLightPreview() {
 private fun StoreListScreenEmptyDarkPreview() {
     PhoebeStoreTheme {
         StoreListScreenContent(
-            stores = emptyList(),
+            onNavigateBack = {},
+            stores =emptyList(),
             onNavigateToStoreDetail = {},
             onNavigateToCreateStore = {}
         )

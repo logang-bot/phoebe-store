@@ -1,6 +1,6 @@
 ---
-name: create-composables
-description: Guidelines to create composables
+name: creating-composables
+description: When create a new function that is marked as composable
 ---
 
 When create a composable take into consideration these guidelines

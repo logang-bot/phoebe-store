@@ -31,6 +31,7 @@ The innermost layer. Pure Kotlin — no Android, no Room, no Retrofit.
 |---|---|
 | `domain/model/` | Plain Kotlin data classes representing core business concepts |
 | `domain/repository/` | Repository **interfaces** — contracts the data layer must fulfill |
+| `domain/usecase/` | Single-responsibility use cases that orchestrate multiple repositories |
 
 ### `data/`
 Implements `domain/repository/` contracts. The only layer allowed to touch databases or network calls.
@@ -95,10 +96,12 @@ app/src/main/java/com/example/phoebestore/
 │   │   ├── Sale.kt
 │   │   ├── SaleType.kt
 │   │   └── ProfitOutcome.kt
-│   └── repository/
-│       ├── StoreRepository.kt
-│       ├── ProductRepository.kt
-│       └── SaleRepository.kt
+│   ├── repository/
+│   │   ├── StoreRepository.kt
+│   │   ├── ProductRepository.kt
+│   │   └── SaleRepository.kt
+│   └── usecase/
+│       └── RecordSaleUseCase.kt
 ├── data/
 │   ├── local/
 │   │   ├── AppDatabase.kt              ← version 5
@@ -155,6 +158,7 @@ app/src/main/java/com/example/phoebestore/
 │   │   │   ├── ProductListViewModel.kt
 │   │   │   ├── ProductListUiState.kt
 │   │   │   ├── ProductCard.kt
+│   │   │   ├── UpdateStockDialog.kt
 │   │   │   ├── CreateProductScreen.kt
 │   │   │   ├── CreateProductViewModel.kt
 │   │   │   └── CreateProductFormState.kt  ← FormState + CreateProductEvent
@@ -162,11 +166,21 @@ app/src/main/java/com/example/phoebestore/
 │   │       ├── RecordSaleScreen.kt
 │   │       ├── RecordSaleViewModel.kt
 │   │       ├── RecordSaleFormState.kt
+│   │       ├── SaleFormContent.kt
 │   │       ├── ProductDropdown.kt
+│   │       ├── SearchTopBar.kt
+│   │       ├── SearchResultsContent.kt
+│   │       ├── SaleConfirmDialog.kt
 │   │       ├── SalePriceRow.kt
 │   │       ├── SaleTotalSection.kt
 │   │       ├── SaleModificationInfo.kt
-│   │       └── DateField.kt
+│   │       ├── DateField.kt
+│   │       ├── SalesListScreen.kt
+│   │       ├── SalesListViewModel.kt
+│   │       ├── SalesListUiState.kt
+│   │       ├── SaleDetailScreen.kt
+│   │       ├── SaleDetailViewModel.kt
+│   │       └── SaleDetailUiState.kt
 │   └── theme/
 │       ├── Color.kt
 │       ├── Theme.kt

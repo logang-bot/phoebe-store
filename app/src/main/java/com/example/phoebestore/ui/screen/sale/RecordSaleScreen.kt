@@ -10,7 +10,11 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -39,6 +43,7 @@ import com.example.phoebestore.ui.theme.PhoebeStoreTheme
 fun RecordSaleScreen(
     storeId: Long,
     onSaleRecorded: () -> Unit,
+    onNavigateBack: () -> Unit,
     viewModel: RecordSaleViewModel = hiltViewModel()
 ) {
     val formState by viewModel.formState.collectAsStateWithLifecycle()
@@ -64,6 +69,7 @@ fun RecordSaleScreen(
 
     RecordSaleScreenContent(
         formState = formState,
+        onNavigateBack = onNavigateBack,
         onProductSelected = viewModel::onProductSelected,
         onCustomProductSelected = viewModel::onCustomProductSelected,
         onSearchSelected = viewModel::onSearchSelected,
@@ -87,6 +93,7 @@ fun RecordSaleScreen(
 @Composable
 private fun RecordSaleScreenContent(
     formState: RecordSaleFormState,
+    onNavigateBack: () -> Unit,
     onProductSelected: (Product?) -> Unit,
     onCustomProductSelected: () -> Unit,
     onSearchSelected: () -> Unit,
@@ -134,6 +141,14 @@ private fun RecordSaleScreenContent(
                                 style = MaterialTheme.typography.titleLarge,
                                 fontWeight = FontWeight.SemiBold
                             )
+                        },
+                        navigationIcon = {
+                            IconButton(onClick = onNavigateBack) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                    contentDescription = stringResource(R.string.navigate_back)
+                                )
+                            }
                         },
                         colors = TopAppBarDefaults.topAppBarColors(
                             containerColor = MaterialTheme.colorScheme.surfaceContainer
@@ -201,6 +216,7 @@ private val previewProducts = listOf(
 private fun RecordSaleScreenLightPreview() {
     PhoebeStoreTheme {
         RecordSaleScreenContent(
+            onNavigateBack = {},
             formState = RecordSaleFormState(
                 products = previewProducts,
                 selectedProduct = previewProducts.first(),
@@ -239,6 +255,7 @@ private fun RecordSaleScreenLightPreview() {
 private fun RecordSaleScreenDarkPreview() {
     PhoebeStoreTheme {
         RecordSaleScreenContent(
+            onNavigateBack = {},
             formState = RecordSaleFormState(
                 products = previewProducts,
                 selectedProduct = previewProducts.first(),
@@ -277,6 +294,7 @@ private fun RecordSaleScreenDarkPreview() {
 private fun RecordSaleSearchExpandedPreview() {
     PhoebeStoreTheme {
         RecordSaleScreenContent(
+            onNavigateBack = {},
             formState = RecordSaleFormState(
                 products = previewProducts,
                 isSearchSelected = true,

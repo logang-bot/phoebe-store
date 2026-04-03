@@ -229,22 +229,44 @@ Lists all products belonging to a store. Entry point to create or edit products.
 
 | Property | Type | Description |
 |---|---|---|
-| `uiState` | `StateFlow<ProductListUiState>` | Wraps `products: List<Product>` — all products for the store, ordered by `name ASC` |
+| `uiState` | `StateFlow<ProductListUiState>` | Products list + stock-update dialog state |
 
 State class: `ProductListUiState.kt`
+
+`ProductListUiState` fields:
+
+| Field | Default | Notes |
+|---|---|---|
+| `products` | `emptyList()` | All products for the store, collected from `ProductRepository` |
+| `stockDialogProduct` | `null` | The product whose stock dialog is open; `null` when closed |
+| `stockDialogInput` | `""` | Current text in the stock input field |
+| `isSavingStock` | `false` | `true` while the update coroutine runs; disables all dialog controls |
 
 ### Layout
 - Title at the top.
 - `LazyVerticalGrid` with `GridCells.Fixed(2)` and `Modifier.animateItem()` on each cell — products animate in/out when the list changes.
 - Full-width "Add product" `Button` pinned at the bottom.
 - Empty state shown when `uiState.products` is empty.
+- `UpdateStockDialog` rendered on top when `stockDialogProduct` is non-null.
 
 ### `ProductCard` (`ProductCard.kt`)
-Square card (`aspectRatio(1f)`) showing:
-- `AsyncImage` filling the top portion with `ContentScale.Crop`; `Icons.Default.ShoppingCart` placeholder when `imageUrl` is blank.
-- Product name (bold), selling price, and stock count below the image.
+Card showing:
+- Image area (`aspectRatio(1f)`): `AsyncImage` with `ContentScale.Crop`; `Icons.Default.Share` placeholder when `imageUrl` is blank. A `SmallFloatingActionButton` (using `ic_box_add`) sits at `Alignment.BottomEnd` of the image box — tapping it opens `UpdateStockDialog` for that product.
+- Info area below: product name (bold, single line), selling price, and stock count.
 
 Previews: light / dark (2 total).
+
+### `UpdateStockDialog` (`UpdateStockDialog.kt`)
+`AlertDialog` for quickly editing a product's stock without opening the full edit form. Contains:
+- Product name as title.
+- Current stock label (read-only, pre-set from `product.stock`).
+- `OutlinedTextField` for the new stock value (number keyboard).
+- `FilledTonalIconButton` row with subtract (`ic_remove`) and add (`ic_add`) buttons (same pattern as `RecordSaleScreen`).
+- Save button with an `AnimatedContent` fade+scale transition between the label and a `CircularProgressIndicator`.
+
+All controls are disabled while `isSavingStock = true`. Tapping outside or the Cancel button is blocked during saving. On success the dialog is dismissed automatically by the ViewModel.
+
+Previews: light / dark / saving state (3 total).
 
 ---
 
@@ -419,8 +441,11 @@ Money fields also auto-format to `"%.2f"` on focus loss. The `onFocusChanged` mo
 
 ### Child composables
 
+#### `SaleFormContent` (`SaleFormContent.kt`)
+Internal wrapper composable that renders the full scrollable form. Extracted from `RecordSaleScreenContent` so that the `AnimatedContent` in the screen can swap between `SaleFormContent` (form mode) and `SearchResultsContent` (search mode) with a fade transition. Receives the full `RecordSaleFormState` and all event callbacks — no business logic inside.
+
 #### `ProductDropdown` (`ProductDropdown.kt`)
-`ExposedDropdownMenuBox` listing store products plus a "Custom product" option at the bottom. Read-only `OutlinedTextField` shows the selected item's name. Callbacks: `onProductSelected(Product?)` and `onCustomSelected()`.
+`ExposedDropdownMenuBox` listing store products, a "Search product" option (triggers full-screen search), and a "Custom / Other" option at the bottom. Read-only `OutlinedTextField` shows the selected item's name. Callbacks: `onProductSelected(Product?)`, `onCustomSelected()`, and `onSearchSelected()`.
 
 Previews: light / dark (2 total).
 
@@ -456,6 +481,21 @@ Previews: light / dark × EXTRA_PROFIT / SMALLER_PROFIT / LOSS (6 total).
 Read-only `OutlinedTextField` displaying the selected date. Accepts `epochMillis: Long` (used to seed `rememberDatePickerState`) and `formattedDate: String` (pre-formatted by the ViewModel, displayed as-is). A "Change" `TextButton` in the trailing slot opens a `DatePickerDialog`. Confirming updates the epoch millis via `onDateSelected`. No date formatting inside the composable.
 
 Previews: light / dark (2 total).
+
+#### `SaleConfirmDialog` (`SaleConfirmDialog.kt`)
+`AlertDialog` shown when the user taps Save, before the sale is persisted. Displays a read-only summary of the pending sale using private `ConfirmRow` composables (label in `labelSmall` / `onSurfaceVariant`, value in `bodyMedium` bold). Optional rows for unit cost (hidden when `"0.00"`) and notes (hidden when blank). Confirm button calls `onConfirm`; dismiss/cancel calls `onDismiss`. All values are pre-formatted strings received from the ViewModel.
+
+Previews: light / dark (2 total).
+
+#### `SearchTopBar` (`SearchTopBar.kt`)
+Replaces the regular `TopAppBar` while search is active. Renders as a `Surface` with a `Row` containing an `OutlinedTextField` (search query, `ImeAction.Search`) and a "Close" `Button`. The text field holds a `FocusRequester` so the screen can request keyboard focus via `LaunchedEffect` as soon as search expands. Both the IME Search action and the Close button call `onSearchConfirmed()` and hide the software keyboard.
+
+Previews: 1 (light only).
+
+#### `SearchResultsContent` (`SearchResultsContent.kt`)
+Replaces `SaleFormContent` in the content area while search is active. Scrollable `Column` of `TextButton` rows — each row spans the full width with the product name on the left and price on the right. Tapping a row calls `onProductSelected(product)`, which collapses the search and pre-fills the form. Shows a "no results" message when the query is non-blank and `filteredProducts` is empty; shows nothing when the query is blank and no results exist.
+
+Previews: results list / empty state (2 total, light only).
 
 ### Navigation after save
 `isSuccess = true` in `formState` is observed in a `LaunchedEffect` on the screen. When it fires, `onSaleRecorded()` is called, which pops the back stack.
