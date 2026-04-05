@@ -1,10 +1,17 @@
 package com.example.phoebestore.ui.screen.sale
 
 import com.example.phoebestore.domain.model.Product
-import com.example.phoebestore.domain.model.Sale
+
+data class SaleDisplayItem(
+    val id: Long,
+    val productName: String,
+    val formattedDate: String,
+    val formattedTotal: String,
+    val formattedQuantity: String
+)
 
 data class SalesListUiState(
-    val sales: List<Sale> = emptyList(),
+    val sales: List<SaleDisplayItem> = emptyList(),
     val products: List<Product> = emptyList(),
     val selectedProduct: Product? = null,
     val fromDate: Long = 0L,

@@ -1,8 +1,10 @@
 package com.example.phoebestore.ui.common
 
 import android.content.res.Configuration
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.Text
@@ -18,7 +20,8 @@ fun LoadingButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    isLoading: Boolean = false
+    isLoading: Boolean = false,
+    icon: (@Composable () -> Unit)? = null
 ) {
     Button(
         onClick = onClick,
@@ -32,6 +35,10 @@ fun LoadingButton(
                 color = LocalContentColor.current
             )
         } else {
+            if (icon != null) {
+                icon()
+                Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
+            }
             Text(text)
         }
     }

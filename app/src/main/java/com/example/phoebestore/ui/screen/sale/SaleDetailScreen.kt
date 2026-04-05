@@ -36,9 +36,6 @@ import com.example.phoebestore.R
 import com.example.phoebestore.domain.model.Sale
 import com.example.phoebestore.ui.common.ThemedCard
 import com.example.phoebestore.ui.theme.PhoebeStoreTheme
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 @Composable
 fun SaleDetailScreen(
@@ -48,7 +45,7 @@ fun SaleDetailScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     SaleDetailScreenContent(
-        sale = uiState.sale,
+        uiState = uiState,
         onNavigateBack = onNavigateBack
     )
 }
@@ -56,7 +53,7 @@ fun SaleDetailScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun SaleDetailScreenContent(
-    sale: Sale?,
+    uiState: SaleDetailUiState,
     onNavigateBack: () -> Unit
 ) {
     Scaffold(
@@ -84,7 +81,7 @@ private fun SaleDetailScreenContent(
             )
         }
     ) { innerPadding ->
-        if (sale != null) {
+        if (uiState.sale != null) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -92,28 +89,26 @@ private fun SaleDetailScreenContent(
                     .padding(innerPadding)
                     .padding(horizontal = 16.dp, vertical = 16.dp)
             ) {
-                SaleDetailCard(sale = sale)
+                SaleDetailCard(uiState = uiState)
             }
         }
     }
 }
 
-private val dateFormat = SimpleDateFormat("MMM dd, yyyy - h:mm a", Locale.getDefault())
-
 @Composable
-private fun SaleDetailCard(sale: Sale) {
-    val profit = sale.quantity * (sale.unitPrice - sale.unitCost)
+private fun SaleDetailCard(uiState: SaleDetailUiState) {
+    val sale = uiState.sale ?: return
     val rows = buildList {
         add(stringResource(R.string.sale_detail_product) to sale.productName)
-        add(stringResource(R.string.sale_detail_quantity) to "${sale.quantity}")
-        add(stringResource(R.string.sale_detail_unit_price) to "%.2f".format(sale.unitPrice))
-        if (sale.unitCost > 0.0) {
-            add(stringResource(R.string.sale_detail_unit_cost) to "%.2f".format(sale.unitCost))
-            add(stringResource(R.string.sale_detail_profit) to "%.2f".format(profit))
+        add(stringResource(R.string.sale_detail_quantity) to uiState.formattedQuantity)
+        add(stringResource(R.string.sale_detail_unit_price) to uiState.formattedUnitPrice)
+        if (uiState.showUnitCost) {
+            add(stringResource(R.string.sale_detail_unit_cost) to uiState.formattedUnitCost)
+            add(stringResource(R.string.sale_detail_profit) to uiState.formattedProfit)
         }
-        add(stringResource(R.string.sale_detail_total) to "%.2f".format(sale.totalAmount))
-        add(stringResource(R.string.sale_detail_date) to dateFormat.format(Date(sale.soldAt)))
-        if (sale.notes.isNotBlank()) {
+        add(stringResource(R.string.sale_detail_total) to uiState.formattedTotal)
+        add(stringResource(R.string.sale_detail_date) to uiState.formattedDate)
+        if (uiState.showNotes) {
             add(stringResource(R.string.sale_detail_notes) to sale.notes)
         }
     }
@@ -163,12 +158,24 @@ private val previewSale = Sale(
     notes = "Customer paid cash"
 )
 
+private val previewUiState = SaleDetailUiState(
+    sale = previewSale,
+    formattedQuantity = "2",
+    formattedUnitPrice = "29.99",
+    formattedUnitCost = "15.00",
+    formattedProfit = "29.98",
+    formattedTotal = "59.98",
+    formattedDate = "Apr 03, 2026 - 3:00 PM",
+    showUnitCost = true,
+    showNotes = true
+)
+
 @Preview(showBackground = true)
 @Composable
 private fun SaleDetailScreenLightPreview() {
     PhoebeStoreTheme {
         SaleDetailScreenContent(
-            sale = previewSale,
+            uiState = previewUiState,
             onNavigateBack = {}
         )
     }
@@ -179,7 +186,7 @@ private fun SaleDetailScreenLightPreview() {
 private fun SaleDetailScreenDarkPreview() {
     PhoebeStoreTheme {
         SaleDetailScreenContent(
-            sale = previewSale,
+            uiState = previewUiState,
             onNavigateBack = {}
         )
     }

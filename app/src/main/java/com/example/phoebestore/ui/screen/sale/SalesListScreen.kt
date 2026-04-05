@@ -51,13 +51,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.phoebestore.R
 import com.example.phoebestore.domain.model.Product
-import com.example.phoebestore.domain.model.Sale
 import com.example.phoebestore.ui.common.ThemedCard
 import com.example.phoebestore.ui.theme.PhoebeStoreTheme
-import java.text.SimpleDateFormat
 import java.util.Calendar
-import java.util.Date
-import java.util.Locale
 import java.util.TimeZone
 
 @Composable
@@ -94,7 +90,7 @@ fun SalesListScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun SalesListScreenContent(
-    sales: List<Sale>,
+    sales: List<SaleDisplayItem>,
     products: List<Product>,
     selectedProduct: Product?,
     fromDate: Long,
@@ -269,10 +265,10 @@ private fun SalesListScreenContent(
                             .padding(horizontal = 16.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        items(sales, key = { it.id }) { sale ->
+                        items(sales, key = { it.id }) { item ->
                             SaleListItem(
-                                sale = sale,
-                                onClick = { onNavigateToSaleDetail(sale.id) },
+                                item = item,
+                                onClick = { onNavigateToSaleDetail(item.id) },
                                 modifier = Modifier.animateItem()
                             )
                         }
@@ -413,8 +409,6 @@ private fun DateRangeFilter(
     }
 }
 
-private val dateTimeFormat = SimpleDateFormat("MMM dd, yyyy - h:mm a", Locale.getDefault())
-
 private fun toUtcMidnight(localEpochMillis: Long): Long {
     val local = Calendar.getInstance().apply { timeInMillis = localEpochMillis }
     return Calendar.getInstance(TimeZone.getTimeZone("UTC")).apply {
@@ -425,7 +419,7 @@ private fun toUtcMidnight(localEpochMillis: Long): Long {
 
 @Composable
 private fun SaleListItem(
-    sale: Sale,
+    item: SaleDisplayItem,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -445,7 +439,7 @@ private fun SaleListItem(
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = sale.productName,
+                    text = item.productName,
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onSurface,
@@ -454,21 +448,21 @@ private fun SaleListItem(
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
-                    text = dateTimeFormat.format(Date(sale.soldAt)),
+                    text = item.formattedDate,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
             Column(horizontalAlignment = Alignment.End) {
                 Text(
-                    text = "%.2f".format(sale.totalAmount),
+                    text = item.formattedTotal,
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Medium,
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
-                    text = "×${sale.quantity}",
+                    text = item.formattedQuantity,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -478,9 +472,9 @@ private fun SaleListItem(
 }
 
 private val previewSales = listOf(
-    Sale(id = 1L, storeId = 1L, productName = "Summer Dress", quantity = 2, unitPrice = 29.99, totalAmount = 59.98),
-    Sale(id = 2L, storeId = 1L, productName = "Leather Bag", quantity = 1, unitPrice = 89.99, totalAmount = 89.99),
-    Sale(id = 3L, storeId = 1L, productName = "Sun Hat", quantity = 3, unitPrice = 14.99, totalAmount = 44.97)
+    SaleDisplayItem(id = 1L, productName = "Summer Dress", formattedDate = "Apr 03, 2026 - 10:00 AM", formattedTotal = "59.98", formattedQuantity = "×2"),
+    SaleDisplayItem(id = 2L, productName = "Leather Bag", formattedDate = "Apr 03, 2026 - 11:30 AM", formattedTotal = "89.99", formattedQuantity = "×1"),
+    SaleDisplayItem(id = 3L, productName = "Sun Hat", formattedDate = "Apr 03, 2026 - 2:15 PM", formattedTotal = "44.97", formattedQuantity = "×3")
 )
 
 private val previewProducts = listOf(

@@ -63,9 +63,53 @@
     <!-- Store Detail Screen -->
     <string name="store_detail_edit_button">Editar tienda</string>
     <string name="store_detail_products_button">Productos</string>
+    <string name="store_detail_sales_button">Ventas</string>
     <string name="store_detail_analytics_title">Analíticas</string>
     <string name="store_detail_analytics_coming_soon">Gráficos y analíticas próximamente</string>
     <string name="store_detail_create_sale_button">Registrar venta</string>
+
+    <!-- Sales List Screen -->
+    <string name="sales_list_title">Ventas</string>
+    <string name="sales_list_empty_title">Sin ventas aún</string>
+    <string name="sales_list_empty_subtitle">Registra tu primera venta para verla aquí.</string>
+    <string name="sales_list_filter_all_products">Todos los productos</string>
+    <string name="sales_list_load_more">Cargar más</string>
+    <string name="sales_list_end_of_entries">Fin de registros</string>
+    <string name="sales_list_menu_reset_filters">Restablecer filtros</string>
+    <string name="sales_list_menu_today_report">Ver reporte del día</string>
+    <string name="sales_list_menu_filtered_report">Ver reporte de ventas</string>
+
+    <!-- Sales Report Screen -->
+    <string name="sales_report_title">Reporte de ventas</string>
+
+    <!-- Common -->
+    <string name="navigate_back">Atrás</string>
+    <string name="more_options">Más opciones</string>
+    <string name="sales_list_filter_from">Desde</string>
+    <string name="sales_list_filter_to">Hasta</string>
+    <string name="sales_list_date_ok">Aceptar</string>
+    <string name="sales_list_date_cancel">Cancelar</string>
+
+    <!-- Sale Detail Screen -->
+    <string name="sale_detail_title">Detalle de venta</string>
+    <string name="sale_detail_product">Producto</string>
+    <string name="sale_detail_quantity">Cantidad</string>
+    <string name="sale_detail_unit_price">Precio unitario</string>
+    <string name="sale_detail_unit_cost">Costo unitario</string>
+    <string name="sale_detail_total">Total</string>
+    <string name="sale_detail_profit">Ganancia</string>
+    <string name="sale_detail_date">Fecha</string>
+    <string name="sale_detail_notes">Notas</string>
+    <string name="sale_detail_back">Atrás</string>
+
+    <!-- Product Card -->
+    <string name="product_card_update_stock_button">Actualizar stock</string>
+
+    <!-- Update Stock Dialog -->
+    <string name="update_stock_dialog_current_stock">Stock actual: %d</string>
+    <string name="update_stock_dialog_new_stock_label">Nuevo stock</string>
+    <string name="update_stock_dialog_save">Guardar</string>
+    <string name="update_stock_dialog_cancel">Cancelar</string>
 
     <!-- Product List Screen -->
     <string name="product_list_title">Productos</string>

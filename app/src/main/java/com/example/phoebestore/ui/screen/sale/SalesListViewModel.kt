@@ -34,7 +34,8 @@ class SalesListViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val storeId: Long = checkNotNull(savedStateHandle["storeId"])
-    private val dateFormat = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
+    private val filterDateFormat = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
+    private val saleItemDateFormat = SimpleDateFormat("MMM dd, yyyy - h:mm a", Locale.getDefault())
 
     private val _fromDate = MutableStateFlow(startOfDay(System.currentTimeMillis()))
     private val _toDate = MutableStateFlow(endOfDay(System.currentTimeMillis()))
@@ -54,15 +55,23 @@ class SalesListViewModel @Inject constructor(
             sale.soldAt in filters.from..filters.to &&
                     (filters.selectedProduct == null || sale.productId == filters.selectedProduct.id)
         }
-        val page = filtered.take(filters.displayedCount)
+        val page = filtered.take(filters.displayedCount).map { sale ->
+            SaleDisplayItem(
+                id = sale.id,
+                productName = sale.productName,
+                formattedDate = saleItemDateFormat.format(Date(sale.soldAt)),
+                formattedTotal = "%.2f".format(sale.totalAmount),
+                formattedQuantity = "×${sale.quantity}"
+            )
+        }
         SalesListUiState(
             sales = page,
             products = products,
             selectedProduct = filters.selectedProduct,
             fromDate = filters.from,
             toDate = filters.to,
-            formattedFromDate = dateFormat.format(Date(filters.from)),
-            formattedToDate = dateFormat.format(Date(filters.to)),
+            formattedFromDate = filterDateFormat.format(Date(filters.from)),
+            formattedToDate = filterDateFormat.format(Date(filters.to)),
             isLoading = false,
             hasMore = filtered.size > filters.displayedCount
         )
@@ -72,8 +81,8 @@ class SalesListViewModel @Inject constructor(
         initialValue = SalesListUiState(
             fromDate = _fromDate.value,
             toDate = _toDate.value,
-            formattedFromDate = dateFormat.format(Date(_fromDate.value)),
-            formattedToDate = dateFormat.format(Date(_toDate.value)),
+            formattedFromDate = filterDateFormat.format(Date(_fromDate.value)),
+            formattedToDate = filterDateFormat.format(Date(_toDate.value)),
             isLoading = true
         )
     )
