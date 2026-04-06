@@ -9,4 +9,5 @@ interface StoreRepository {
     suspend fun getById(id: Long): Store?
     fun getAll(): Flow<List<Store>>
     suspend fun delete(id: Long)
+    suspend fun markAccessed(id: Long)
 }

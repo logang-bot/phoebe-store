@@ -7,5 +7,6 @@ data class Store(
     val currency: Currency = Currency.USD,
     val logoUrl: String = "",
     val photoUrl: String = "",
-    val createdAt: Long = System.currentTimeMillis()
+    val createdAt: Long = System.currentTimeMillis(),
+    val lastAccessedAt: Long = 0
 )

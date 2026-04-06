@@ -27,4 +27,7 @@ class StoreRepositoryImpl @Inject constructor(
 
     override suspend fun delete(id: Long) =
         dao.deleteById(id)
+
+    override suspend fun markAccessed(id: Long) =
+        dao.updateLastAccessed(id, System.currentTimeMillis())
 }

@@ -49,21 +49,20 @@ internal fun SaleFormContent(
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 16.dp, vertical = 16.dp)
     ) {
-        if (formState.products.isNotEmpty()) {
-            ProductDropdown(
-                products = formState.products,
-                selectedProduct = formState.selectedProduct,
-                isCustomSelected = formState.isCustomProduct,
-                isSearchSelected = formState.isSearchSelected,
-                onProductSelected = onProductSelected,
-                onCustomSelected = onCustomProductSelected,
-                onSearchSelected = onSearchSelected,
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-        }
+        ProductDropdown(
+            products = formState.products,
+            selectedProduct = formState.selectedProduct,
+            isCustomSelected = formState.isCustomProduct,
+            isSearchSelected = formState.isSearchSelected,
+            showSearchOption = formState.products.isNotEmpty(),
+            onProductSelected = onProductSelected,
+            onCustomSelected = onCustomProductSelected,
+            onSearchSelected = onSearchSelected,
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(modifier = Modifier.height(12.dp))
 
-        if (formState.products.isEmpty() || formState.isCustomProduct) {
+        if (formState.isCustomProduct) {
             OutlinedTextField(
                 value = formState.productName,
                 onValueChange = onProductNameChange,

@@ -39,9 +39,8 @@
     <string name="create_store_currency_label">Moneda</string>
     <string name="create_store_logo_label">Logo de la tienda</string>
     <string name="create_store_photo_label">Foto de portada</string>
-    <string name="create_store_take_photo">Tomar foto</string>
-    <string name="create_store_retake_photo">Retomar foto</string>
-    <string name="create_store_choose_from_gallery">Elegir de la galería</string>
+    <string name="create_store_open_camera">Abrir cámara</string>
+    <string name="create_store_open_gallery">Abrir galería</string>
     <string name="create_store_save">Guardar</string>
 
     <!-- Store List Screen -->
@@ -149,6 +148,12 @@
     <string name="record_sale_modification_smaller_profit">reduciendo la ganancia en </string>
     <string name="record_sale_modification_loss">resultando en una pérdida de </string>
     <string name="record_sale_modification_compared_to_standard"> en comparación con el precio estándar.</string>
+    <string name="record_sale_result_success_title">Venta Registrada</string>
+    <string name="record_sale_result_success_body">%1$s × %2$d</string>
+    <string name="record_sale_result_success_total">Total: %1$s</string>
+    <string name="record_sale_result_error_title">Algo Salió Mal</string>
+    <string name="record_sale_result_error_body">Ocurrió un error al guardar la venta. Por favor, inténtalo de nuevo.</string>
+    <string name="record_sale_result_ok">Aceptar</string>
 
     <!-- Product Card -->
     <string name="product_card_stock">Stock: %d</string>

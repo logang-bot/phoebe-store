@@ -15,7 +15,8 @@ fun StoreEntity.toDomain(): Store = Store(
     currency = currency.toCurrency(),
     logoUrl = logoUrl,
     photoUrl = photoUrl,
-    createdAt = createdAt
+    createdAt = createdAt,
+    lastAccessedAt = lastAccessedAt
 )
 
 fun StoreDto.toDomain(): Store = Store(
@@ -35,5 +36,6 @@ fun Store.toEntity(): StoreEntity = StoreEntity(
     currency = currency.name,
     logoUrl = logoUrl,
     photoUrl = photoUrl,
-    createdAt = createdAt
+    createdAt = createdAt,
+    lastAccessedAt = lastAccessedAt
 )

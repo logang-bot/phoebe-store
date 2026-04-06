@@ -10,10 +10,19 @@ class RecordSaleUseCase @Inject constructor(
     private val saleRepository: SaleRepository,
     private val productRepository: ProductRepository
 ) {
-    suspend operator fun invoke(sale: Sale, selectedProduct: Product?) {
+    suspend operator fun invoke(sale: Sale, selectedProduct: Product?, isCustomProduct: Boolean) {
         saleRepository.create(sale)
-        selectedProduct?.let { product ->
-            productRepository.update(product.copy(stock = (product.stock - sale.quantity).coerceAtLeast(0)))
+        if (selectedProduct != null) {
+            productRepository.update(selectedProduct.copy(stock = (selectedProduct.stock - sale.quantity).coerceAtLeast(0)))
+        } else if (isCustomProduct && sale.productName.isNotBlank()) {
+            productRepository.create(
+                Product(
+                    storeId = sale.storeId,
+                    name = sale.productName,
+                    price = sale.unitPrice,
+                    costPrice = sale.unitCost
+                )
+            )
         }
     }
 }

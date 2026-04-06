@@ -17,12 +17,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.List
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardDefaults
@@ -165,7 +162,7 @@ private fun StoreDetailScreenContent(
                     )
                 ) {
                     Icon(
-                        painterResource(R.drawable.ic_package_2_24px),
+                        painterResource(R.drawable.ic_package_2),
                         contentDescription = null,
                         modifier = Modifier.size(ButtonDefaults.IconSize)
                     )
@@ -220,6 +217,15 @@ private fun StoreDetailHeader(
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize()
                 )
+            } else {
+                Icon(
+                    painter = painterResource(R.drawable.ic_landscape),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier
+                        .size(56.dp)
+                        .align(Alignment.Center)
+                )
             }
 
             // Edit button at top-left of photo
@@ -260,7 +266,7 @@ private fun StoreDetailHeader(
                 )
             } else {
                 Icon(
-                    imageVector = Icons.Default.Star,
+                    painter = painterResource(R.drawable.ic_brand_family),
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(36.dp)

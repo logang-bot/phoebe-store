@@ -26,7 +26,7 @@ data class RecordSaleFormState(
     val profitDelta: Double = 0.0,
     val currentProfit: Double = 0.0,
     val isSaving: Boolean = false,
-    val isSuccess: Boolean = false,
+    val saleResult: SaleResult? = null,
     val showConfirmDialog: Boolean = false,
     val productNameError: Boolean = false,
     val quantityError: Boolean = false,

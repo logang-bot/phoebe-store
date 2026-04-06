@@ -28,6 +28,7 @@ class StoreDetailViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
+            storeRepository.markAccessed(storeId)
             combine(
                 storeRepository.getAll().map { list -> list.find { it.id == storeId } },
                 saleRepository.getByStore(storeId)

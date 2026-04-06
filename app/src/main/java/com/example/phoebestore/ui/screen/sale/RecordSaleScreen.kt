@@ -51,8 +51,14 @@ fun RecordSaleScreen(
 ) {
     val formState by viewModel.formState.collectAsStateWithLifecycle()
 
-    LaunchedEffect(formState.isSuccess) {
-        if (formState.isSuccess) onSaleRecorded()
+    formState.saleResult?.let { result ->
+        SaleResultDialog(
+            result = result,
+            onDismiss = {
+                viewModel.clearSaleResult()
+                if (result is SaleResult.Success) onSaleRecorded()
+            }
+        )
     }
 
     if (formState.showConfirmDialog) {
@@ -227,6 +233,7 @@ private fun RecordSaleScreenLightPreview() {
     PhoebeStoreTheme {
         RecordSaleScreenContent(
             onNavigateBack = {},
+
             formState = RecordSaleFormState(
                 products = previewProducts,
                 selectedProduct = previewProducts.first(),
@@ -266,6 +273,7 @@ private fun RecordSaleScreenDarkPreview() {
     PhoebeStoreTheme {
         RecordSaleScreenContent(
             onNavigateBack = {},
+
             formState = RecordSaleFormState(
                 products = previewProducts,
                 selectedProduct = previewProducts.first(),
@@ -305,6 +313,7 @@ private fun RecordSaleSearchExpandedPreview() {
     PhoebeStoreTheme {
         RecordSaleScreenContent(
             onNavigateBack = {},
+
             formState = RecordSaleFormState(
                 products = previewProducts,
                 isSearchSelected = true,

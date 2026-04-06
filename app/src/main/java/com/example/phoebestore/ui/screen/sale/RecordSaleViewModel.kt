@@ -46,6 +46,7 @@ class RecordSaleViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
+            storeRepository.markAccessed(storeId)
             storeRepository.getById(storeId)?.let { store ->
                 _formState.update { it.copy(currency = store.currency) }
             }
@@ -272,24 +273,42 @@ class RecordSaleViewModel @Inject constructor(
         viewModelScope.launch {
             _formState.update { it.copy(showConfirmDialog = false, isSaving = true) }
             val saleType = if (state.isPriceModified || state.isCostModified) SaleType.MODIFIED else SaleType.STANDARD
-            recordSaleUseCase(
-                sale = Sale(
-                    storeId = storeId,
-                    productId = state.selectedProduct?.id,
-                    productName = productName,
-                    quantity = quantity,
-                    unitPrice = unitPrice,
-                    unitCost = state.unitCost.toDoubleOrNull() ?: 0.0,
-                    totalAmount = state.totalAmount,
-                    saleType = saleType,
-                    profitOutcome = state.profitOutcome,
-                    notes = state.notes.trim(),
-                    soldAt = state.soldAt
-                ),
-                selectedProduct = state.selectedProduct
-            )
-            _formState.update { it.copy(isSaving = false, isSuccess = true) }
+            try {
+                recordSaleUseCase(
+                    sale = Sale(
+                        storeId = storeId,
+                        productId = state.selectedProduct?.id,
+                        productName = productName,
+                        quantity = quantity,
+                        unitPrice = unitPrice,
+                        unitCost = state.unitCost.toDoubleOrNull() ?: 0.0,
+                        totalAmount = state.totalAmount,
+                        saleType = saleType,
+                        profitOutcome = state.profitOutcome,
+                        notes = state.notes.trim(),
+                        soldAt = state.soldAt
+                    ),
+                    selectedProduct = state.selectedProduct,
+                    isCustomProduct = state.isCustomProduct
+                )
+                _formState.update {
+                    it.copy(
+                        isSaving = false,
+                        saleResult = SaleResult.Success(
+                            productName = productName,
+                            quantity = quantity,
+                            formattedTotal = "${state.currency.name} ${"%.2f".format(state.totalAmount)}"
+                        )
+                    )
+                }
+            } catch (e: Exception) {
+                _formState.update { it.copy(isSaving = false, saleResult = SaleResult.Error) }
+            }
         }
+    }
+
+    fun clearSaleResult() {
+        _formState.update { it.copy(saleResult = null) }
     }
 
     private fun computeProfitOutcome(
