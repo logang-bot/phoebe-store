@@ -23,6 +23,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.phoebestore.R
 import com.example.phoebestore.domain.model.Currency
+import com.example.phoebestore.ui.common.ProductDropdown
 import com.example.phoebestore.domain.model.Product
 import com.example.phoebestore.ui.theme.PhoebeStoreTheme
 

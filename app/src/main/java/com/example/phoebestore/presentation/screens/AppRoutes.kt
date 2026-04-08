@@ -27,10 +27,14 @@ data class ProductListScreen(val storeId: Long)
 data class SalesListScreen(val storeId: Long)
 
 @Serializable
+data class InventoryHistoryScreen(val storeId: Long)
+
+@Serializable
 data class SaleDetailScreen(val saleId: Long)
 
 @Serializable
 data class SalesReportScreen(
+    val storeId: Long,
     val fromDate: Long,
     val toDate: Long,
     val productId: Long? = null

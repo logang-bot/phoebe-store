@@ -3,10 +3,11 @@ package com.example.phoebestore.ui.screen.product
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.phoebestore.domain.model.InventoryLog
 import com.example.phoebestore.domain.model.Product
+import com.example.phoebestore.domain.repository.InventoryLogRepository
 import com.example.phoebestore.domain.repository.ProductRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -17,6 +18,7 @@ import javax.inject.Inject
 @HiltViewModel
 class ProductListViewModel @Inject constructor(
     private val productRepository: ProductRepository,
+    private val inventoryLogRepository: InventoryLogRepository,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -34,9 +36,7 @@ class ProductListViewModel @Inject constructor(
     }
 
     fun onUpdateStockClick(product: Product) {
-        _uiState.update {
-            it.copy(stockDialogProduct = product, stockDialogInput = product.stock.toString())
-        }
+        _uiState.update { it.copy(stockDialogProduct = product, stockDialogInput = product.stock.toString()) }
     }
 
     fun onDismissStockDialog() {
@@ -56,19 +56,30 @@ class ProductListViewModel @Inject constructor(
 
     fun onStockDecrement() {
         val current = _uiState.value.stockDialogInput.toIntOrNull() ?: 0
-        if (current > 0) {
-            _uiState.update { it.copy(stockDialogInput = (current - 1).toString()) }
-        }
+        if (current > 0) _uiState.update { it.copy(stockDialogInput = (current - 1).toString()) }
     }
 
     fun onSaveStock() {
         val product = _uiState.value.stockDialogProduct ?: return
         val newStock = _uiState.value.stockDialogInput.toIntOrNull() ?: return
+        if (product.stock == newStock) { onDismissStockDialog(); return }
         viewModelScope.launch {
             _uiState.update { it.copy(isSavingStock = true) }
-            delay(5_000) // TODO: Remove this delay
             productRepository.update(product.copy(stock = newStock))
+            logStockChange(product, newStock)
             _uiState.update { it.copy(isSavingStock = false, stockDialogProduct = null, stockDialogInput = "") }
         }
+    }
+
+    private suspend fun logStockChange(product: Product, newStock: Int) {
+        inventoryLogRepository.log(
+            InventoryLog(
+                storeId = storeId,
+                productId = product.id,
+                productName = product.name,
+                previousStock = product.stock,
+                newStock = newStock
+            )
+        )
     }
 }

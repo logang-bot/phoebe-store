@@ -4,8 +4,9 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.phoebestore.domain.model.Currency
+import com.example.phoebestore.domain.model.InventoryLog
 import com.example.phoebestore.domain.model.Product
+import com.example.phoebestore.domain.repository.InventoryLogRepository
 import com.example.phoebestore.domain.repository.ProductRepository
 import com.example.phoebestore.domain.repository.StoreRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -22,11 +23,13 @@ import javax.inject.Inject
 class CreateProductViewModel @Inject constructor(
     private val productRepository: ProductRepository,
     private val storeRepository: StoreRepository,
+    private val inventoryLogRepository: InventoryLogRepository,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
     private val storeId: Long = checkNotNull(savedStateHandle["storeId"])
     private val productId: Long? = savedStateHandle["productId"]
+    private var originalStock: Int? = null
 
     private val _formState = MutableStateFlow(CreateProductFormState())
     val formState: StateFlow<CreateProductFormState> = _formState.asStateFlow()
@@ -43,38 +46,27 @@ class CreateProductViewModel @Inject constructor(
             }
             productId?.let { id ->
                 productRepository.getById(id)?.let { product ->
-                    _formState.update { it.copy(
-                        name = product.name,
-                        description = product.description,
-                        price = product.price.toString(),
-                        costPrice = if (product.costPrice > 0.0) product.costPrice.toString() else "",
-                        stock = product.stock.toString(),
-                        imageUrl = product.imageUrl
-                    )}
+                    originalStock = product.stock
+                    _formState.update {
+                        it.copy(
+                            name = product.name,
+                            description = product.description,
+                            price = product.price.toString(),
+                            costPrice = if (product.costPrice > 0.0) product.costPrice.toString() else "",
+                            stock = product.stock.toString(),
+                            imageUrl = product.imageUrl
+                        )
+                    }
                 }
             }
         }
     }
 
-    fun onNameChange(value: String) {
-        _formState.update { it.copy(name = value, nameError = false) }
-    }
-
-    fun onDescriptionChange(value: String) {
-        _formState.update { it.copy(description = value) }
-    }
-
-    fun onPriceChange(value: String) {
-        _formState.update { it.copy(price = value.toDecimalInput(), priceError = false) }
-    }
-
-    fun onCostPriceChange(value: String) {
-        _formState.update { it.copy(costPrice = value.toDecimalInput()) }
-    }
-
-    fun onStockChange(value: String) {
-        _formState.update { it.copy(stock = value.toIntegerInput()) }
-    }
+    fun onNameChange(value: String) { _formState.update { it.copy(name = value, nameError = false) } }
+    fun onDescriptionChange(value: String) { _formState.update { it.copy(description = value) } }
+    fun onPriceChange(value: String) { _formState.update { it.copy(price = value.toDecimalInput(), priceError = false) } }
+    fun onCostPriceChange(value: String) { _formState.update { it.copy(costPrice = value.toDecimalInput()) } }
+    fun onStockChange(value: String) { _formState.update { it.copy(stock = value.toIntegerInput()) } }
 
     fun onPriceFocusLost() {
         _formState.update { state ->
@@ -91,9 +83,60 @@ class CreateProductViewModel @Inject constructor(
     }
 
     fun onStockFocused() {
-        _formState.update { state ->
-            if (state.stock == "0") state.copy(stock = "") else state
+        _formState.update { state -> if (state.stock == "0") state.copy(stock = "") else state }
+    }
+
+    fun onImageCaptured(uri: String) { _formState.update { it.copy(imageUrl = uri) } }
+
+    fun onPermissionResult(permission: String, isGranted: Boolean) {
+        if (!isGranted && !visiblePermissionDialogQueue.contains(permission)) {
+            visiblePermissionDialogQueue.add(permission)
         }
+    }
+
+    fun dismissDialog() { visiblePermissionDialogQueue.removeFirstOrNull() }
+
+    fun saveProduct() {
+        val state = _formState.value
+        val price = state.price.toDoubleOrNull()
+        if (state.name.isBlank()) { _formState.update { it.copy(nameError = true) }; return }
+        if (price == null || price <= 0.0) { _formState.update { it.copy(priceError = true) }; return }
+        viewModelScope.launch {
+            _formState.update { it.copy(isLoading = true) }
+            try {
+                val product = buildProduct(state, price)
+                if (productId == null) productRepository.create(product) else productRepository.update(product)
+                logStockChangeIfNeeded(product)
+                _events.send(CreateProductEvent.ProductSaved)
+            } finally {
+                _formState.update { it.copy(isLoading = false) }
+            }
+        }
+    }
+
+    private fun buildProduct(state: CreateProductFormState, price: Double): Product = Product(
+        id = productId ?: 0L,
+        storeId = storeId,
+        name = state.name.trim(),
+        description = state.description.trim(),
+        price = price,
+        costPrice = state.costPrice.toDoubleOrNull() ?: 0.0,
+        stock = state.stock.toIntOrNull() ?: 0,
+        imageUrl = state.imageUrl
+    )
+
+    private suspend fun logStockChangeIfNeeded(product: Product) {
+        val prevStock = originalStock ?: return
+        if (prevStock == product.stock || productId == null) return
+        inventoryLogRepository.log(
+            InventoryLog(
+                storeId = storeId,
+                productId = productId,
+                productName = product.name,
+                previousStock = prevStock,
+                newStock = product.stock
+            )
+        )
     }
 
     private fun String.toDecimalInput(): String {
@@ -104,51 +147,4 @@ class CreateProductViewModel @Inject constructor(
     }
 
     private fun String.toIntegerInput(): String = filter { it.isDigit() }
-
-    fun onImageCaptured(uri: String) {
-        _formState.update { it.copy(imageUrl = uri) }
-    }
-
-    fun onPermissionResult(permission: String, isGranted: Boolean) {
-        if (!isGranted && !visiblePermissionDialogQueue.contains(permission)) {
-            visiblePermissionDialogQueue.add(permission)
-        }
-    }
-
-    fun dismissDialog() {
-        visiblePermissionDialogQueue.removeFirstOrNull()
-    }
-
-    fun saveProduct() {
-        val state = _formState.value
-        val price = state.price.toDoubleOrNull()
-        if (state.name.isBlank()) {
-            _formState.update { it.copy(nameError = true) }
-            return
-        }
-        if (price == null || price <= 0.0) {
-            _formState.update { it.copy(priceError = true) }
-            return
-        }
-        viewModelScope.launch {
-            _formState.update { it.copy(isLoading = true) }
-            try {
-                val product = Product(
-                    id = productId ?: 0L,
-                    storeId = storeId,
-                    name = state.name.trim(),
-                    description = state.description.trim(),
-                    price = price,
-                    costPrice = state.costPrice.toDoubleOrNull() ?: 0.0,
-                    stock = state.stock.toIntOrNull() ?: 0,
-                    imageUrl = state.imageUrl
-                )
-                if (productId == null) productRepository.create(product) else productRepository.update(product)
-                _events.send(CreateProductEvent.ProductSaved)
-            } finally {
-                _formState.update { it.copy(isLoading = false) }
-            }
-        }
-    }
 }
-

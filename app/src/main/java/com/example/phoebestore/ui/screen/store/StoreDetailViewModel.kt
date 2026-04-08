@@ -42,4 +42,11 @@ class StoreDetailViewModel @Inject constructor(
             }.collect { _uiState.value = it }
         }
     }
+
+    fun deleteStore() {
+        viewModelScope.launch {
+            storeRepository.delete(storeId)
+            _uiState.value = _uiState.value.copy(deleted = true)
+        }
+    }
 }

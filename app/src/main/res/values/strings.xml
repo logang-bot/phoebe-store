@@ -62,9 +62,21 @@
     <string name="store_detail_edit_button">Edit store</string>
     <string name="store_detail_products_button">Products</string>
     <string name="store_detail_sales_button">Sales</string>
+    <string name="store_detail_inventory_history_button">Inventory History</string>
+    <string name="store_detail_delete_button">Delete store</string>
+    <string name="store_detail_delete_dialog_title">Delete \"%s\"?</string>
+    <string name="store_detail_delete_dialog_body">This will permanently delete all products, sales, and inventory records for this store. Type the store name to confirm.</string>
+    <string name="store_detail_delete_dialog_name_label">Store name</string>
+    <string name="store_detail_delete_dialog_confirm">Delete</string>
+    <string name="store_detail_delete_dialog_cancel">Cancel</string>
     <string name="store_detail_analytics_title">Analytics</string>
     <string name="store_detail_analytics_coming_soon">Charts and analytics coming soon</string>
     <string name="store_detail_create_sale_button">Create sale</string>
+
+    <!-- Inventory History Screen -->
+    <string name="inventory_history_title">Inventory History</string>
+    <string name="inventory_history_empty_title">No changes recorded</string>
+    <string name="inventory_history_empty_subtitle">Stock modifications will appear here once you update a product\'s inventory.</string>
 
     <!-- Sales List Screen -->
     <string name="sales_list_title">Sales</string>
@@ -79,6 +91,19 @@
 
     <!-- Sales Report Screen -->
     <string name="sales_report_title">Sales report</string>
+    <string name="sales_report_period">%1$s – %2$s</string>
+    <string name="sales_report_filter_all_products">All products</string>
+    <string name="sales_report_filter_product">Product: %s</string>
+    <string name="sales_report_inventory_title">Inventory overview</string>
+    <string name="sales_report_total_revenue_label">Total revenue</string>
+    <string name="sales_report_total_profit_label">Total profit</string>
+    <string name="sales_report_no_data">No sales found for this period</string>
+    <string name="sales_report_revenue_over_time_title">Revenue over time</string>
+    <string name="sales_report_profit_outcome_title">Profit outcome distribution</string>
+    <string name="sales_report_outcome_normal">Normal profit</string>
+    <string name="sales_report_outcome_extra">Extra profit</string>
+    <string name="sales_report_outcome_smaller">Smaller profit</string>
+    <string name="sales_report_outcome_loss">Loss</string>
 
     <!-- Common -->
     <string name="navigate_back">Back</string>

@@ -15,10 +15,12 @@ import com.example.phoebestore.presentation.screens.ProductListScreen
 import com.example.phoebestore.presentation.screens.RecordSaleScreen
 import com.example.phoebestore.presentation.screens.SaleDetailScreen
 import com.example.phoebestore.presentation.screens.SalesListScreen
+import com.example.phoebestore.presentation.screens.InventoryHistoryScreen
 import com.example.phoebestore.presentation.screens.SalesReportScreen
 import com.example.phoebestore.presentation.screens.StoreDetailScreen
 import com.example.phoebestore.presentation.screens.StoreListScreen
 import com.example.phoebestore.ui.screen.home.HomeScreen
+import com.example.phoebestore.ui.screen.product.InventoryHistoryScreen
 import com.example.phoebestore.ui.screen.product.CreateProductScreen
 import com.example.phoebestore.ui.screen.product.ProductListScreen
 import com.example.phoebestore.ui.screen.sale.RecordSaleScreen
@@ -80,9 +82,13 @@ fun AppNavigation(
                 onNavigateToSalesList = { storeId ->
                     navController.navigate(SalesListScreen(storeId))
                 },
+                onNavigateToInventoryHistory = { storeId ->
+                    navController.navigate(InventoryHistoryScreen(storeId))
+                },
                 onNavigateToCreateSale = {
                     navController.navigate(RecordSaleScreen(route.storeId))
-                }
+                },
+                onDeleteStore = { navController.popBackStack() }
             )
         }
 
@@ -95,7 +101,7 @@ fun AppNavigation(
                     navController.navigate(SaleDetailScreen(saleId))
                 },
                 onNavigateToReport = { fromDate, toDate, productId ->
-                    navController.navigate(SalesReportScreen(fromDate, toDate, productId))
+                    navController.navigate(SalesReportScreen(route.storeId, fromDate, toDate, productId))
                 }
             )
         }
@@ -150,14 +156,12 @@ fun AppNavigation(
             )
         }
 
-        composable<SalesReportScreen> { backStackEntry ->
-            val route = backStackEntry.toRoute<SalesReportScreen>()
-            SalesReportScreen(
-                fromDate = route.fromDate,
-                toDate = route.toDate,
-                productId = route.productId,
-                onNavigateBack = { navController.popBackStack() }
-            )
+        composable<SalesReportScreen> {
+            SalesReportScreen(onNavigateBack = { navController.popBackStack() })
+        }
+
+        composable<InventoryHistoryScreen> {
+            InventoryHistoryScreen(onNavigateBack = { navController.popBackStack() })
         }
     }
 }

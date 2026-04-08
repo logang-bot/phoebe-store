@@ -1,4 +1,4 @@
-package com.example.phoebestore.ui.screen.sale
+package com.example.phoebestore.ui.common
 
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -69,37 +69,25 @@ fun ProductDropdown(
             if (showSearchOption) {
                 DropdownMenuItem(
                     text = { Text(stringResource(R.string.record_sale_search_product)) },
-                    onClick = {
-                        onSearchSelected()
-                        expanded = false
-                    }
+                    onClick = { onSearchSelected(); expanded = false }
                 )
             }
             if (showCustomOption) {
                 DropdownMenuItem(
                     text = { Text(stringResource(R.string.record_sale_custom_product)) },
-                    onClick = {
-                        onCustomSelected()
-                        expanded = false
-                    }
+                    onClick = { onCustomSelected(); expanded = false }
                 )
             }
             if (allProductsLabel != null) {
                 DropdownMenuItem(
                     text = { Text(allProductsLabel) },
-                    onClick = {
-                        onProductSelected(null)
-                        expanded = false
-                    }
+                    onClick = { onProductSelected(null); expanded = false }
                 )
             }
             products.forEach { product ->
                 DropdownMenuItem(
                     text = { Text(product.name) },
-                    onClick = {
-                        onProductSelected(product)
-                        expanded = false
-                    }
+                    onClick = { onProductSelected(product); expanded = false }
                 )
             }
         }
@@ -115,15 +103,7 @@ private val previewProducts = listOf(
 @Composable
 private fun ProductDropdownLightPreview() {
     PhoebeStoreTheme {
-        ProductDropdown(
-            products = previewProducts,
-            selectedProduct = previewProducts.first(),
-            isCustomSelected = false,
-            isSearchSelected = false,
-            onProductSelected = {},
-            onCustomSelected = {},
-            onSearchSelected = {}
-        )
+        ProductDropdown(products = previewProducts, selectedProduct = previewProducts.first(), onProductSelected = {})
     }
 }
 
@@ -131,29 +111,6 @@ private fun ProductDropdownLightPreview() {
 @Composable
 private fun ProductDropdownDarkPreview() {
     PhoebeStoreTheme {
-        ProductDropdown(
-            products = previewProducts,
-            selectedProduct = previewProducts.first(),
-            isCustomSelected = false,
-            isSearchSelected = false,
-            onProductSelected = {},
-            onCustomSelected = {},
-            onSearchSelected = {}
-        )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun ProductDropdownFilterPreview() {
-    PhoebeStoreTheme {
-        ProductDropdown(
-            products = previewProducts,
-            selectedProduct = null,
-            onProductSelected = {},
-            allProductsLabel = "All products",
-            showCustomOption = false,
-            showSearchOption = false
-        )
+        ProductDropdown(products = previewProducts, selectedProduct = previewProducts.first(), onProductSelected = {})
     }
 }

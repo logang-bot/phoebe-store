@@ -3,12 +3,15 @@ package com.example.phoebestore.di
 import android.content.Context
 import androidx.room.Room
 import com.example.phoebestore.data.local.AppDatabase
+import com.example.phoebestore.data.local.dao.InventoryLogDao
 import com.example.phoebestore.data.local.dao.ProductDao
 import com.example.phoebestore.data.local.dao.SaleDao
 import com.example.phoebestore.data.local.dao.StoreDao
+import com.example.phoebestore.data.repository.impl.InventoryLogRepositoryImpl
 import com.example.phoebestore.data.repository.impl.ProductRepositoryImpl
 import com.example.phoebestore.data.repository.impl.SaleRepositoryImpl
 import com.example.phoebestore.data.repository.impl.StoreRepositoryImpl
+import com.example.phoebestore.domain.repository.InventoryLogRepository
 import com.example.phoebestore.domain.repository.ProductRepository
 import com.example.phoebestore.domain.repository.SaleRepository
 import com.example.phoebestore.domain.repository.StoreRepository
@@ -39,6 +42,9 @@ object DatabaseModule {
 
     @Provides
     fun provideSaleDao(db: AppDatabase): SaleDao = db.saleDao()
+
+    @Provides
+    fun provideInventoryLogDao(db: AppDatabase): InventoryLogDao = db.inventoryLogDao()
 }
 
 @Module
@@ -53,4 +59,7 @@ abstract class RepositoryModule {
 
     @Binds
     abstract fun bindSaleRepository(impl: SaleRepositoryImpl): SaleRepository
+
+    @Binds
+    abstract fun bindInventoryLogRepository(impl: InventoryLogRepositoryImpl): InventoryLogRepository
 }
