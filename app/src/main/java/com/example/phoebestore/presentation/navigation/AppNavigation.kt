@@ -16,6 +16,7 @@ import com.example.phoebestore.presentation.screens.RecordSaleScreen
 import com.example.phoebestore.presentation.screens.SaleDetailScreen
 import com.example.phoebestore.presentation.screens.SalesListScreen
 import com.example.phoebestore.presentation.screens.InventoryHistoryScreen
+import com.example.phoebestore.presentation.screens.CreditSalesListScreen
 import com.example.phoebestore.presentation.screens.SalesReportScreen
 import com.example.phoebestore.presentation.screens.StoreDetailScreen
 import com.example.phoebestore.presentation.screens.StoreListScreen
@@ -26,6 +27,7 @@ import com.example.phoebestore.ui.screen.product.ProductListScreen
 import com.example.phoebestore.ui.screen.sale.RecordSaleScreen
 import com.example.phoebestore.ui.screen.sale.SaleDetailScreen
 import com.example.phoebestore.ui.screen.sale.SalesListScreen
+import com.example.phoebestore.ui.screen.sale.CreditSalesListScreen
 import com.example.phoebestore.ui.screen.sale.SalesReportScreen
 import com.example.phoebestore.ui.screen.store.CreateStoreScreen
 import com.example.phoebestore.ui.screen.store.StoreDetailScreen
@@ -84,6 +86,9 @@ fun AppNavigation(
                 },
                 onNavigateToInventoryHistory = { storeId ->
                     navController.navigate(InventoryHistoryScreen(storeId))
+                },
+                onNavigateToCreditSales = { storeId ->
+                    navController.navigate(CreditSalesListScreen(storeId))
                 },
                 onNavigateToCreateSale = {
                     navController.navigate(RecordSaleScreen(route.storeId))
@@ -154,6 +159,10 @@ fun AppNavigation(
                 onSaleRecorded = { navController.popBackStack() },
                 onNavigateBack = { navController.popBackStack() }
             )
+        }
+
+        composable<CreditSalesListScreen> {
+            CreditSalesListScreen(onNavigateBack = { navController.popBackStack() })
         }
 
         composable<SalesReportScreen> {

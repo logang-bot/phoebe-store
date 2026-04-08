@@ -77,6 +77,7 @@ canSave = (selectedProduct != null OR productName is not blank)
        AND quantity > 0
        AND unitPrice > 0
        AND quantity does NOT exceed selectedProduct.stock
+       AND (isOnCredit = false OR creditPersonName is not blank)
 ```
 
 The Save button in the bottom bar is disabled when `canSave = false`.
@@ -91,13 +92,27 @@ When a catalogue product is selected, any change to `unitPrice` or `unitCost` is
 
 ---
 
+## On Credit
+
+The user can mark a sale as on credit by checking the "On credit" checkbox at the bottom of the form. When checked:
+
+- `isOnCredit` is set to `true`.
+- A "Customer name" `OutlinedTextField` appears, and `canSave` requires a non-blank value in this field.
+- The credit person name is stored in `creditPersonName`.
+
+On save, `onCredit = true` and `creditPersonName` are passed into the `Sale` domain object. Stock is still decremented — credit only affects payment status, not inventory.
+
+When the sale is paid later, `CreditSalesListViewModel.markAsDone()` flips `onCredit = false` via `saleRepository.update()`.
+
+---
+
 ## Confirm Dialog
 
 Tapping Save does **not** immediately persist the sale. Instead:
 
 1. `onSaveClicked()` sets `showConfirmDialog = true`.
 2. `RecordSaleScreen` renders `SaleConfirmDialog` on top of the form.
-3. The dialog shows a read-only summary (product name, quantity, unit price, unit cost if non-zero, total, date, notes if non-blank).
+3. The dialog shows a read-only summary (product name, quantity, unit price, unit cost if non-zero, total, date, notes if non-blank, and customer name if on credit).
 4. **Confirm** → `confirmSave()` is called.
 5. **Cancel / dismiss** → `onDismissConfirmDialog()` sets `showConfirmDialog = false` and returns the user to the form.
 
@@ -111,15 +126,18 @@ Tapping Save does **not** immediately persist the sale. Instead:
 showConfirmDialog = false
 isSaving = true
     ↓
-RecordSaleUseCase(sale, selectedProduct)
+RecordSaleUseCase(sale, selectedProduct, isCustomProduct)
     ├─ saleRepository.create(sale)            → inserts SaleEntity into Room
-    └─ if selectedProduct != null:
-           productRepository.update(
-               product.copy(stock = (product.stock - quantity).coerceAtLeast(0))
-           )                                  → decrements stock (floor 0)
+    │      (includes onCredit and creditPersonName fields)
+    ├─ if selectedProduct != null:
+    │      productRepository.update(
+    │          product.copy(stock = (product.stock - quantity).coerceAtLeast(0))
+    │      )                                  → decrements stock (floor 0)
+    └─ else if isCustomProduct and productName is not blank:
+           productRepository.create(Product(…)) → creates a new catalogue entry
     ↓
 isSaving = false
-isSuccess = true
+saleResult = SaleResult.Success(…) or SaleResult.Error
 ```
 
 `SaleType` stored in the record:
@@ -128,13 +146,17 @@ isSuccess = true
 
 `profitOutcome` (`NORMAL_PROFIT`, `EXTRA_PROFIT`, `SMALLER_PROFIT`, `LOSS`) is also persisted in the sale record for analytics purposes.
 
+`onCredit` and `creditPersonName` are stored verbatim from `formState`. Stock is always decremented regardless of credit status.
+
 While `isSaving = true` the Save button shows a `CircularProgressIndicator` (via `LoadingButton`) and is disabled.
 
 ---
 
 ## Navigation After Save
 
-A `LaunchedEffect` on `RecordSaleScreen` observes `formState.isSuccess`. When it becomes `true`, `onSaleRecorded()` is called, which invokes `navController.popBackStack()`. The previous screen (`HomeScreen` or `StoreDetailScreen`) becomes visible again.
+After `confirmSave()` completes, `saleResult` is set to `SaleResult.Success` or `SaleResult.Error`. `RecordSaleScreen` renders `SaleResultDialog` showing the outcome. When the dialog is dismissed:
+- On success → `onSaleRecorded()` is called → `navController.popBackStack()`. The previous screen becomes visible.
+- On error → the dialog closes, the user remains on the form to retry.
 
 ---
 
@@ -145,6 +167,7 @@ A `LaunchedEffect` on `RecordSaleScreen` observes `formState.isSuccess`. When it
 | `isSearchExpanded` | `onSearchSelected()` | `onProductSelected()`, `onCustomProductSelected()`, `onSearchConfirmed()` |
 | `showConfirmDialog` | `onSaveClicked()` | `onDismissConfirmDialog()`, start of `confirmSave()` |
 | `isSaving` | Start of `confirmSave()` coroutine | After `RecordSaleUseCase` completes |
-| `isSuccess` | After `RecordSaleUseCase` completes | Never reset — triggers one-shot navigation |
 | `isPriceModified` | `onUnitPriceChange()` when price ≠ catalogue | `onProductSelected()`, `onCustomProductSelected()`, `onSearchSelected()` |
 | `isCostModified` | `onUnitCostChange()` when cost ≠ catalogue | `onProductSelected()`, `onCustomProductSelected()`, `onSearchSelected()` |
+| `isOnCredit` | `onOnCreditChange(true)` | `onOnCreditChange(false)` |
+| `creditPersonNameError` | Would be set on save validation | `onCreditPersonNameChange()`, `onOnCreditChange(false)` |

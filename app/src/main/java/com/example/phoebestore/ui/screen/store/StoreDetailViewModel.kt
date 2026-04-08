@@ -3,6 +3,7 @@ package com.example.phoebestore.ui.screen.store
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.phoebestore.domain.repository.ProductRepository
 import com.example.phoebestore.domain.repository.SaleRepository
 import com.example.phoebestore.domain.repository.StoreRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -18,6 +19,7 @@ import javax.inject.Inject
 class StoreDetailViewModel @Inject constructor(
     private val storeRepository: StoreRepository,
     private val saleRepository: SaleRepository,
+    private val productRepository: ProductRepository,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -31,13 +33,18 @@ class StoreDetailViewModel @Inject constructor(
             storeRepository.markAccessed(storeId)
             combine(
                 storeRepository.getAll().map { list -> list.find { it.id == storeId } },
-                saleRepository.getByStore(storeId)
-            ) { store, sales ->
+                saleRepository.getByStore(storeId),
+                productRepository.getByStore(storeId)
+            ) { store, sales, products ->
+                val lowestStock = products.filter { it.stock <= 5 }.sortedBy { it.stock }.take(3)
                 StoreDetailUiState(
                     store = store,
                     totalSales = sales.size,
                     formattedRevenue = "%.2f".format(sales.sumOf { it.totalAmount }),
-                    formattedProfit = "%.2f".format(sales.sumOf { it.quantity * (it.unitPrice - it.unitCost) })
+                    formattedProfit = "%.2f".format(sales.sumOf { it.quantity * (it.unitPrice - it.unitCost) }),
+                    totalStock = products.sumOf { it.stock },
+                    lowStockAlerts = lowestStock.takeIf { it.isNotEmpty() }
+                                         ?.joinToString(", ") { it.name }
                 )
             }.collect { _uiState.value = it }
         }

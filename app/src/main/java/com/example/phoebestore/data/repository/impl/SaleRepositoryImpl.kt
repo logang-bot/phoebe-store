@@ -16,11 +16,17 @@ class SaleRepositoryImpl @Inject constructor(
     override suspend fun create(sale: Sale): Long =
         dao.insert(sale.toEntity())
 
+    override suspend fun update(sale: Sale) =
+        dao.update(sale.toEntity())
+
     override suspend fun getById(id: Long): Sale? =
         dao.getById(id)?.toDomain()
 
     override fun getByStore(storeId: Long): Flow<List<Sale>> =
         dao.getByStore(storeId).map { list -> list.map { it.toDomain() } }
+
+    override fun getOnCreditByStore(storeId: Long): Flow<List<Sale>> =
+        dao.getOnCreditByStore(storeId).map { list -> list.map { it.toDomain() } }
 
     override suspend fun delete(id: Long) =
         dao.deleteById(id)

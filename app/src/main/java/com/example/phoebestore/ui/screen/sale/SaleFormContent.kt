@@ -10,12 +10,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -42,7 +44,9 @@ internal fun SaleFormContent(
     onUnitPriceFocusLost: () -> Unit,
     onUnitCostFocusLost: () -> Unit,
     onSoldAtChange: (Long) -> Unit,
-    onNotesChange: (String) -> Unit
+    onNotesChange: (String) -> Unit,
+    onOnCreditChange: (Boolean) -> Unit,
+    onCreditPersonNameChange: (String) -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -165,6 +169,51 @@ internal fun SaleFormContent(
             maxLines = 5,
             modifier = Modifier.fillMaxWidth()
         )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        OnCreditSection(
+            isOnCredit = formState.isOnCredit,
+            creditPersonName = formState.creditPersonName,
+            creditPersonNameError = formState.creditPersonNameError,
+            onOnCreditChange = onOnCreditChange,
+            onCreditPersonNameChange = onCreditPersonNameChange
+        )
+    }
+}
+
+@Composable
+private fun OnCreditSection(
+    isOnCredit: Boolean,
+    creditPersonName: String,
+    creditPersonNameError: Boolean,
+    onOnCreditChange: (Boolean) -> Unit,
+    onCreditPersonNameChange: (String) -> Unit
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Checkbox(checked = isOnCredit, onCheckedChange = onOnCreditChange)
+        Text(
+            text = stringResource(R.string.record_sale_on_credit_label),
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier.weight(1f)
+        )
+    }
+    if (isOnCredit) {
+        Spacer(modifier = Modifier.height(8.dp))
+        OutlinedTextField(
+            value = creditPersonName,
+            onValueChange = onCreditPersonNameChange,
+            label = { Text(stringResource(R.string.record_sale_credit_person_label)) },
+            isError = creditPersonNameError,
+            supportingText = if (creditPersonNameError) {
+                { Text(stringResource(R.string.record_sale_credit_person_required_error)) }
+            } else null,
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
+        )
     }
 }
 
@@ -203,7 +252,9 @@ private fun SaleFormContentPreview() {
             onUnitPriceFocusLost = {},
             onUnitCostFocusLost = {},
             onSoldAtChange = {},
-            onNotesChange = {}
+            onNotesChange = {},
+            onOnCreditChange = {},
+            onCreditPersonNameChange = {}
         )
     }
 }

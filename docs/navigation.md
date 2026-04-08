@@ -16,6 +16,11 @@ Navigation uses Jetpack Navigation Compose with **type-safe serializable routes*
 | `CreateStoreScreen` | `data class` | `storeId: Long? = null` (null = create mode) |
 | `CreateProductScreen` | `data class` | `storeId: Long`, `productId: Long? = null` (null = create mode) |
 | `RecordSaleScreen` | `data class` | `storeId: Long` |
+| `SalesListScreen` | `data class` | `storeId: Long` |
+| `SaleDetailScreen` | `data class` | `saleId: Long` |
+| `SalesReportScreen` | `data class` | `storeId: Long`, `fromDate: Long`, `toDate: Long`, `productId: Long? = null` |
+| `InventoryHistoryScreen` | `data class` | `storeId: Long` |
+| `CreditSalesListScreen` | `data class` | `storeId: Long` |
 
 ---
 
@@ -28,13 +33,18 @@ HomeScreen
     │       └─► StoreDetailScreen(storeId)
     │               ├─► CreateStoreScreen(storeId)          (edit store)
     │               ├─► ProductListScreen(storeId)
-    │               │       ├─► CreateProductScreen(storeId)         (create product)
-    │               │       └─► CreateProductScreen(storeId, productId)  (edit product)
+    │               │       ├─► CreateProductScreen(storeId)           (create product)
+    │               │       └─► CreateProductScreen(storeId, productId)(edit product)
+    │               ├─► SalesListScreen(storeId)
+    │               │       ├─► SaleDetailScreen(saleId)
+    │               │       └─► SalesReportScreen(storeId, from, to, productId?)
+    │               ├─► CreditSalesListScreen(storeId)
+    │               ├─► InventoryHistoryScreen(storeId)
     │               └─► RecordSaleScreen(storeId)           (log a sale)
     └─►(tap last store card)─► StoreDetailScreen(storeId)
 ```
 
-All leaf actions (`onStoreSaved`, `onProductSaved`, `onSaleRecorded`) call `popBackStack()` to return to the previous screen.
+All leaf actions (`onStoreSaved`, `onProductSaved`, `onSaleRecorded`, `onNavigateBack`) call `popBackStack()` to return to the previous screen.
 
 ## Transitions
 
@@ -55,14 +65,20 @@ Configured globally on the `NavHost` via `enterTransition`, `exitTransition`, `p
 |---|---|
 | `HomeScreen` | Welcome overview with a summary of total sales and profits across all stores |
 | `StoreListScreen` | Lists all stores created by the user; entry point to create a new store |
-| `StoreDetailScreen` | Shows a single store's summary: products, inventory levels, sales history |
+| `StoreDetailScreen` | Shows a single store's summary: products, inventory levels, and navigation hub to all store sub-features |
 | `CreateStoreScreen` | Form to create or edit a store (determined by whether `storeId` is null) |
 | `CreateProductScreen` | Form to create or edit a product within a store (determined by whether `productId` is null) |
-| `RecordSaleScreen` | Form to log a new sale against a store's products |
+| `RecordSaleScreen` | Form to log a new sale against a store's products, with optional on-credit marking |
+| `SalesListScreen` | Paginated, date-filtered list of all sales for a store; credit sales are labelled with a badge |
+| `SaleDetailScreen` | Read-only detail view of a single sale record |
+| `SalesReportScreen` | Aggregated analytics report for a date range, including an on-credit breakdown note |
+| `InventoryHistoryScreen` | Chronological log of all stock changes for a store |
+| `CreditSalesListScreen` | Date-filtered 2-column grid of pending credit sales; tap an item to mark it as paid |
 
 ---
 
 ## Back Stack Behaviour
 
 - **Create/Edit screens** (`CreateStoreScreen`, `CreateProductScreen`, `RecordSaleScreen`): call `popBackStack()` on save, returning to the previous screen.
+- **List/detail screens** (`SalesListScreen`, `SaleDetailScreen`, `SalesReportScreen`, `InventoryHistoryScreen`, `CreditSalesListScreen`): call `popBackStack()` via the top-bar back arrow.
 - **No screens are popped inclusively** at this stage; all destinations remain navigable via the system back button.

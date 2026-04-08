@@ -18,6 +18,8 @@ fun SaleEntity.toDomain(): Sale = Sale(
     saleType = runCatching { SaleType.valueOf(saleType) }.getOrDefault(SaleType.STANDARD),
     profitOutcome = runCatching { ProfitOutcome.valueOf(profitOutcome) }.getOrDefault(ProfitOutcome.NORMAL_PROFIT),
     notes = notes,
+    onCredit = onCredit,
+    creditPersonName = creditPersonName,
     soldAt = soldAt,
     createdAt = createdAt
 )
@@ -50,6 +52,8 @@ fun Sale.toEntity(): SaleEntity = SaleEntity(
     saleType = saleType.name,
     profitOutcome = profitOutcome.name,
     notes = notes,
+    onCredit = onCredit,
+    creditPersonName = creditPersonName,
     soldAt = soldAt,
     createdAt = createdAt
 )

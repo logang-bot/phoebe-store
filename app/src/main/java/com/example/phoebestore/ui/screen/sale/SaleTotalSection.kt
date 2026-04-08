@@ -35,11 +35,9 @@ fun SaleTotalSection(
     ) {
         Column {
             Spacer(modifier = Modifier.height(16.dp))
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-            Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = "${stringResource(R.string.record_sale_total_label)}: $currencyName $formattedTotalAmount",
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onSurface
             )

@@ -29,6 +29,8 @@ fun SaleConfirmDialog(
     formattedTotalAmount: String,
     formattedSoldAt: String,
     notes: String,
+    isOnCredit: Boolean = false,
+    creditPersonName: String = "",
     onConfirm: () -> Unit,
     onDismiss: () -> Unit
 ) {
@@ -80,6 +82,12 @@ fun SaleConfirmDialog(
                     ConfirmRow(
                         label = stringResource(R.string.record_sale_notes_label),
                         value = notes
+                    )
+                }
+                if (isOnCredit) {
+                    ConfirmRow(
+                        label = stringResource(R.string.record_sale_on_credit_confirm_label),
+                        value = creditPersonName
                     )
                 }
             }

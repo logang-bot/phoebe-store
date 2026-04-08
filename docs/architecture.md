@@ -93,26 +93,30 @@ app/src/main/java/com/example/phoebestore/
 │   │   ├── Currency.kt
 │   │   ├── Store.kt
 │   │   ├── Product.kt
-│   │   ├── Sale.kt
+│   │   ├── Sale.kt                     ← onCredit + creditPersonName fields
 │   │   ├── SaleType.kt
-│   │   └── ProfitOutcome.kt
+│   │   ├── ProfitOutcome.kt
+│   │   └── InventoryLog.kt
 │   ├── repository/
 │   │   ├── StoreRepository.kt
 │   │   ├── ProductRepository.kt
-│   │   └── SaleRepository.kt
+│   │   ├── SaleRepository.kt           ← update() + getOnCreditByStore()
+│   │   └── InventoryLogRepository.kt
 │   └── usecase/
 │       └── RecordSaleUseCase.kt
 ├── data/
 │   ├── local/
-│   │   ├── AppDatabase.kt              ← version 5
+│   │   ├── AppDatabase.kt              ← version 8
 │   │   ├── entity/
 │   │   │   ├── StoreEntity.kt
 │   │   │   ├── ProductEntity.kt
-│   │   │   └── SaleEntity.kt
+│   │   │   ├── SaleEntity.kt           ← onCredit + creditPersonName columns
+│   │   │   └── InventoryLogEntity.kt
 │   │   └── dao/
 │   │       ├── StoreDao.kt
 │   │       ├── ProductDao.kt
-│   │       └── SaleDao.kt
+│   │       ├── SaleDao.kt              ← update() + getOnCreditByStore() queries
+│   │       └── InventoryLogDao.kt
 │   ├── remote/
 │   │   └── dto/
 │   │       ├── StoreDto.kt
@@ -121,22 +125,28 @@ app/src/main/java/com/example/phoebestore/
 │   ├── mapper/
 │   │   ├── StoreMapper.kt
 │   │   ├── ProductMapper.kt
-│   │   └── SaleMapper.kt
+│   │   ├── SaleMapper.kt               ← maps onCredit + creditPersonName
+│   │   └── InventoryLogMapper.kt
 │   └── repository/
 │       └── impl/
 │           ├── StoreRepositoryImpl.kt
 │           ├── ProductRepositoryImpl.kt
-│           └── SaleRepositoryImpl.kt
+│           ├── SaleRepositoryImpl.kt
+│           └── InventoryLogRepositoryImpl.kt
 ├── presentation/
 │   ├── navigation/
 │   │   └── AppNavigation.kt
 │   └── screens/
-│       └── AppRoutes.kt
+│       └── AppRoutes.kt                ← CreditSalesListScreen route added
 ├── ui/
 │   ├── common/
 │   │   ├── ActivityExtensions.kt
+│   │   ├── DateRangeFilter.kt
+│   │   ├── LoadingButton.kt
 │   │   ├── PermissionDialog.kt
-│   │   └── StoreCard.kt               ← shared card (HomeScreen + StoreListScreen)
+│   │   ├── ProductDropdown.kt
+│   │   ├── StoreCard.kt
+│   │   └── ThemedCard.kt
 │   ├── screen/
 │   │   ├── home/
 │   │   │   ├── HomeScreen.kt
@@ -147,40 +157,51 @@ app/src/main/java/com/example/phoebestore/
 │   │   │   ├── StoreListScreen.kt
 │   │   │   ├── StoreListViewModel.kt
 │   │   │   ├── StoreListUiState.kt
-│   │   │   ├── StoreDetailScreen.kt
+│   │   │   ├── StoreDetailScreen.kt    ← "Sales on Credit" button added
 │   │   │   ├── StoreDetailViewModel.kt
 │   │   │   ├── StoreDetailUiState.kt
+│   │   │   ├── StoreDetailOverviewCard.kt
 │   │   │   ├── CreateStoreScreen.kt
 │   │   │   ├── CreateStoreViewModel.kt
-│   │   │   └── CreateStoreFormState.kt     ← FormState + CreateStoreEvent
+│   │   │   └── CreateStoreFormState.kt
 │   │   ├── product/
 │   │   │   ├── ProductListScreen.kt
 │   │   │   ├── ProductListViewModel.kt
 │   │   │   ├── ProductListUiState.kt
 │   │   │   ├── ProductCard.kt
 │   │   │   ├── UpdateStockDialog.kt
+│   │   │   ├── InventoryHistoryScreen.kt
 │   │   │   ├── CreateProductScreen.kt
 │   │   │   ├── CreateProductViewModel.kt
-│   │   │   └── CreateProductFormState.kt  ← FormState + CreateProductEvent
+│   │   │   └── CreateProductFormState.kt
 │   │   └── sale/
 │   │       ├── RecordSaleScreen.kt
 │   │       ├── RecordSaleViewModel.kt
-│   │       ├── RecordSaleFormState.kt
-│   │       ├── SaleFormContent.kt
-│   │       ├── ProductDropdown.kt
+│   │       ├── RecordSaleFormState.kt  ← isOnCredit + creditPersonName added
+│   │       ├── SaleFormContent.kt      ← OnCreditSection added
 │   │       ├── SearchTopBar.kt
 │   │       ├── SearchResultsContent.kt
-│   │       ├── SaleConfirmDialog.kt
+│   │       ├── SaleConfirmDialog.kt    ← shows credit row when applicable
+│   │       ├── SaleResult.kt
+│   │       ├── SaleResultDialog.kt
 │   │       ├── SalePriceRow.kt
 │   │       ├── SaleTotalSection.kt
 │   │       ├── SaleModificationInfo.kt
 │   │       ├── DateField.kt
-│   │       ├── SalesListScreen.kt
+│   │       ├── SalesListScreen.kt      ← CreditBadge chip added
 │   │       ├── SalesListViewModel.kt
-│   │       ├── SalesListUiState.kt
+│   │       ├── SalesListUiState.kt     ← isOnCredit field in SaleDisplayItem
 │   │       ├── SaleDetailScreen.kt
 │   │       ├── SaleDetailViewModel.kt
-│   │       └── SaleDetailUiState.kt
+│   │       ├── SaleDetailUiState.kt
+│   │       ├── SalesReportScreen.kt    ← CreditSalesNote in TotalsSection
+│   │       ├── SalesReportViewModel.kt ← computeCreditTotals()
+│   │       ├── SalesReportUiState.kt   ← creditSalesCount + credit totals
+│   │       ├── SalesReportCharts.kt
+│   │       ├── CreditSalesListScreen.kt    ← new
+│   │       ├── CreditSalesListViewModel.kt ← new
+│   │       ├── CreditSalesListUiState.kt   ← new
+│   │       └── CreditSaleGridItem.kt       ← new
 │   └── theme/
 │       ├── Color.kt
 │       ├── Theme.kt
@@ -200,6 +221,6 @@ app/src/main/java/com/example/phoebestore/
 3. `CreateStoreViewModel.saveStore()` validates the form, then calls `StoreRepository.create(store)`.
 4. `StoreRepositoryImpl` maps the domain `Store` → `StoreEntity` via `StoreMapper`, then calls `StoreDao.insert()`.
 5. Room inserts the row and returns the new ID.
-6. The ViewModel emits a `StoreSaved` event via a `Channel`.
-7. The screen collects the event and calls `onStoreSaved()`, which pops the back stack.
+6. The ViewModel emits a `CreateStoreEvent.StoreSaved` event via a `Channel`.
+7. The screen collects the event in a `LaunchedEffect` and calls `onStoreSaved()`, which pops the back stack.
 8. `StoreListScreen` is now visible. Its `StateFlow<StoreListUiState>` (backed by `StoreDao.getAll()`) automatically emits the updated list, and the new `StoreCard` appears with a `animateItem()` fade-in.

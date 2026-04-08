@@ -56,6 +56,7 @@
     <string name="home_overview_profit">Profit</string>
     <string name="home_overview_products_in_stock">Products in stock</string>
     <string name="home_overview_low_stock_alerts">Low stock alerts</string>
+    <string name="home_overview_low_stock_none">None</string>
     <string name="home_overview_placeholder_value">—</string>
 
     <!-- Store Detail Screen -->
@@ -72,6 +73,7 @@
     <string name="store_detail_analytics_title">Analytics</string>
     <string name="store_detail_analytics_coming_soon">Charts and analytics coming soon</string>
     <string name="store_detail_create_sale_button">Create sale</string>
+    <string name="store_detail_credit_sales_button">Sales on Credit</string>
 
     <!-- Inventory History Screen -->
     <string name="inventory_history_title">Inventory History</string>
@@ -96,8 +98,12 @@
     <string name="sales_report_filter_product">Product: %s</string>
     <string name="sales_report_inventory_title">Inventory overview</string>
     <string name="sales_report_total_revenue_label">Total revenue</string>
+    <string name="sales_report_total_credit_revenue_label">Total credit revenue</string>
     <string name="sales_report_total_profit_label">Total profit</string>
+    <string name="sales_report_total_credit_profit_label">Total credit profit</string>
     <string name="sales_report_no_data">No sales found for this period</string>
+    <string name="sales_report_credit_note">%1$d on credit · revenue %2$s · profit %3$s pending</string>
+    <string name="sales_report_credit_note_amount">%1$d on credit</string>
     <string name="sales_report_revenue_over_time_title">Revenue over time</string>
     <string name="sales_report_profit_outcome_title">Profit outcome distribution</string>
     <string name="sales_report_outcome_normal">Normal profit</string>
@@ -112,6 +118,8 @@
     <string name="sales_list_filter_to">To</string>
     <string name="sales_list_date_ok">OK</string>
     <string name="sales_list_date_cancel">Cancel</string>
+    <string name="revenue">Revenue</string>
+    <string name="profit">Profit</string>
 
     <!-- Sale Detail Screen -->
     <string name="sale_detail_title">Sale detail</string>
@@ -169,6 +177,23 @@
     <string name="record_sale_result_error_title">Something Went Wrong</string>
     <string name="record_sale_result_error_body">An error occurred while saving the sale. Please try again.</string>
     <string name="record_sale_result_ok">OK</string>
+    <string name="record_sale_on_credit_label">On credit</string>
+    <string name="record_sale_credit_person_label">Customer name</string>
+    <string name="record_sale_credit_person_required_error">Customer name is required</string>
+    <string name="record_sale_on_credit_confirm_label">On credit (customer)</string>
+
+    <!-- Credit Sales List Screen -->
+    <string name="credit_sales_list_title">Sales on Credit</string>
+    <string name="credit_sales_list_empty_title">No pending credits</string>
+    <string name="credit_sales_list_empty_subtitle">No credit sales in this period. Adjust the date filter or all credits have been collected.</string>
+    <string name="credit_sales_customer_label">Customer: %s</string>
+    <string name="credit_sale_mark_done_dialog_title">Mark as paid?</string>
+    <string name="credit_sale_mark_done_dialog_body">This will mark %s\'s sale as collected and remove it from this list.</string>
+    <string name="credit_sale_mark_done_confirm">Mark as paid</string>
+    <string name="credit_sale_mark_done_cancel">Cancel</string>
+
+    <!-- Sale credit badge -->
+    <string name="sale_on_credit_badge">Credit</string>
 
     <!-- Product Card -->
     <string name="product_card_stock">Stock: %d</string>

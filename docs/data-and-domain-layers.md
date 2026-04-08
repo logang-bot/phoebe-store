@@ -57,12 +57,16 @@ data class Sale(
     val saleType: SaleType = SaleType.STANDARD,
     val profitOutcome: ProfitOutcome = ProfitOutcome.NORMAL_PROFIT,
     val notes: String = "",
+    val onCredit: Boolean = false,      // true when payment has not been collected yet
+    val creditPersonName: String = "",  // name of the customer who owes payment
     val soldAt: Long = System.currentTimeMillis(),
     val createdAt: Long = System.currentTimeMillis()
 )
 ```
 
 > `unitPrice` and `unitCost` are **snapshots** recorded at sale time. They may differ from the product's current `price` / `costPrice` if the user adjusts them before saving — this is tracked via `saleType` and `profitOutcome`.
+
+> When `onCredit = true` the sale has been recorded and stock has been decremented, but payment is still pending. `creditPersonName` identifies who owes the payment. Once paid, `onCredit` is set to `false` via `SaleRepository.update()` and the sale is removed from the credit sales view.
 
 ### `SaleType`
 
@@ -192,6 +196,8 @@ Table: `sales`
 | `saleType` | `String` | `"STANDARD"` or `"MODIFIED"` |
 | `profitOutcome` | `String` | `"NORMAL_PROFIT"`, `"EXTRA_PROFIT"`, `"SMALLER_PROFIT"`, or `"LOSS"` |
 | `notes` | `String` | Default `""` |
+| `onCredit` | `Boolean` | `false` by default; `true` means payment is pending |
+| `creditPersonName` | `String` | Name of the customer who owes payment; required when `onCredit = true` |
 | `soldAt` | `Long` | Unix timestamp (ms) — when the sale occurred |
 | `createdAt` | `Long` | Unix timestamp (ms) — when the record was created |
 
@@ -200,7 +206,7 @@ Table: `sales`
 ### `AppDatabase`
 
 ```kotlin
-@Database(entities = [StoreEntity::class, ProductEntity::class, SaleEntity::class], version = 5)
+@Database(entities = [StoreEntity::class, ProductEntity::class, SaleEntity::class, InventoryLogEntity::class], version = 8)
 ```
 
 `fallbackToDestructiveMigration()` is enabled — safe during development, replace with proper migrations before production.
@@ -284,7 +290,10 @@ Located in `data/remote/dto/`. Annotated with `@Serializable` (kotlinx.serializa
 | Method | Returns | Notes |
 |---|---|---|
 | `insert(sale)` | `Long` | Inserted row ID; aborts on conflict |
+| `update(sale)` | `Unit` | Full-row update (used to mark credit sales as paid) |
+| `getById(id)` | `SaleEntity?` | Suspending |
 | `getByStore(storeId)` | `Flow<List<SaleEntity>>` | Ordered by `soldAt DESC` |
+| `getOnCreditByStore(storeId)` | `Flow<List<SaleEntity>>` | Only rows where `onCredit = 1`, ordered by `soldAt DESC` |
 | `deleteById(id)` | `Unit` | |
 
 ---
@@ -322,10 +331,17 @@ interface ProductRepository {
 ```kotlin
 interface SaleRepository {
     suspend fun create(sale: Sale): Long
+    suspend fun update(sale: Sale)
+    suspend fun getById(id: Long): Sale?
     fun getByStore(storeId: Long): Flow<List<Sale>>
+    fun getOnCreditByStore(storeId: Long): Flow<List<Sale>>
     suspend fun delete(id: Long)
 }
 ```
+
+`update()` is used by `CreditSalesListViewModel` to flip `onCredit = false` when a customer pays. It performs a full-row update via Room `@Update`.
+
+`getOnCreditByStore()` returns only sales where `onCredit = true`, backed by the `getOnCreditByStore` DAO query. The result is a live `Flow` so the credit sales screen updates automatically after `update()` is called.
 
 ---
 

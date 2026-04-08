@@ -61,7 +61,8 @@ class SalesListViewModel @Inject constructor(
                 productName = sale.productName,
                 formattedDate = saleItemDateFormat.format(Date(sale.soldAt)),
                 formattedTotal = "%.2f".format(sale.totalAmount),
-                formattedQuantity = "×${sale.quantity}"
+                formattedQuantity = "×${sale.quantity}",
+                isOnCredit = sale.onCredit
             )
         }
         SalesListUiState(

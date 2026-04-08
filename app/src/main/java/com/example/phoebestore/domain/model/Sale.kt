@@ -12,6 +12,8 @@ data class Sale(
     val saleType: SaleType = SaleType.STANDARD,
     val profitOutcome: ProfitOutcome = ProfitOutcome.NORMAL_PROFIT,
     val notes: String = "",
+    val onCredit: Boolean = false,
+    val creditPersonName: String = "",
     val soldAt: Long = System.currentTimeMillis(),
     val createdAt: Long = System.currentTimeMillis()
 )

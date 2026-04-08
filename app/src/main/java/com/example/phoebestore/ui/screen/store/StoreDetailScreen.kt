@@ -46,6 +46,7 @@ fun StoreDetailScreen(
     onNavigateToProductList: (storeId: Long) -> Unit,
     onNavigateToSalesList: (storeId: Long) -> Unit,
     onNavigateToInventoryHistory: (storeId: Long) -> Unit = {},
+    onNavigateToCreditSales: (storeId: Long) -> Unit = {},
     onNavigateToCreateSale: () -> Unit = {},
     onDeleteStore: () -> Unit = {},
     viewModel: StoreDetailViewModel = hiltViewModel()
@@ -61,10 +62,13 @@ fun StoreDetailScreen(
         totalSales = uiState.totalSales,
         formattedRevenue = uiState.formattedRevenue,
         formattedProfit = uiState.formattedProfit,
+        totalStock = uiState.totalStock,
+        lowStockAlerts = uiState.lowStockAlerts,
         onNavigateToEditStore = { onNavigateToEditStore(storeId) },
         onNavigateToProductList = { onNavigateToProductList(storeId) },
         onNavigateToSalesList = { onNavigateToSalesList(storeId) },
         onNavigateToInventoryHistory = { onNavigateToInventoryHistory(storeId) },
+        onNavigateToCreditSales = { onNavigateToCreditSales(storeId) },
         onCreateSale = onNavigateToCreateSale,
         onDeleteStore = viewModel::deleteStore
     )
@@ -76,10 +80,13 @@ private fun StoreDetailScreenContent(
     totalSales: Int,
     formattedRevenue: String,
     formattedProfit: String,
+    totalStock: Int,
+    lowStockAlerts: String?,
     onNavigateToEditStore: () -> Unit,
     onNavigateToProductList: () -> Unit,
     onNavigateToSalesList: () -> Unit,
     onNavigateToInventoryHistory: () -> Unit = {},
+    onNavigateToCreditSales: () -> Unit = {},
     onCreateSale: () -> Unit = {},
     onDeleteStore: () -> Unit = {}
 ) {
@@ -166,6 +173,21 @@ private fun StoreDetailScreenContent(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
+                OutlinedButton(
+                    onClick = onNavigateToCreditSales,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(
+                        painterResource(R.drawable.ic_unpublished),
+                        contentDescription = null,
+                        modifier = Modifier.size(ButtonDefaults.IconSize)
+                    )
+                    Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
+                    Text(stringResource(R.string.store_detail_credit_sales_button))
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
                 Button(
                     onClick = onNavigateToProductList,
                     modifier = Modifier.fillMaxWidth(),
@@ -203,7 +225,9 @@ private fun StoreDetailScreenContent(
                 StoreDetailOverviewCard(
                     totalSales = totalSales,
                     formattedRevenue = formattedRevenue,
-                    formattedProfit = formattedProfit
+                    formattedProfit = formattedProfit,
+                    totalStock = totalStock,
+                    lowStockAlerts = lowStockAlerts
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -245,6 +269,8 @@ private fun StoreDetailScreenLightPreview() {
             totalSales = 12,
             formattedRevenue = "350.00",
             formattedProfit = "120.00",
+            totalStock = 84,
+            lowStockAlerts = "Lipstick, Mascara, Blush",
             onNavigateToEditStore = {},
             onNavigateToProductList = {},
             onNavigateToSalesList = {}
@@ -261,6 +287,8 @@ private fun StoreDetailScreenDarkPreview() {
             totalSales = 12,
             formattedRevenue = "350.00",
             formattedProfit = "120.00",
+            totalStock = 84,
+            lowStockAlerts = "Lipstick, Mascara, Blush",
             onNavigateToEditStore = {},
             onNavigateToProductList = {},
             onNavigateToSalesList = {}

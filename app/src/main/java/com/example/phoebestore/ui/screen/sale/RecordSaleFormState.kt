@@ -25,6 +25,8 @@ data class RecordSaleFormState(
     val profitOutcome: ProfitOutcome = ProfitOutcome.NORMAL_PROFIT,
     val profitDelta: Double = 0.0,
     val currentProfit: Double = 0.0,
+    val isOnCredit: Boolean = false,
+    val creditPersonName: String = "",
     val isSaving: Boolean = false,
     val saleResult: SaleResult? = null,
     val showConfirmDialog: Boolean = false,
@@ -32,6 +34,7 @@ data class RecordSaleFormState(
     val quantityError: Boolean = false,
     val quantityExceedsStock: Boolean = false,
     val unitPriceError: Boolean = false,
+    val creditPersonNameError: Boolean = false,
     // Derived display fields — computed by the ViewModel, never set by callers
     val formattedSoldAt: String = "",
     val formattedTotalAmount: String = "",

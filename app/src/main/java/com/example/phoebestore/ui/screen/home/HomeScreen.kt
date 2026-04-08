@@ -55,6 +55,8 @@ fun HomeScreen(
         totalSales = uiState.totalSales,
         formattedRevenue = uiState.formattedRevenue,
         formattedProfit = uiState.formattedProfit,
+        totalStock = uiState.totalStock,
+        lowStockAlerts = uiState.lowStockAlerts,
         welcomeMessage = welcomeMessage,
         onNavigateToStoreList = onNavigateToStoreList,
         onNavigateToStoreDetail = onNavigateToStoreDetail,
@@ -68,6 +70,8 @@ private fun HomeScreenContent(
     totalSales: Int,
     formattedRevenue: String,
     formattedProfit: String,
+    totalStock: Int,
+    lowStockAlerts: String?,
     welcomeMessage: String,
     onNavigateToStoreList: () -> Unit,
     onNavigateToStoreDetail: (storeId: Long) -> Unit,
@@ -156,7 +160,9 @@ private fun HomeScreenContent(
                 store = lastStore,
                 totalSales = totalSales,
                 formattedRevenue = formattedRevenue,
-                formattedProfit = formattedProfit
+                formattedProfit = formattedProfit,
+                totalStock = totalStock,
+                lowStockAlerts = lowStockAlerts
             )
         }
     }
@@ -178,6 +184,8 @@ private fun HomeScreenLightPreview() {
             totalSales = 8,
             formattedRevenue = "240.00",
             formattedProfit = "90.00",
+            totalStock = 42,
+            lowStockAlerts = "Lipstick, Mascara, Blush",
             welcomeMessage = "Welcome back!",
             onNavigateToStoreList = {},
             onNavigateToStoreDetail = { _ -> }
@@ -194,6 +202,8 @@ private fun HomeScreenDarkPreview() {
             totalSales = 8,
             formattedRevenue = "240.00",
             formattedProfit = "90.00",
+            totalStock = 42,
+            lowStockAlerts = "Lipstick, Mascara, Blush",
             welcomeMessage = "Welcome back!",
             onNavigateToStoreList = {},
             onNavigateToStoreDetail = { _ -> }
@@ -210,6 +220,8 @@ private fun HomeScreenEmptyLightPreview() {
             totalSales = 0,
             formattedRevenue = "0.00",
             formattedProfit = "0.00",
+            totalStock = 0,
+            lowStockAlerts = "—",
             welcomeMessage = "Ready to manage your stores?",
             onNavigateToStoreList = {},
             onNavigateToStoreDetail = { _ -> }
@@ -226,6 +238,8 @@ private fun HomeScreenEmptyDarkPreview() {
             totalSales = 0,
             formattedRevenue = "0.00",
             formattedProfit = "0.00",
+            totalStock = 0,
+            lowStockAlerts = "—",
             welcomeMessage = "Ready to manage your stores?",
             onNavigateToStoreList = {},
             onNavigateToStoreDetail = { _ -> }

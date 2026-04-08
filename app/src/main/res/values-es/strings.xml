@@ -57,6 +57,7 @@
     <string name="home_overview_profit">Ganancia</string>
     <string name="home_overview_products_in_stock">Productos en stock</string>
     <string name="home_overview_low_stock_alerts">Alertas de stock bajo</string>
+    <string name="home_overview_low_stock_none">Ninguno</string>
     <string name="home_overview_placeholder_value">—</string>
 
     <!-- Store Detail Screen -->
@@ -73,6 +74,7 @@
     <string name="store_detail_analytics_title">Analíticas</string>
     <string name="store_detail_analytics_coming_soon">Gráficos y analíticas próximamente</string>
     <string name="store_detail_create_sale_button">Registrar venta</string>
+    <string name="store_detail_credit_sales_button">Ventas a crédito</string>
 
     <!-- Inventory History Screen -->
     <string name="inventory_history_title">Historial de inventario</string>
@@ -97,8 +99,12 @@
     <string name="sales_report_filter_product">Producto: %s</string>
     <string name="sales_report_inventory_title">Resumen de inventario</string>
     <string name="sales_report_total_revenue_label">Total de ingresos</string>
+    <string name="sales_report_total_credit_revenue_label">Total de ingresos a crédito</string>
     <string name="sales_report_total_profit_label">Ganancia total</string>
+    <string name="sales_report_total_credit_profit_label">Ganacia total a crédito</string>
     <string name="sales_report_no_data">No se encontraron ventas en este período</string>
+    <string name="sales_report_credit_note">%1$d a crédito · ingresos %2$s · ganancia %3$s pendiente</string>
+    <string name="sales_report_credit_note_amount">%1$d a crédito</string>
     <string name="sales_report_revenue_over_time_title">Ingresos a lo largo del tiempo</string>
     <string name="sales_report_profit_outcome_title">Distribución de ganancias</string>
     <string name="sales_report_outcome_normal">Ganancia normal</string>
@@ -113,6 +119,8 @@
     <string name="sales_list_filter_to">Hasta</string>
     <string name="sales_list_date_ok">Aceptar</string>
     <string name="sales_list_date_cancel">Cancelar</string>
+    <string name="revenue">Ingresos</string>
+    <string name="profit">Ganancia</string>
 
     <!-- Sale Detail Screen -->
     <string name="sale_detail_title">Detalle de venta</string>
@@ -179,6 +187,23 @@
     <string name="record_sale_result_error_title">Algo Salió Mal</string>
     <string name="record_sale_result_error_body">Ocurrió un error al guardar la venta. Por favor, inténtalo de nuevo.</string>
     <string name="record_sale_result_ok">Aceptar</string>
+    <string name="record_sale_on_credit_label">A crédito</string>
+    <string name="record_sale_credit_person_label">Nombre del cliente</string>
+    <string name="record_sale_credit_person_required_error">El nombre del cliente es obligatorio</string>
+    <string name="record_sale_on_credit_confirm_label">A crédito (cliente)</string>
+
+    <!-- Credit Sales List Screen -->
+    <string name="credit_sales_list_title">Ventas a crédito</string>
+    <string name="credit_sales_list_empty_title">Sin créditos pendientes</string>
+    <string name="credit_sales_list_empty_subtitle">No hay ventas a crédito en este período. Ajusta el filtro de fechas o todos los créditos han sido cobrados.</string>
+    <string name="credit_sales_customer_label">Cliente: %s</string>
+    <string name="credit_sale_mark_done_dialog_title">¿Marcar como pagado?</string>
+    <string name="credit_sale_mark_done_dialog_body">Esto marcará la venta de %s como cobrada y la eliminará de esta lista.</string>
+    <string name="credit_sale_mark_done_confirm">Marcar como pagado</string>
+    <string name="credit_sale_mark_done_cancel">Cancelar</string>
+
+    <!-- Sale credit badge -->
+    <string name="sale_on_credit_badge">Crédito</string>
 
     <!-- Product Card -->
     <string name="product_card_stock">Stock: %d</string>

@@ -30,5 +30,8 @@ data class SalesReportUiState(
     val profitOutcomeBreakdown: List<ProfitOutcomeBreakdownItem> = emptyList(),
     val formattedTotalRevenue: String = "",
     val formattedTotalProfit: String = "",
+    val creditSalesCount: Int = 0,
+    val formattedCreditRevenue: String = "",
+    val formattedCreditProfit: String = "",
     val hasData: Boolean = false
 )

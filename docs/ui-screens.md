@@ -208,10 +208,14 @@ A `Box` with total height of `photoHeight + logoRadius` (240dp = 200dp photo + 4
 
 #### Body
 - Optional description text (hidden when blank).
-- `OverviewCard` — placeholder metrics (Total sales, Revenue, Profit, Products in stock, Low stock alerts) showing `—`.
-- `AnalyticsPlaceholderCard` — "Charts and analytics coming soon" copy.
-- Full-width "Products" `Button` → navigates to `ProductListScreen`.
-- Full-width "Edit store" `OutlinedButton` → navigates to `CreateStoreScreen(storeId)`.
+- Currency label.
+- **"Sales"** `Button` (secondary colour) → navigates to `SalesListScreen`.
+- **"Sales on Credit"** `OutlinedButton` → navigates to `CreditSalesListScreen`.
+- **"Products"** `Button` (tertiary colour) → navigates to `ProductListScreen`.
+- **"Inventory History"** `OutlinedButton` → navigates to `InventoryHistoryScreen`.
+- `StoreDetailOverviewCard` — live metrics: total sales count, formatted revenue, formatted profit, total stock, low-stock product names.
+- `StoreDetailAnalyticsCard` — "Charts and analytics coming soon" placeholder.
+- **"Delete store"** `OutlinedButton` (error colour) — opens `DeleteStoreDialog` for confirmation before calling `viewModel.deleteStore()`. On deletion the screen pops via `LaunchedEffect(uiState.deleted)`.
 
 ---
 
@@ -377,10 +381,13 @@ State class: `RecordSaleFormState.kt`
 | `profitOutcome` | `NORMAL_PROFIT` | Computed by `computeProfitOutcome()` — see below |
 | `profitDelta` | `0.0` | `currentProfit − standardProfit` (can be negative) |
 | `currentProfit` | `0.0` | `unitPrice − unitCost` at the current field values |
+| `isOnCredit` | `false` | `true` when the user marks this sale as on credit |
+| `creditPersonName` | `""` | Required when `isOnCredit = true` — name of the customer |
 | `showConfirmDialog` | `false` | Shows `SaleConfirmDialog` when `true` |
 | `isSaving` | `false` | Disables Save button while the coroutine runs |
-| `isSuccess` | `false` | Triggers `onSaleRecorded()` navigation when `true` |
-| `canSave` | `false` | Derived: product + quantity + price valid and stock not exceeded |
+| `saleResult` | `null` | `SaleResult.Success` or `SaleResult.Error` — drives the post-save result dialog |
+| `creditPersonNameError` | `false` | Shows supporting error text when credit name is required but blank |
+| `canSave` | `false` | Derived: product + quantity + price valid, stock not exceeded, and credit name filled if on credit |
 
 **Derived display fields** (pre-formatted strings, computed in the ViewModel):
 
@@ -437,7 +444,8 @@ Money fields also auto-format to `"%.2f"` on focus loss. The `onFocusChanged` mo
 6. `SaleModificationInfo` — animated modification info block
 7. `DateField` — date picker for the sale date
 8. Notes (`OutlinedTextField`, multiline 3–5 lines)
-9. Save `Button` in the bottom bar (disabled while saving)
+9. `OnCreditSection` — checkbox labelled "On credit"; when checked a customer-name `OutlinedTextField` appears below it (required to enable Save)
+10. Save `Button` in the bottom bar (disabled while saving)
 
 ### Child composables
 
@@ -483,9 +491,16 @@ Read-only `OutlinedTextField` displaying the selected date. Accepts `epochMillis
 Previews: light / dark (2 total).
 
 #### `SaleConfirmDialog` (`SaleConfirmDialog.kt`)
-`AlertDialog` shown when the user taps Save, before the sale is persisted. Displays a read-only summary of the pending sale using private `ConfirmRow` composables (label in `labelSmall` / `onSurfaceVariant`, value in `bodyMedium` bold). Optional rows for unit cost (hidden when `"0.00"`) and notes (hidden when blank). Confirm button calls `onConfirm`; dismiss/cancel calls `onDismiss`. All values are pre-formatted strings received from the ViewModel.
+`AlertDialog` shown when the user taps Save, before the sale is persisted. Displays a read-only summary of the pending sale using private `ConfirmRow` composables (label in `labelSmall` / `onSurfaceVariant`, value in `bodyMedium` bold). Optional rows for: unit cost (hidden when `"0.00"`), notes (hidden when blank), and on-credit customer name (shown when `isOnCredit = true`). Confirm button calls `onConfirm`; dismiss/cancel calls `onDismiss`. All values are pre-formatted strings received from the ViewModel.
 
 Previews: light / dark (2 total).
+
+#### `OnCreditSection` (inside `SaleFormContent.kt`)
+Private composable rendered at the bottom of `SaleFormContent`. Contains:
+- A `Row` with a `Checkbox` and the label "On credit".
+- When checked, an `OutlinedTextField` for the customer's name slides in below, with error state support.
+
+`onOnCreditChange(Boolean)` and `onCreditPersonNameChange(String)` delegate directly to the ViewModel. Toggling the checkbox off clears `creditPersonName` and resets the error flag.
 
 #### `SearchTopBar` (`SearchTopBar.kt`)
 Replaces the regular `TopAppBar` while search is active. Renders as a `Surface` with a `Row` containing an `OutlinedTextField` (search query, `ImeAction.Search`) and a "Close" `Button`. The text field holds a `FocusRequester` so the screen can request keyboard focus via `LaunchedEffect` as soon as search expands. Both the IME Search action and the Close button call `onSearchConfirmed()` and hide the software keyboard.
@@ -498,7 +513,163 @@ Replaces `SaleFormContent` in the content area while search is active. Scrollabl
 Previews: results list / empty state (2 total, light only).
 
 ### Navigation after save
-`isSuccess = true` in `formState` is observed in a `LaunchedEffect` on the screen. When it fires, `onSaleRecorded()` is called, which pops the back stack.
+A `SaleResultDialog` is shown after the save coroutine completes. On dismissal, if the result was `SaleResult.Success`, `onSaleRecorded()` is called and the back stack is popped.
+
+---
+
+## SalesListScreen
+
+**File:** `ui/screen/sale/SalesListScreen.kt`
+**ViewModel:** `ui/screen/sale/SalesListViewModel.kt`
+
+### Purpose
+Paginated, filterable list of all sales for a store. Shows all sales regardless of credit status. Credit sales are visually labelled. Entry point to sale detail and the sales report.
+
+### State
+
+`SalesListViewModel` exposes:
+
+| Property | Type | Description |
+|---|---|---|
+| `uiState` | `StateFlow<SalesListUiState>` | Filtered/paged sales, filter values, product list |
+
+`SalesListUiState` fields:
+
+| Field | Notes |
+|---|---|
+| `sales: List<SaleDisplayItem>` | Current page of display items |
+| `products: List<Product>` | Store's product catalogue — drives the product filter dropdown |
+| `selectedProduct: Product?` | Currently active product filter; `null` = all products |
+| `fromDate / toDate: Long` | Active date range (epoch ms) |
+| `formattedFromDate / formattedToDate: String` | Pre-formatted for the date filter chips |
+| `isLoading: Boolean` | Shows `CircularProgressIndicator` while first emit arrives |
+| `hasMore: Boolean` | `true` when more results exist beyond the current page |
+
+`SaleDisplayItem` fields:
+
+| Field | Notes |
+|---|---|
+| `id: Long` | Used as the `LazyColumn` item key |
+| `productName: String` | |
+| `formattedDate: String` | `"MMM dd, yyyy - h:mm a"` |
+| `formattedTotal: String` | `"%.2f"` of `totalAmount` |
+| `formattedQuantity: String` | `"×N"` |
+| `isOnCredit: Boolean` | Drives the `CreditBadge` chip next to the product name |
+
+### Layout
+- `ProductDropdown` filter (hidden when no products exist).
+- `DateRangeFilter` — two date chips for from/to.
+- `LazyColumn` of `SaleListItem` cards with `Modifier.animateItem()`.
+- Pagination footer: "Load more" `Button` when `hasMore = true`; "End of entries" label otherwise.
+- Empty and loading states.
+
+### Credit badge
+`CreditBadge` is a private composable that renders the text "Credit" in a small rounded-corner chip using `secondaryContainer` / `onSecondaryContainer` colours. It appears to the right of the product name inside `SaleListItem` when `isOnCredit = true`.
+
+### Filtering and pagination
+- Page size: 15 items. `loadMore()` increments the displayed count by 15.
+- Any filter change (date or product) resets `displayedCount` to 15.
+- The three-way `combine` (sales flow + products flow + filter state flow) means the list reactively updates whenever a sale is added, updated, or deleted elsewhere.
+
+### Overflow menu
+A `MoreVert` icon in the top bar exposes three actions:
+- **Reset filters** — resets dates to today and clears the product filter.
+- **Get today's sales report** — navigates to `SalesReportScreen` with today's full-day range and no product filter.
+- **Get sales report** — navigates to `SalesReportScreen` with the current active filter values.
+
+---
+
+## SalesReportScreen
+
+**File:** `ui/screen/sale/SalesReportScreen.kt`
+**ViewModel:** `ui/screen/sale/SalesReportViewModel.kt`
+
+### Purpose
+Aggregated analytics for a fixed date range (and optional product filter) passed in via route arguments. Read-only — no user input.
+
+### State
+
+`SalesReportViewModel` receives `storeId`, `fromDate`, `toDate`, and `productId?` from `SavedStateHandle`. It combines `saleRepository.getByStore()` and `productRepository.getByStore()` into a single `StateFlow<SalesReportUiState>`.
+
+`SalesReportUiState` fields:
+
+| Field | Notes |
+|---|---|
+| `formattedTotalRevenue: String` | Sum of `totalAmount` for all filtered sales |
+| `formattedTotalProfit: String` | Sum of `(unitPrice − unitCost) × quantity` |
+| `creditSalesCount: Int` | Number of sales where `onCredit = true` within the filtered set |
+| `formattedCreditRevenue: String` | `totalAmount` sum for on-credit sales only |
+| `formattedCreditProfit: String` | Profit sum for on-credit sales only |
+| `inventoryItems: List<InventoryBarItem>` | Per-product sold-unit counts with a bar fraction |
+| `dailyRevenue: List<DailyRevenueItem>` | Revenue by day across the selected range |
+| `profitOutcomeBreakdown: List<ProfitOutcomeBreakdownItem>` | Distribution of `NORMAL / EXTRA / SMALLER / LOSS` outcomes |
+| `hasData: Boolean` | `false` → shows empty-state message |
+
+### On-credit note
+When `creditSalesCount > 0`, a `CreditSalesNote` composable is rendered below the total profit figure in `TotalsSection`. It shows (in `tertiary` colour):
+
+> _N on credit · revenue X · profit Y pending_
+
+This indicates that the reported totals include on-credit amounts that have not yet been collected.
+
+---
+
+## CreditSalesListScreen
+
+**File:** `ui/screen/sale/CreditSalesListScreen.kt`
+**ViewModel:** `ui/screen/sale/CreditSalesListViewModel.kt`
+
+### Purpose
+Shows only sales where `onCredit = true` for a store, in a 2-column grid filtered by date. Tapping a card opens a confirmation dialog to mark the sale as paid, which flips `onCredit = false` via `SaleRepository.update()` and removes it from the grid automatically (the Flow re-emits).
+
+### State
+
+`CreditSalesListViewModel` exposes:
+
+| Property | Type | Description |
+|---|---|---|
+| `uiState` | `StateFlow<CreditSalesListUiState>` | Filtered credit sales, date range, loading flag |
+
+`CreditSalesListUiState` fields:
+
+| Field | Notes |
+|---|---|
+| `sales: List<CreditSaleDisplayItem>` | Sales matching the active date filter |
+| `fromDate / toDate: Long` | Active date range (epoch ms) |
+| `formattedFromDate / formattedToDate: String` | Pre-formatted for the date filter chips |
+| `isLoading: Boolean` | Shows `CircularProgressIndicator` on first load |
+
+`CreditSaleDisplayItem` fields:
+
+| Field | Notes |
+|---|---|
+| `id: Long` | Used as the `LazyVerticalGrid` item key |
+| `productName: String` | |
+| `creditPersonName: String` | Displayed as "Customer: …" below the product name |
+| `formattedDate: String` | `"MMM dd, yyyy - h:mm a"` |
+| `formattedTotal: String` | `"%.2f"` of `totalAmount` |
+| `quantity: Int` | Displayed as `×N` |
+
+### Default date range
+On first load `fromDate` defaults to the start of the current calendar year, so all yearly credit sales are visible without the user having to adjust the filter.
+
+### Layout
+- `DateRangeFilter` at the top.
+- `LazyVerticalGrid` with `GridCells.Fixed(2)` — `CreditSaleGridItem` cards.
+- Empty state includes a "Reset filters" `Button` to return to the default date range.
+- Loading state shows a centred `CircularProgressIndicator`.
+
+### `CreditSaleGridItem` (`CreditSaleGridItem.kt`)
+Card composable for the grid. Shows product name (bold, up to 2 lines), customer name in `secondary` colour, total amount, quantity, and date. Tapping calls `onClick`.
+
+Previews: light / dark (2 total).
+
+### Mark as paid
+When the user taps a grid item, `pendingDoneItem` state is set and a `MarkAsDoneDialog` appears:
+
+> _"Mark as paid? This will mark [customer]'s sale as collected and remove it from this list."_
+
+On confirm, `viewModel.markAsDone(id)` is called, which fetches the sale by ID and calls `saleRepository.update(sale.copy(onCredit = false))`. The `getOnCreditByStore` Flow re-emits the shorter list and the item disappears from the grid.
 
 ---
 

@@ -16,6 +16,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -318,14 +320,23 @@ private fun SaleListItem(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = item.productName,
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Text(
+                        text = item.productName,
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f, fill = false)
+                    )
+                    if (item.isOnCredit) {
+                        CreditBadge()
+                    }
+                }
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = item.formattedDate,
@@ -351,8 +362,23 @@ private fun SaleListItem(
     }
 }
 
+@Composable
+private fun CreditBadge() {
+    Text(
+        text = stringResource(R.string.sale_on_credit_badge),
+        style = MaterialTheme.typography.labelSmall,
+        color = MaterialTheme.colorScheme.onSecondaryContainer,
+        modifier = Modifier
+            .background(
+                color = MaterialTheme.colorScheme.secondaryContainer,
+                shape = RoundedCornerShape(4.dp)
+            )
+            .padding(horizontal = 4.dp, vertical = 1.dp)
+    )
+}
+
 private val previewSales = listOf(
-    SaleDisplayItem(id = 1L, productName = "Summer Dress", formattedDate = "Apr 03, 2026 - 10:00 AM", formattedTotal = "59.98", formattedQuantity = "×2"),
+    SaleDisplayItem(id = 1L, productName = "Summer Dress", formattedDate = "Apr 03, 2026 - 10:00 AM", formattedTotal = "59.98", formattedQuantity = "×2", isOnCredit = true),
     SaleDisplayItem(id = 2L, productName = "Leather Bag", formattedDate = "Apr 03, 2026 - 11:30 AM", formattedTotal = "89.99", formattedQuantity = "×1"),
     SaleDisplayItem(id = 3L, productName = "Sun Hat", formattedDate = "Apr 03, 2026 - 2:15 PM", formattedTotal = "44.97", formattedQuantity = "×3")
 )

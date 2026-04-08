@@ -132,31 +132,64 @@ private fun TotalsSection(uiState: SalesReportUiState, modifier: Modifier = Modi
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        Text(
-            text = stringResource(R.string.sales_report_total_revenue_label),
-            style = MaterialTheme.typography.labelLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Text(
-            text = uiState.formattedTotalRevenue,
-            style = MaterialTheme.typography.displaySmall,
-            fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center
-        )
-        Spacer(Modifier.height(8.dp))
-        Text(
-            text = stringResource(R.string.sales_report_total_profit_label),
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Text(
-            text = uiState.formattedTotalProfit,
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.SemiBold,
-            color = MaterialTheme.colorScheme.primary,
-            textAlign = TextAlign.Center
-        )
+        RevenueAndProfitResume(
+            uiState.formattedTotalRevenue,
+            uiState.formattedTotalProfit,
+            stringResource(R.string.sales_report_total_revenue_label),
+            stringResource(R.string.sales_report_total_profit_label))
+
+        if (uiState.creditSalesCount > 0) {
+            Spacer(Modifier.height(12.dp))
+            Text(
+                text = stringResource(R.string.sales_report_credit_note_amount,
+                    uiState.creditSalesCount),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.tertiary,
+                textAlign = TextAlign.Center,
+                fontWeight = FontWeight.Medium
+            )
+            Spacer(Modifier.height(12.dp))
+            RevenueAndProfitResume(
+                uiState.formattedCreditRevenue,
+                uiState.formattedCreditProfit,
+                stringResource(R.string.sales_report_total_credit_revenue_label),
+                stringResource(R.string.sales_report_total_credit_profit_label)
+            )
+        }
     }
+}
+
+@Composable
+private fun RevenueAndProfitResume(
+    totalRevenue: String,
+    totalProfit: String,
+    revenueTitle: String = "",
+    profitTitle: String = ""
+) {
+    Text(
+        text = revenueTitle.ifEmpty { stringResource(R.string.revenue) },
+        style = MaterialTheme.typography.labelLarge,
+        color = MaterialTheme.colorScheme.onSurfaceVariant
+    )
+    Text(
+        text = totalRevenue,
+        style = MaterialTheme.typography.displaySmall,
+        fontWeight = FontWeight.Bold,
+        textAlign = TextAlign.Center
+    )
+    Spacer(Modifier.height(8.dp))
+    Text(
+        text = profitTitle.ifEmpty { stringResource(R.string.profit) },
+        style = MaterialTheme.typography.labelMedium,
+        color = MaterialTheme.colorScheme.onSurfaceVariant
+    )
+    Text(
+        text = totalProfit,
+        style = MaterialTheme.typography.headlineMedium,
+        fontWeight = FontWeight.SemiBold,
+        color = MaterialTheme.colorScheme.primary,
+        textAlign = TextAlign.Center
+    )
 }
 
 @Composable
@@ -203,6 +236,9 @@ private val previewUiState = SalesReportUiState(
     ),
     formattedTotalRevenue = "2,459.80",
     formattedTotalProfit = "987.40",
+    creditSalesCount = 4,
+    formattedCreditRevenue = "149.97",
+    formattedCreditProfit = "59.97",
     hasData = true
 )
 

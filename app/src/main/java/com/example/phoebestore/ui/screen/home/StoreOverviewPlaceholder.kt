@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import com.example.phoebestore.R
 import com.example.phoebestore.domain.model.Currency
 import com.example.phoebestore.domain.model.Store
+
 import com.example.phoebestore.ui.theme.PhoebeStoreTheme
 
 @Composable
@@ -30,17 +31,19 @@ internal fun StoreOverviewPlaceholder(
     totalSales: Int,
     formattedRevenue: String,
     formattedProfit: String,
+    totalStock: Int,
+    lowStockAlerts: String?,
     modifier: Modifier = Modifier
 ) {
     if (store == null) return
 
-    val placeholder = stringResource(R.string.home_overview_placeholder_value)
     val rows = listOf(
         stringResource(R.string.home_overview_total_sales) to "$totalSales",
         stringResource(R.string.home_overview_revenue) to formattedRevenue,
         stringResource(R.string.home_overview_profit) to formattedProfit,
-        stringResource(R.string.home_overview_products_in_stock) to placeholder,
-        stringResource(R.string.home_overview_low_stock_alerts) to placeholder
+        stringResource(R.string.home_overview_products_in_stock) to "$totalStock",
+        stringResource(R.string.home_overview_low_stock_alerts) to
+            (lowStockAlerts ?: stringResource(R.string.home_overview_low_stock_none))
     )
 
     ThemedCard(
@@ -103,7 +106,9 @@ private fun StoreOverviewPlaceholderLightPreview() {
             store = previewStore,
             totalSales = 8,
             formattedRevenue = "240.00",
-            formattedProfit = "90.00"
+            formattedProfit = "90.00",
+            totalStock = 42,
+            lowStockAlerts = "Lipstick, Mascara, Blush",
         )
     }
 }
@@ -116,7 +121,9 @@ private fun StoreOverviewPlaceholderDarkPreview() {
             store = previewStore,
             totalSales = 8,
             formattedRevenue = "240.00",
-            formattedProfit = "90.00"
+            formattedProfit = "90.00",
+            totalStock = 42,
+            lowStockAlerts = "Lipstick, Mascara, Blush",
         )
     }
 }

@@ -30,6 +30,8 @@ data class SaleEntity(
     val saleType: String = "STANDARD",
     val profitOutcome: String = "NORMAL_PROFIT",
     val notes: String = "",
+    val onCredit: Boolean = false,
+    val creditPersonName: String = "",
     val soldAt: Long = System.currentTimeMillis(),
     val createdAt: Long = System.currentTimeMillis()
 )

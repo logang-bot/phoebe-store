@@ -39,3 +39,6 @@ data class SalesReportScreen(
     val toDate: Long,
     val productId: Long? = null
 )
+
+@Serializable
+data class CreditSalesListScreen(val storeId: Long)

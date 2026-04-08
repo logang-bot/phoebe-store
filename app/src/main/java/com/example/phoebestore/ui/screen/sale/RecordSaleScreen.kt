@@ -71,6 +71,8 @@ fun RecordSaleScreen(
             formattedTotalAmount = formState.formattedTotalAmount,
             formattedSoldAt = formState.formattedSoldAt,
             notes = formState.notes,
+            isOnCredit = formState.isOnCredit,
+            creditPersonName = formState.creditPersonName,
             onConfirm = viewModel::confirmSave,
             onDismiss = viewModel::onDismissConfirmDialog
         )
@@ -94,6 +96,8 @@ fun RecordSaleScreen(
         onUnitCostFocusLost = viewModel::onUnitCostFocusLost,
         onSoldAtChange = viewModel::onSoldAtChange,
         onNotesChange = viewModel::onNotesChange,
+        onOnCreditChange = viewModel::onOnCreditChange,
+        onCreditPersonNameChange = viewModel::onCreditPersonNameChange,
         onSave = viewModel::onSaveClicked
     )
 }
@@ -118,6 +122,8 @@ private fun RecordSaleScreenContent(
     onUnitCostFocusLost: () -> Unit,
     onSoldAtChange: (Long) -> Unit,
     onNotesChange: (String) -> Unit,
+    onOnCreditChange: (Boolean) -> Unit,
+    onCreditPersonNameChange: (String) -> Unit,
     onSave: () -> Unit
 ) {
     val focusRequester = remember { FocusRequester() }
@@ -215,7 +221,9 @@ private fun RecordSaleScreenContent(
                     onUnitPriceFocusLost = onUnitPriceFocusLost,
                     onUnitCostFocusLost = onUnitCostFocusLost,
                     onSoldAtChange = onSoldAtChange,
-                    onNotesChange = onNotesChange
+                    onNotesChange = onNotesChange,
+                    onOnCreditChange = onOnCreditChange,
+                    onCreditPersonNameChange = onCreditPersonNameChange
                 )
             }
         }
@@ -262,6 +270,8 @@ private fun RecordSaleScreenLightPreview() {
             onUnitCostFocusLost = {},
             onSoldAtChange = {},
             onNotesChange = {},
+            onOnCreditChange = {},
+            onCreditPersonNameChange = {},
             onSave = {}
         )
     }
@@ -302,6 +312,8 @@ private fun RecordSaleScreenDarkPreview() {
             onUnitCostFocusLost = {},
             onSoldAtChange = {},
             onNotesChange = {},
+            onOnCreditChange = {},
+            onCreditPersonNameChange = {},
             onSave = {}
         )
     }
@@ -338,6 +350,8 @@ private fun RecordSaleSearchExpandedPreview() {
             onUnitCostFocusLost = {},
             onSoldAtChange = {},
             onNotesChange = {},
+            onOnCreditChange = {},
+            onCreditPersonNameChange = {},
             onSave = {}
         )
     }

@@ -252,6 +252,14 @@ class RecordSaleViewModel @Inject constructor(
         _formState.update { it.copy(notes = value) }
     }
 
+    fun onOnCreditChange(value: Boolean) {
+        _formState.update { it.copy(isOnCredit = value, creditPersonName = "", creditPersonNameError = false).withComputedDisplayFields() }
+    }
+
+    fun onCreditPersonNameChange(value: String) {
+        _formState.update { it.copy(creditPersonName = value, creditPersonNameError = false).withComputedDisplayFields() }
+    }
+
     fun onSoldAtChange(epochMillis: Long) {
         _formState.update { it.copy(soldAt = epochMillis).withComputedDisplayFields() }
     }
@@ -286,6 +294,8 @@ class RecordSaleViewModel @Inject constructor(
                         saleType = saleType,
                         profitOutcome = state.profitOutcome,
                         notes = state.notes.trim(),
+                        onCredit = state.isOnCredit,
+                        creditPersonName = state.creditPersonName.trim(),
                         soldAt = state.soldAt
                     ),
                     selectedProduct = state.selectedProduct,
@@ -345,7 +355,8 @@ class RecordSaleViewModel @Inject constructor(
             canSave = (selectedProduct != null || productName.isNotBlank()) &&
                     (qty > 0) &&
                     (unitPrice.toDoubleOrNull()?.let { it > 0.0 } == true) &&
-                    !exceedsStock
+                    !exceedsStock &&
+                    (!isOnCredit || creditPersonName.isNotBlank())
         )
     }
 

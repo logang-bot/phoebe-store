@@ -59,6 +59,7 @@ class SalesReportViewModel @Inject constructor(
 
     private fun buildUiState(sales: List<Sale>, products: List<Product>): SalesReportUiState {
         val filtered = filterSales(sales)
+        val credit = computeCreditTotals(filtered)
         return SalesReportUiState(
             isLoading = false,
             formattedFromDate = dateFormat.format(Date(params.fromDate)),
@@ -69,7 +70,21 @@ class SalesReportViewModel @Inject constructor(
             profitOutcomeBreakdown = buildProfitOutcomeBreakdown(filtered),
             formattedTotalRevenue = "%.2f".format(filtered.sumOf { it.totalAmount }),
             formattedTotalProfit = "%.2f".format(filtered.sumOf { (it.unitPrice - it.unitCost) * it.quantity }),
+            creditSalesCount = credit.count,
+            formattedCreditRevenue = "%.2f".format(credit.revenue),
+            formattedCreditProfit = "%.2f".format(credit.profit),
             hasData = filtered.isNotEmpty()
+        )
+    }
+
+    private data class CreditTotals(val count: Int, val revenue: Double, val profit: Double)
+
+    private fun computeCreditTotals(sales: List<Sale>): CreditTotals {
+        val credit = sales.filter { it.onCredit }
+        return CreditTotals(
+            count = credit.size,
+            revenue = credit.sumOf { it.totalAmount },
+            profit = credit.sumOf { (it.unitPrice - it.unitCost) * it.quantity }
         )
     }
 

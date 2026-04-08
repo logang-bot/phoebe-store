@@ -7,7 +7,8 @@ data class SaleDisplayItem(
     val productName: String,
     val formattedDate: String,
     val formattedTotal: String,
-    val formattedQuantity: String
+    val formattedQuantity: String,
+    val isOnCredit: Boolean = false
 )
 
 data class SalesListUiState(

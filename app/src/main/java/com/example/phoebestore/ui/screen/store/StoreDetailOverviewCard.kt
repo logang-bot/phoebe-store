@@ -23,15 +23,17 @@ import com.example.phoebestore.ui.common.ThemedCard
 internal fun StoreDetailOverviewCard(
     totalSales: Int,
     formattedRevenue: String,
-    formattedProfit: String
+    formattedProfit: String,
+    totalStock: Int,
+    lowStockAlerts: String?
 ) {
-    val placeholder = stringResource(R.string.home_overview_placeholder_value)
     val rows = listOf(
         stringResource(R.string.home_overview_total_sales) to "$totalSales",
         stringResource(R.string.home_overview_revenue) to formattedRevenue,
         stringResource(R.string.home_overview_profit) to formattedProfit,
-        stringResource(R.string.home_overview_products_in_stock) to placeholder,
-        stringResource(R.string.home_overview_low_stock_alerts) to placeholder
+        stringResource(R.string.home_overview_products_in_stock) to "$totalStock",
+        stringResource(R.string.home_overview_low_stock_alerts) to
+            (lowStockAlerts ?: stringResource(R.string.home_overview_low_stock_none))
     )
     ThemedCard(
         modifier = Modifier.fillMaxWidth(),
