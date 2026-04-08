@@ -14,6 +14,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -106,7 +107,7 @@ private fun StoreDetailScreenContent(
     Scaffold(
         containerColor = MaterialTheme.colorScheme.surfaceContainer,
         bottomBar = {
-            Box(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
+            Box(modifier = Modifier.navigationBarsPadding().padding(horizontal = 16.dp, vertical = 12.dp)) {
                 Button(
                     onClick = onCreateSale,
                     modifier = Modifier.fillMaxWidth()

@@ -8,6 +8,7 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -175,7 +176,7 @@ private fun RecordSaleScreenContent(
         containerColor = MaterialTheme.colorScheme.surfaceContainer,
         bottomBar = {
             if (!formState.isSearchExpanded) {
-                Box(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
+                Box(modifier = Modifier.navigationBarsPadding().padding(horizontal = 16.dp, vertical = 12.dp)) {
                     LoadingButton(
                         text = stringResource(R.string.record_sale_save),
                         onClick = onSave,
