@@ -8,6 +8,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -33,15 +34,24 @@ fun SaleTotalSection(
         exit = fadeOut() + shrinkVertically(),
         modifier = modifier
     ) {
-        Column {
+        Column(
+            horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally,
+            modifier = Modifier.fillMaxWidth()
+        ) {
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                text = "${stringResource(R.string.record_sale_total_label)}: $currencyName $formattedTotalAmount",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.SemiBold,
+                text = stringResource(R.string.record_sale_total_label),
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = "$currencyName $formattedTotalAmount",
+                style = MaterialTheme.typography.displaySmall,
+                fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface
             )
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(16.dp))
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
         }
     }

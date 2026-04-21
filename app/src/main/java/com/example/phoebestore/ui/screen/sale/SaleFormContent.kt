@@ -1,6 +1,5 @@
 package com.example.phoebestore.ui.screen.sale
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -9,25 +8,28 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.FilledTonalIconButton
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import kotlin.math.roundToInt
 import com.example.phoebestore.R
 import com.example.phoebestore.domain.model.Currency
-import com.example.phoebestore.ui.common.ProductDropdown
 import com.example.phoebestore.domain.model.Product
 import com.example.phoebestore.ui.theme.PhoebeStoreTheme
 
@@ -50,22 +52,40 @@ internal fun SaleFormContent(
     onOnCreditChange: (Boolean) -> Unit,
     onCreditPersonNameChange: (String) -> Unit
 ) {
+    val scrollState = rememberScrollState()
+    var viewportHeightPx by remember { mutableIntStateOf(0) }
+    var quantityOffsetPx by remember { mutableIntStateOf(0) }
+    var quantityHeightPx by remember { mutableIntStateOf(0) }
+
+    LaunchedEffect(formState.selectedProduct, formState.isCustomProduct) {
+        if ((formState.selectedProduct != null || formState.isCustomProduct) && quantityHeightPx > 0) {
+            val target = (quantityOffsetPx - (viewportHeightPx - quantityHeightPx) / 2)
+                .coerceAtLeast(0)
+            scrollState.animateScrollTo(target)
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .verticalScroll(rememberScrollState())
+            .onSizeChanged { viewportHeightPx = it.height }
+            .verticalScroll(scrollState)
             .padding(horizontal = 16.dp, vertical = 16.dp)
     ) {
-        ProductDropdown(
+        Text(
+            text = stringResource(R.string.record_sale_product_label),
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        ProductPickerGrid(
             products = formState.products,
             selectedProduct = formState.selectedProduct,
             isCustomSelected = formState.isCustomProduct,
             isSearchSelected = formState.isSearchSelected,
-            showSearchOption = formState.products.isNotEmpty(),
-            onProductSelected = onProductSelected,
+            onProductSelected = { onProductSelected(it) },
             onCustomSelected = onCustomProductSelected,
-            onSearchSelected = onSearchSelected,
-            modifier = Modifier.fillMaxWidth()
+            onSearchSelected = onSearchSelected
         )
         Spacer(modifier = Modifier.height(12.dp))
 
@@ -84,43 +104,31 @@ internal fun SaleFormContent(
             Spacer(modifier = Modifier.height(12.dp))
         }
 
-        OutlinedTextField(
+        QuantityField(
             value = formState.quantity,
             onValueChange = onQuantityChange,
-            label = { Text(stringResource(R.string.record_sale_quantity_label)) },
+            onIncrement = onQuantityIncrement,
+            onDecrement = onQuantityDecrement,
             isError = formState.quantityError || formState.quantityExceedsStock,
-            supportingText = when {
-                formState.quantityError -> { { Text(stringResource(R.string.record_sale_quantity_error)) } }
-                formState.quantityExceedsStock -> { { Text(stringResource(R.string.record_sale_quantity_exceeds_stock)) } }
+            errorMessage = when {
+                formState.quantityError -> stringResource(R.string.record_sale_quantity_error)
+                formState.quantityExceedsStock -> stringResource(R.string.record_sale_quantity_exceeds_stock)
                 else -> null
             },
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        val qty = formState.quantity.toIntOrNull() ?: 0
-        Row(
+            canIncrement = formState.selectedProduct == null ||
+                (formState.quantity.toIntOrNull() ?: 0) < formState.selectedProduct.stock,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 5.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            FilledTonalIconButton(
-                onClick = onQuantityDecrement,
-                enabled = qty > 1,
-                modifier = Modifier.weight(1f)
-            ) {
-                Icon(painterResource(R.drawable.ic_remove), contentDescription = null)
-            }
-            FilledTonalIconButton(
-                onClick = onQuantityIncrement,
-                enabled = formState.selectedProduct == null || qty < formState.selectedProduct.stock,
-                modifier = Modifier.weight(1f)
-            ) {
-                Icon(painterResource(R.drawable.ic_add), contentDescription = null)
-            }
-        }
+                .onGloballyPositioned { coords ->
+                    quantityOffsetPx = coords.positionInParent().y.roundToInt()
+                    quantityHeightPx = coords.size.height
+                }
+        )
+
+        SaleTotalSection(
+            formattedTotalAmount = formState.formattedTotalAmount,
+            currencyName = formState.currency.name
+        )
 
         Spacer(modifier = Modifier.height(12.dp))
 
@@ -134,11 +142,6 @@ internal fun SaleFormContent(
             onUnitPriceFocusLost = onUnitPriceFocusLost,
             onUnitCostFocusLost = onUnitCostFocusLost,
             modifier = Modifier.fillMaxWidth()
-        )
-
-        SaleTotalSection(
-            formattedTotalAmount = formState.formattedTotalAmount,
-            currencyName = formState.currency.name
         )
 
         SaleModificationInfo(

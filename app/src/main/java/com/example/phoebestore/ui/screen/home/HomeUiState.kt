@@ -8,5 +8,7 @@ data class HomeUiState(
     val formattedRevenue: String = "0.00",
     val formattedProfit: String = "0.00",
     val totalStock: Int = 0,
-    val lowStockAlerts: String? = null
+    val lowStockAlerts: String? = null,
+    val hasProducts: Boolean = false,
+    val isInitialized: Boolean = false
 )

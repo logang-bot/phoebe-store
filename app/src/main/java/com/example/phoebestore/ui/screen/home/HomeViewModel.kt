@@ -21,11 +21,19 @@ class HomeViewModel @Inject constructor(
     productRepository: ProductRepository
 ) : ViewModel() {
 
+    private var autoNavHandled = false
+
+    fun shouldAutoNav(): Boolean = !autoNavHandled
+
+    fun markAutoNavHandled() {
+        autoNavHandled = true
+    }
+
     val uiState: StateFlow<HomeUiState> = storeRepository.getAll()
         .flatMapLatest { stores ->
             val lastStore = stores.firstOrNull()
             if (lastStore == null) {
-                flowOf(HomeUiState())
+                flowOf(HomeUiState(isInitialized = true))
             } else {
                 combine(
                     saleRepository.getByStore(lastStore.id),
@@ -39,7 +47,9 @@ class HomeViewModel @Inject constructor(
                         formattedProfit = "%.2f".format(sales.sumOf { it.quantity * (it.unitPrice - it.unitCost) }),
                         totalStock = products.sumOf { it.stock },
                         lowStockAlerts = lowestStock.takeIf { it.isNotEmpty() }
-                                             ?.joinToString(", ") { it.name }
+                                             ?.joinToString(", ") { it.name },
+                        hasProducts = products.isNotEmpty(),
+                        isInitialized = true
                     )
                 }
             }

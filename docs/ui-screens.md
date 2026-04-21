@@ -265,7 +265,7 @@ Previews: light / dark (2 total).
 - Product name as title.
 - Current stock label (read-only, pre-set from `product.stock`).
 - `OutlinedTextField` for the new stock value (number keyboard).
-- `FilledTonalIconButton` row with subtract (`ic_remove`) and add (`ic_add`) buttons (same pattern as `RecordSaleScreen`).
+- `FilledTonalIconButton` row with subtract (`ic_remove`) and add (`ic_add`) buttons.
 - Save button with an `AnimatedContent` fade+scale transition between the label and a `CircularProgressIndicator`.
 
 All controls are disabled while `isSavingStock = true`. Tapping outside or the Cancel button is blocked during saving. On success the dialog is dismissed automatically by the ViewModel.
@@ -362,7 +362,7 @@ State class: `RecordSaleFormState.kt`
 | Field | Default | Notes |
 |---|---|---|
 | `products` | `emptyList()` | Store's product catalogue, collected from `ProductRepository` |
-| `selectedProduct` | `null` | Product chosen from the dropdown or search |
+| `selectedProduct` | `null` | Product chosen from the picker grid or search; changing this triggers auto-scroll to the quantity field |
 | `isCustomProduct` | `false` | `true` when the user selects the "Custom / Other" option |
 | `isSearchSelected` | `false` | `true` while the search option is active |
 | `isSearchExpanded` | `false` | `true` while the full-screen search UI is shown |
@@ -436,11 +436,11 @@ All numeric fields reject non-numeric input at the ViewModel level:
 Money fields also auto-format to `"%.2f"` on focus loss. The `onFocusChanged` modifier in `SalePriceRow` calls `onUnitPriceFocusLost()` / `onUnitCostFocusLost()` on the ViewModel — all formatting happens there, not in the composable.
 
 ### Form fields (top to bottom)
-1. `ProductDropdown` — visible only when the store has products
-2. Product name (`OutlinedTextField`) — visible when no products exist or when "Custom product" is selected
-3. Quantity (`OutlinedTextField`, integer keyboard)
-4. `SalePriceRow` — unit price + unit cost side-by-side, prefixed with the store's currency code
-5. `SaleTotalSection` — animated total display
+1. `ProductPickerGrid` — 3-column, 3-row-tall scrollable grid; first two cells are "Search product" and "Custom / Other" action cards, remaining cells show catalogue products with their images
+2. Product name (`OutlinedTextField`) — visible when no products exist or when "Custom / Other" is selected
+3. `QuantityField` — tall centered number input with a pill-shaped stepper (minus left / plus right)
+4. `SaleTotalSection` — animated centered total display (label above, large value below)
+5. `SalePriceRow` — unit price + unit cost side-by-side, prefixed with the store's currency code
 6. `SaleModificationInfo` — animated modification info block
 7. `DateField` — date picker for the sale date
 8. Notes (`OutlinedTextField`, multiline 3–5 lines)
@@ -452,8 +452,23 @@ Money fields also auto-format to `"%.2f"` on focus loss. The `onFocusChanged` mo
 #### `SaleFormContent` (`SaleFormContent.kt`)
 Internal wrapper composable that renders the full scrollable form. Extracted from `RecordSaleScreenContent` so that the `AnimatedContent` in the screen can swap between `SaleFormContent` (form mode) and `SearchResultsContent` (search mode) with a fade transition. Receives the full `RecordSaleFormState` and all event callbacks — no business logic inside.
 
-#### `ProductDropdown` (`ProductDropdown.kt`)
-`ExposedDropdownMenuBox` listing store products, a "Search product" option (triggers full-screen search), and a "Custom / Other" option at the bottom. Read-only `OutlinedTextField` shows the selected item's name. Callbacks: `onProductSelected(Product?)`, `onCustomSelected()`, and `onSearchSelected()`.
+Uses `BoxWithConstraints` to capture the viewport height and a `rememberScrollState` reference. A `LaunchedEffect` keyed on `selectedProduct` and `isCustomProduct` fires when a product or custom option is chosen, calling `scrollState.animateScrollTo()` with a target that centres the `QuantityField` in the viewport. The field's position is tracked via `Modifier.onGloballyPositioned`.
+
+#### `ProductPickerGrid` (`ProductPickerGrid.kt`)
+3-column lazy grid rendered inside `BoxWithConstraints`. The grid height is set to `maxWidth` — because cells are square (`aspectRatio(1f)`) and gaps are equal in both directions, this makes exactly 3 rows visible at once; additional products scroll within the fixed viewport.
+
+Items are modelled as a sealed `GridItem` interface (`Search`, `Custom`, `ProductItem`). The first two slots are always `PickerActionCard`s (icon + label, centred). Remaining slots are `PickerProductCard`s showing the product image (`AsyncImage` with `ic_package_2` fallback) and the product name centred below. When an item is selected its card switches to `primaryContainer` and a `primary.copy(alpha = 0.4f)` overlay is drawn on top of the image area.
+
+Callbacks: `onProductSelected(Product)`, `onCustomSelected()`, `onSearchSelected()`.
+
+Previews: light / dark (2 total).
+
+#### `QuantityField` (`QuantityField.kt`)
+Composite composable with three parts:
+- **Label** — `labelMedium` text above, coloured `error` when the field is in error state.
+- **`QuantityInput`** — `BasicTextField` at 72dp height with `headlineMedium` text aligned to the centre. Border colour cycles through `outline` → `primary` (focused) → `error` using `MutableInteractionSource`. Cursor brush uses `primary`.
+- **`QuantitySteppers`** — 52dp `Row` of two `FilledTonalButton`s with no gap between them. The left button has large `topStart`/`bottomStart` corner radii and the right has `topEnd`/`bottomEnd`, so together they form one pill split down the middle by a 1dp `outlineVariant` divider. Left button calls `onDecrement` (disabled when `qty ≤ 1`); right calls `onIncrement` (disabled when at max stock).
+- **Error text** — `bodySmall` error-coloured message shown below the steppers when `errorMessage != null`.
 
 Previews: light / dark (2 total).
 
@@ -463,7 +478,12 @@ Side-by-side `Row` of two `OutlinedTextField`s (unit price and unit cost), each 
 Previews: light / dark (2 total).
 
 #### `SaleTotalSection` (`SaleTotalSection.kt`)
-`AnimatedVisibility` (fade + expand) wrapping a divider/total/divider layout. Accepts `formattedTotalAmount: String`; visible when the string is non-empty. Displays `"Total: <currency> <formattedTotalAmount>"` in `titleMedium` semibold.
+`AnimatedVisibility` (fade + expand) wrapping a centred column. Visible when `formattedTotalAmount` is non-empty. Layout (top to bottom):
+- `labelLarge` "Total" label in `onSurfaceVariant`.
+- `displaySmall` bold `"<currency> <formattedTotalAmount>"` value.
+- `HorizontalDivider` in `outlineVariant`.
+
+Appears immediately after `QuantityField`, before `SalePriceRow`, so the user sees the running total as soon as they adjust quantity.
 
 Previews: light / dark (2 total).
 

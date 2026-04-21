@@ -19,7 +19,7 @@ Route: `RecordSaleScreen(storeId: Long)`. The `storeId` is extracted from `Saved
 On `init`, the ViewModel launches a single sequential coroutine:
 
 1. `storeRepository.getById(storeId)` — loads the store's currency and applies it to `formState.currency`.
-2. `productRepository.getByStore(storeId).collect { … }` — starts collecting the product catalogue as a Flow. The list is stored in `formState.products` and drives the `ProductDropdown`.
+2. `productRepository.getByStore(storeId).collect { … }` — starts collecting the product catalogue as a Flow. The list is stored in `formState.products` and drives the `ProductPickerGrid`.
 
 Both steps happen in the same coroutine, ensuring currency is always set before product data arrives.
 
@@ -29,12 +29,12 @@ Both steps happen in the same coroutine, ensuring currency is always set before 
 
 There are three mutually exclusive ways to choose a product. Switching between them resets all price, cost, and profit fields.
 
-### 1. Dropdown
+### 1. Product Picker Grid
 
-When the store has products, a `ProductDropdown` is shown at the top of the form. The user picks a product from the list or selects "Custom / Other" at the bottom.
+When the store has products, a `ProductPickerGrid` is shown at the top of the form. It renders a fixed 3-column, 3-row-tall scrollable grid. The first two cells are always the "Search product" and "Custom / Other" action cards; remaining cells show catalogue products with their images and names.
 
-- **Catalogue product selected** (`onProductSelected(product)`): pre-fills `unitPrice`, `unitCost`, `productName`. `isPriceModified` and `isCostModified` are reset to `false`.
-- **"Custom / Other" selected** (`onCustomProductSelected()`): clears all price fields and shows the free-text product name field.
+- **Catalogue product selected** (`onProductSelected(product)`): pre-fills `unitPrice`, `unitCost`, `productName`. `isPriceModified` and `isCostModified` are reset to `false`. The form auto-scrolls so the quantity field is vertically centred in the viewport.
+- **"Custom / Other" selected** (`onCustomProductSelected()`): clears all price fields and shows the free-text product name field. The form auto-scrolls to the quantity field in the same way.
 
 ### 2. Search
 

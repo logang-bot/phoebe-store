@@ -111,6 +111,10 @@
     <string name="sales_report_outcome_smaller">Smaller profit</string>
     <string name="sales_report_outcome_loss">Loss</string>
 
+    <!-- Bottom Navigation -->
+    <string name="nav_home">Home</string>
+    <string name="nav_stores">Stores</string>
+
     <!-- Common -->
     <string name="navigate_back">Back</string>
     <string name="more_options">More options</string>

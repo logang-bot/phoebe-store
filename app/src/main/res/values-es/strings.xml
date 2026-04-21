@@ -112,6 +112,10 @@
     <string name="sales_report_outcome_smaller">Ganancia reducida</string>
     <string name="sales_report_outcome_loss">Pérdida</string>
 
+    <!-- Bottom Navigation -->
+    <string name="nav_home">Inicio</string>
+    <string name="nav_stores">Tiendas</string>
+
     <!-- Common -->
     <string name="navigate_back">Atrás</string>
     <string name="more_options">Más opciones</string>

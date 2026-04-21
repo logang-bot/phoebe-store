@@ -20,8 +20,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import kotlinx.coroutines.delay
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -41,14 +43,23 @@ import com.example.phoebestore.ui.theme.PhoebeStoreTheme
 
 @Composable
 fun HomeScreen(
-    onNavigateToStoreList: () -> Unit,
-    onNavigateToStoreDetail: (storeId: Long) -> Unit,
     onNavigateToCreateSale: (storeId: Long) -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val welcomeMessages = stringArrayResource(R.array.home_welcome_messages)
     val welcomeMessage = remember { welcomeMessages.random() }
+
+    LaunchedEffect(uiState.isInitialized) {
+        if (!uiState.isInitialized) return@LaunchedEffect
+        if (!viewModel.shouldAutoNav()) return@LaunchedEffect
+        viewModel.markAutoNavHandled()
+        val lastStore = uiState.lastStore ?: return@LaunchedEffect
+        if (uiState.hasProducts) {
+            delay(1000)
+            onNavigateToCreateSale(lastStore.id)
+        }
+    }
 
     HomeScreenContent(
         lastStore = uiState.lastStore,
@@ -58,8 +69,6 @@ fun HomeScreen(
         totalStock = uiState.totalStock,
         lowStockAlerts = uiState.lowStockAlerts,
         welcomeMessage = welcomeMessage,
-        onNavigateToStoreList = onNavigateToStoreList,
-        onNavigateToStoreDetail = onNavigateToStoreDetail,
         onNavigateToCreateSale = { uiState.lastStore?.let { onNavigateToCreateSale(it.id) } }
     )
 }
@@ -73,8 +82,6 @@ private fun HomeScreenContent(
     totalStock: Int,
     lowStockAlerts: String?,
     welcomeMessage: String,
-    onNavigateToStoreList: () -> Unit,
-    onNavigateToStoreDetail: (storeId: Long) -> Unit,
     onNavigateToCreateSale: () -> Unit = {}
 ) {
     Scaffold(
@@ -102,7 +109,7 @@ private fun HomeScreenContent(
             StoreCard(
                 store = lastStore,
                 flatBottom = lastStore != null,
-                onClick = { lastStore?.let { onNavigateToStoreDetail(it.id) } },
+                onClick = { if (lastStore != null) onNavigateToCreateSale() },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 4.dp)
@@ -139,21 +146,6 @@ private fun HomeScreenContent(
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Button(
-                onClick = onNavigateToStoreList,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.ic_storefront),
-                    contentDescription = null,
-                    modifier = Modifier.size(18.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(stringResource(R.string.home_view_all_stores))
-            }
-
             Spacer(modifier = Modifier.height(24.dp))
 
             StoreOverviewPlaceholder(
@@ -186,9 +178,7 @@ private fun HomeScreenLightPreview() {
             formattedProfit = "90.00",
             totalStock = 42,
             lowStockAlerts = "Lipstick, Mascara, Blush",
-            welcomeMessage = "Welcome back!",
-            onNavigateToStoreList = {},
-            onNavigateToStoreDetail = { _ -> }
+            welcomeMessage = "Welcome back!"
         )
     }
 }
@@ -204,9 +194,7 @@ private fun HomeScreenDarkPreview() {
             formattedProfit = "90.00",
             totalStock = 42,
             lowStockAlerts = "Lipstick, Mascara, Blush",
-            welcomeMessage = "Welcome back!",
-            onNavigateToStoreList = {},
-            onNavigateToStoreDetail = { _ -> }
+            welcomeMessage = "Welcome back!"
         )
     }
 }
@@ -222,9 +210,7 @@ private fun HomeScreenEmptyLightPreview() {
             formattedProfit = "0.00",
             totalStock = 0,
             lowStockAlerts = "—",
-            welcomeMessage = "Ready to manage your stores?",
-            onNavigateToStoreList = {},
-            onNavigateToStoreDetail = { _ -> }
+            welcomeMessage = "Ready to manage your stores?"
         )
     }
 }
@@ -240,9 +226,7 @@ private fun HomeScreenEmptyDarkPreview() {
             formattedProfit = "0.00",
             totalStock = 0,
             lowStockAlerts = "—",
-            welcomeMessage = "Ready to manage your stores?",
-            onNavigateToStoreList = {},
-            onNavigateToStoreDetail = { _ -> }
+            welcomeMessage = "Ready to manage your stores?"
         )
     }
 }
