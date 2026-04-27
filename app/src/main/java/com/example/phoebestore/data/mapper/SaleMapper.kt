@@ -36,6 +36,26 @@ fun SaleDto.toDomain(): Sale = Sale(
     saleType = runCatching { SaleType.valueOf(saleType) }.getOrDefault(SaleType.STANDARD),
     profitOutcome = runCatching { ProfitOutcome.valueOf(profitOutcome) }.getOrDefault(ProfitOutcome.NORMAL_PROFIT),
     notes = notes,
+    onCredit = onCredit,
+    creditPersonName = creditPersonName,
+    soldAt = soldAt,
+    createdAt = createdAt
+)
+
+fun Sale.toDto(): SaleDto = SaleDto(
+    id = id,
+    storeId = storeId,
+    productId = productId,
+    productName = productName,
+    quantity = quantity,
+    unitPrice = unitPrice,
+    unitCost = unitCost,
+    totalAmount = totalAmount,
+    saleType = saleType.name,
+    profitOutcome = profitOutcome.name,
+    notes = notes,
+    onCredit = onCredit,
+    creditPersonName = creditPersonName,
     soldAt = soldAt,
     createdAt = createdAt
 )

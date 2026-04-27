@@ -11,10 +11,12 @@ import com.example.phoebestore.data.repository.impl.InventoryLogRepositoryImpl
 import com.example.phoebestore.data.repository.impl.ProductRepositoryImpl
 import com.example.phoebestore.data.repository.impl.SaleRepositoryImpl
 import com.example.phoebestore.data.repository.impl.StoreRepositoryImpl
+import com.example.phoebestore.data.repository.impl.UserSettingsRepositoryImpl
 import com.example.phoebestore.domain.repository.InventoryLogRepository
 import com.example.phoebestore.domain.repository.ProductRepository
 import com.example.phoebestore.domain.repository.SaleRepository
 import com.example.phoebestore.domain.repository.StoreRepository
+import com.example.phoebestore.domain.repository.UserSettingsRepository
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -62,4 +64,7 @@ abstract class RepositoryModule {
 
     @Binds
     abstract fun bindInventoryLogRepository(impl: InventoryLogRepositoryImpl): InventoryLogRepository
+
+    @Binds
+    abstract fun bindUserSettingsRepository(impl: UserSettingsRepositoryImpl): UserSettingsRepository
 }

@@ -18,8 +18,10 @@ Route: `RecordSaleScreen(storeId: Long)`. The `storeId` is extracted from `Saved
 
 On `init`, the ViewModel launches a single sequential coroutine:
 
-1. `storeRepository.getById(storeId)` — loads the store's currency and applies it to `formState.currency`.
-2. `productRepository.getByStore(storeId).collect { … }` — starts collecting the product catalogue as a Flow. The list is stored in `formState.products` and drives the `ProductPickerGrid`.
+1. `storeRepository.markAccessed(storeId)` — updates the store's `lastAccessedAt` timestamp in Room.
+2. `userSettingsRepository.setLastAccessedStore(storeId)` — persists the store ID to DataStore Preferences. This is what enables `HomeScreen` auto-navigation: `HomeViewModel` reads this value and only populates `lastStore` once a store has been explicitly visited here or in `StoreDetailScreen`.
+3. `storeRepository.getById(storeId)` — loads the store's currency and applies it to `formState.currency`.
+4. `productRepository.getByStore(storeId).collect { … }` — starts collecting the product catalogue as a Flow. The list is stored in `formState.products` and drives the `ProductPickerGrid`.
 
 Both steps happen in the same coroutine, ensuring currency is always set before product data arrives.
 

@@ -10,6 +10,7 @@ import com.example.phoebestore.domain.model.Sale
 import com.example.phoebestore.domain.model.SaleType
 import com.example.phoebestore.domain.repository.ProductRepository
 import com.example.phoebestore.domain.repository.StoreRepository
+import com.example.phoebestore.domain.repository.UserSettingsRepository
 import com.example.phoebestore.domain.usecase.RecordSaleUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -30,7 +31,8 @@ class RecordSaleViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val recordSaleUseCase: RecordSaleUseCase,
     private val productRepository: ProductRepository,
-    private val storeRepository: StoreRepository
+    private val storeRepository: StoreRepository,
+    private val userSettingsRepository: UserSettingsRepository
 ) : ViewModel() {
 
     private val storeId: Long = checkNotNull(savedStateHandle["storeId"])
@@ -47,6 +49,7 @@ class RecordSaleViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             storeRepository.markAccessed(storeId)
+            userSettingsRepository.setLastAccessedStore(storeId)
             storeRepository.getById(storeId)?.let { store ->
                 _formState.update { it.copy(currency = store.currency) }
             }

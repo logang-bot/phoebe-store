@@ -29,6 +29,16 @@ fun StoreDto.toDomain(): Store = Store(
     createdAt = createdAt
 )
 
+fun Store.toDto(): StoreDto = StoreDto(
+    id = id,
+    name = name,
+    description = description,
+    currency = currency.name,
+    logoUrl = logoUrl,
+    photoUrl = photoUrl,
+    createdAt = createdAt
+)
+
 fun Store.toEntity(): StoreEntity = StoreEntity(
     id = id,
     name = name,

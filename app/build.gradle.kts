@@ -22,6 +22,9 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField("String", "SUPABASE_URL", "\"https://stwmgzkfqdwfnrenkunt.supabase.co\"")
+        buildConfigField("String", "SUPABASE_ANON_KEY", "\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0d21nemtmcWR3Zm5yZW5rdW50Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcyNDk3NjgsImV4cCI6MjA5MjgyNTc2OH0.3YCqOvec5WxgA8cj7WWs1cXlGFzxMF3n8_8BiCeyv0g\"")
     }
 
     buildTypes {
@@ -74,6 +77,13 @@ dependencies {
     // Coil
     implementation(libs.coil.compose)
     implementation(libs.coil.network.okhttp)
+
+    // DataStore
+    implementation(libs.datastore.preferences)
+
+    // Supabase
+    implementation(libs.supabase.postgrest)
+    implementation(libs.ktor.client.okhttp)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

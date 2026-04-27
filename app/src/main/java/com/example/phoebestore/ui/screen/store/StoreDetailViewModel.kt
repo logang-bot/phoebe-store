@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.phoebestore.domain.repository.ProductRepository
 import com.example.phoebestore.domain.repository.SaleRepository
 import com.example.phoebestore.domain.repository.StoreRepository
+import com.example.phoebestore.domain.repository.UserSettingsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -20,6 +21,7 @@ class StoreDetailViewModel @Inject constructor(
     private val storeRepository: StoreRepository,
     private val saleRepository: SaleRepository,
     private val productRepository: ProductRepository,
+    private val userSettingsRepository: UserSettingsRepository,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -31,6 +33,7 @@ class StoreDetailViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             storeRepository.markAccessed(storeId)
+            userSettingsRepository.setLastAccessedStore(storeId)
             combine(
                 storeRepository.getAll().map { list -> list.find { it.id == storeId } },
                 saleRepository.getByStore(storeId),

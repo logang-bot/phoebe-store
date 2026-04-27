@@ -47,14 +47,16 @@ fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val isSyncing by viewModel.isSyncing.collectAsStateWithLifecycle()
     val welcomeMessages = stringArrayResource(R.array.home_welcome_messages)
     val welcomeMessage = remember { welcomeMessages.random() }
 
-    LaunchedEffect(uiState.isInitialized) {
+    LaunchedEffect(uiState.isInitialized, isSyncing) {
         if (!uiState.isInitialized) return@LaunchedEffect
+        if (isSyncing) return@LaunchedEffect
         if (!viewModel.shouldAutoNav()) return@LaunchedEffect
-        viewModel.markAutoNavHandled()
         val lastStore = uiState.lastStore ?: return@LaunchedEffect
+        viewModel.markAutoNavHandled()
         if (uiState.hasProducts) {
             delay(1000)
             onNavigateToCreateSale(lastStore.id)

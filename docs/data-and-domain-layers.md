@@ -117,6 +117,9 @@ Located in `data/mapper/`. All mappers are extension functions.
 | `StoreEntity.toDomain(): Store` | Local DB → app |
 | `StoreDto.toDomain(): Store` | API response → app |
 | `Store.toEntity(): StoreEntity` | app → Local DB write |
+| `Store.toDto(): StoreDto` | app → Supabase write |
+
+> `Store.toDto()` omits `lastAccessedAt` — it is a local-only field and is never synced to Supabase.
 
 ### `ProductMapper.kt`
 
@@ -125,6 +128,7 @@ Located in `data/mapper/`. All mappers are extension functions.
 | `ProductEntity.toDomain(): Product` | Local DB → app |
 | `ProductDto.toDomain(): Product` | API response → app |
 | `Product.toEntity(): ProductEntity` | app → Local DB write |
+| `Product.toDto(): ProductDto` | app → Supabase write |
 
 ### `SaleMapper.kt`
 
@@ -133,6 +137,7 @@ Located in `data/mapper/`. All mappers are extension functions.
 | `SaleEntity.toDomain(): Sale` | Local DB → app |
 | `SaleDto.toDomain(): Sale` | API response → app |
 | `Sale.toEntity(): SaleEntity` | app → Local DB write |
+| `Sale.toDto(): SaleDto` | app → Supabase write |
 
 `SaleType` and `ProfitOutcome` are stored as strings in both entity and DTO. The mapper deserialises them with a safe fallback:
 
@@ -258,6 +263,8 @@ Located in `data/remote/dto/`. Annotated with `@Serializable` (kotlinx.serializa
 | `sale_type` | `saleType: String` |
 | `profit_outcome` | `profitOutcome: String` |
 | `notes` | `notes: String` |
+| `on_credit` | `onCredit: Boolean` |
+| `credit_person_name` | `creditPersonName: String` |
 | `sold_at` | `soldAt: Long` |
 | `created_at` | `createdAt: Long` |
 
@@ -270,9 +277,11 @@ Located in `data/remote/dto/`. Annotated with `@Serializable` (kotlinx.serializa
 | Method | Returns | Notes |
 |---|---|---|
 | `insert(store)` | `Long` | Inserted row ID; aborts on conflict |
+| `upsert(store)` | `Unit` | Insert or replace — used by `SyncManager` on initial pull |
 | `update(store)` | `Unit` | |
 | `getById(id)` | `StoreEntity?` | Suspending |
-| `getAll()` | `Flow<List<StoreEntity>>` | Ordered by `createdAt DESC` |
+| `getAll()` | `Flow<List<StoreEntity>>` | Ordered by last accessed / created DESC |
+| `updateLastAccessed(id, timestamp)` | `Unit` | |
 | `deleteById(id)` | `Unit` | |
 
 ### `ProductDao`
@@ -280,6 +289,7 @@ Located in `data/remote/dto/`. Annotated with `@Serializable` (kotlinx.serializa
 | Method | Returns | Notes |
 |---|---|---|
 | `insert(product)` | `Long` | Inserted row ID; aborts on conflict |
+| `upsert(product)` | `Unit` | Insert or replace — used by `SyncManager` on initial pull |
 | `update(product)` | `Unit` | |
 | `getById(id)` | `ProductEntity?` | Suspending |
 | `getByStore(storeId)` | `Flow<List<ProductEntity>>` | Ordered by `name ASC` |
@@ -290,6 +300,7 @@ Located in `data/remote/dto/`. Annotated with `@Serializable` (kotlinx.serializa
 | Method | Returns | Notes |
 |---|---|---|
 | `insert(sale)` | `Long` | Inserted row ID; aborts on conflict |
+| `upsert(sale)` | `Unit` | Insert or replace — used by `SyncManager` on initial pull |
 | `update(sale)` | `Unit` | Full-row update (used to mark credit sales as paid) |
 | `getById(id)` | `SaleEntity?` | Suspending |
 | `getByStore(storeId)` | `Flow<List<SaleEntity>>` | Ordered by `soldAt DESC` |
@@ -343,6 +354,19 @@ interface SaleRepository {
 
 `getOnCreditByStore()` returns only sales where `onCredit = true`, backed by the `getOnCreditByStore` DAO query. The result is a live `Flow` so the credit sales screen updates automatically after `update()` is called.
 
+### `UserSettingsRepository`
+
+```kotlin
+interface UserSettingsRepository {
+    val lastAccessedStoreId: Flow<Long?>
+    suspend fun setLastAccessedStore(storeId: Long)
+}
+```
+
+Backed by Jetpack DataStore Preferences (`user_settings` store, key `last_accessed_store_id`).
+
+`lastAccessedStoreId` emits `null` until the user explicitly visits a store (`StoreDetailScreen` or `RecordSaleScreen`). This value is used by `HomeViewModel` to guard automatic navigation — a `null` result means no store has been visited, so auto-nav is suppressed.
+
 ---
 
 ## Dependency Injection
@@ -351,9 +375,21 @@ interface SaleRepository {
 
 **`DatabaseModule`** (object) — provides:
 - `AppDatabase` singleton (Room builder with `fallbackToDestructiveMigration`)
-- `StoreDao`, `ProductDao`, and `SaleDao` (scoped to the database singleton)
+- `StoreDao`, `ProductDao`, `SaleDao`, and `InventoryLogDao` (scoped to the database singleton)
 
 **`RepositoryModule`** (abstract) — binds:
 - `StoreRepositoryImpl` → `StoreRepository`
 - `ProductRepositoryImpl` → `ProductRepository`
 - `SaleRepositoryImpl` → `SaleRepository`
+- `InventoryLogRepositoryImpl` → `InventoryLogRepository`
+- `UserSettingsRepositoryImpl` → `UserSettingsRepository`
+
+`di/SupabaseModule.kt` contains two Hilt modules:
+
+**`SupabaseModule`** (object) — provides:
+- `SupabaseClient` singleton, configured with `BuildConfig.SUPABASE_URL` and `BuildConfig.SUPABASE_ANON_KEY`
+
+**`RemoteDataSourceModule`** (abstract) — binds:
+- `StoreRemoteDataSourceImpl` → `StoreRemoteDataSource`
+- `ProductRemoteDataSourceImpl` → `ProductRemoteDataSource`
+- `SaleRemoteDataSourceImpl` → `SaleRemoteDataSource`

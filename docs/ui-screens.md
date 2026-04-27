@@ -67,9 +67,37 @@ Entry point of the app. Shows a welcome greeting, a card for the last store the 
 
 | Property | Type | Description |
 |---|---|---|
-| `uiState` | `StateFlow<HomeUiState>` | Wraps `lastStore: Store?` — the most recently created store; `null` if none exist |
+| `uiState` | `StateFlow<HomeUiState>` | Driven by `UserSettingsRepository.lastAccessedStoreId` — see below |
+| `isSyncing` | `StateFlow<Boolean>` | Mirrors `SyncManager.isSyncing`; used to gate auto-navigation |
+
+`HomeUiState` fields:
+
+| Field | Notes |
+|---|---|
+| `lastStore: Store?` | The last explicitly-visited store; `null` until the user visits one |
+| `totalSales: Int` | Sale count for `lastStore` |
+| `formattedRevenue: String` | Total revenue formatted as `"%.2f"` |
+| `formattedProfit: String` | Total profit formatted as `"%.2f"` |
+| `totalStock: Int` | Sum of all product stocks for `lastStore` |
+| `lowStockAlerts: String?` | Comma-joined names of products with stock ≤ 5 (top 3); `null` when none |
+| `hasProducts: Boolean` | `true` when the store has at least one product |
+| `isInitialized: Boolean` | `false` on the initial empty value; `true` once the DataStore / Room emission arrives |
+
+`uiState` is driven by `UserSettingsRepository.lastAccessedStoreId.flatMapLatest { … }`. If `lastAccessedStoreId` is `null` (fresh install / no store visited yet), `uiState` emits `HomeUiState(isInitialized = true)` with `lastStore = null`.
 
 State class: `HomeUiState.kt`
+
+### Auto-navigation
+
+`HomeScreen` auto-navigates to `RecordSaleScreen` for the last store on first composition. The `LaunchedEffect` that triggers it has **three guards** — all must pass before navigation fires:
+
+1. `uiState.isInitialized` must be `true` — waits for Room/DataStore to emit.
+2. `isSyncing` must be `false` — waits for any in-progress initial sync to complete.
+3. `viewModel.shouldAutoNav()` must return `true` — a one-shot flag; `markAutoNavHandled()` is called after navigation to prevent re-firing on recomposition.
+
+Additionally, `val lastStore = uiState.lastStore ?: return@LaunchedEffect` acts as a fourth guard: if no store has ever been explicitly visited (`lastAccessedStoreId == null`), `lastStore` is `null` and the effect returns early without burning the one-shot flag.
+
+The `LaunchedEffect` key is `(uiState.isInitialized, isSyncing)` so it re-runs when sync finishes and re-evaluates the guards with the final state.
 
 ### Components
 

@@ -77,6 +77,17 @@ Configured globally on the `NavHost` via `enterTransition`, `exitTransition`, `p
 
 ---
 
+## Global Sync UI
+
+`AppNavigation` injects `SyncViewModel` and handles two cross-cutting concerns that apply to the entire navigation graph:
+
+- **Snackbar host**: the `Scaffold`'s `snackbarHost` slot is wired to a `SnackbarHostState`. A `LaunchedEffect(Unit)` collects `syncViewModel.syncError` (a `SharedFlow<String>`) and shows each message as a `Snackbar`. This is the surface point for all `RemoteErrorHandler.notify()` calls (e.g. initial sync failures).
+- **Progress indicator**: `syncViewModel.isSyncing` is collected as state. When `true`, a `LinearProgressIndicator` is placed at the top of the content `Box`, above the `NavHost`. It disappears automatically when sync completes.
+
+Neither concern is handled by individual screens — everything is centralised in `AppNavigation`.
+
+---
+
 ## Back Stack Behaviour
 
 - **Create/Edit screens** (`CreateStoreScreen`, `CreateProductScreen`, `RecordSaleScreen`): call `popBackStack()` on save, returning to the previous screen.

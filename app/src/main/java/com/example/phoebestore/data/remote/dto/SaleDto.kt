@@ -16,6 +16,8 @@ data class SaleDto(
     @SerialName("sale_type") val saleType: String = "STANDARD",
     @SerialName("profit_outcome") val profitOutcome: String = "NORMAL_PROFIT",
     val notes: String = "",
+    @SerialName("on_credit") val onCredit: Boolean = false,
+    @SerialName("credit_person_name") val creditPersonName: String = "",
     @SerialName("sold_at") val soldAt: Long,
     @SerialName("created_at") val createdAt: Long
 )

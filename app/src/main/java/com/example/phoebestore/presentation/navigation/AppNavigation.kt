@@ -2,11 +2,20 @@ package com.example.phoebestore.presentation.navigation
 
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavHostController
@@ -43,8 +52,18 @@ import com.example.phoebestore.ui.screen.store.StoreListScreen
 
 @Composable
 fun AppNavigation(
-    navController: NavHostController = rememberNavController()
+    navController: NavHostController = rememberNavController(),
+    syncViewModel: SyncViewModel = hiltViewModel()
 ) {
+    val snackbarHostState = remember { SnackbarHostState() }
+    val isSyncing by syncViewModel.isSyncing.collectAsState()
+
+    LaunchedEffect(Unit) {
+        syncViewModel.syncError.collect { message ->
+            snackbarHostState.showSnackbar(message)
+        }
+    }
+
     val currentEntry by navController.currentBackStackEntryAsState()
     val currentDestination = currentEntry?.destination
     val isOnHome = currentDestination?.hasRoute(HomeScreen::class) == true
@@ -52,6 +71,7 @@ fun AppNavigation(
     val showBottomBar = isOnHome || isOnStores
 
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         bottomBar = {
             if (showBottomBar) {
                 AppBottomNavBar(
@@ -73,17 +93,18 @@ fun AppNavigation(
             }
         }
     ) { innerPadding ->
-        NavHost(
-            navController = navController,
-            startDestination = HomeScreen,
-            modifier = Modifier
-                .padding(innerPadding)
-                .consumeWindowInsets(innerPadding),
-            enterTransition = { slideInHorizontally { it } },
-            exitTransition = { slideOutHorizontally { -it } },
-            popEnterTransition = { slideInHorizontally { -it } },
-            popExitTransition = { slideOutHorizontally { it } }
-        ) {
+        Box {
+            NavHost(
+                navController = navController,
+                startDestination = HomeScreen,
+                modifier = Modifier
+                    .padding(innerPadding)
+                    .consumeWindowInsets(innerPadding),
+                enterTransition = { slideInHorizontally { it } },
+                exitTransition = { slideOutHorizontally { -it } },
+                popEnterTransition = { slideInHorizontally { -it } },
+                popExitTransition = { slideOutHorizontally { it } }
+            ) {
             composable<HomeScreen> {
                 HomeScreen(
                     onNavigateToCreateSale = { storeId ->
@@ -204,6 +225,10 @@ fun AppNavigation(
 
             composable<InventoryHistoryScreen> {
                 InventoryHistoryScreen(onNavigateBack = { navController.popBackStack() })
+            }
+            }
+            if (isSyncing) {
+                LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
             }
         }
     }

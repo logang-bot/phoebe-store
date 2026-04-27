@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
+import androidx.room.Upsert
 import com.example.phoebestore.data.local.entity.StoreEntity
 import kotlinx.coroutines.flow.Flow
 
@@ -13,6 +14,9 @@ interface StoreDao {
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insert(store: StoreEntity): Long
+
+    @Upsert
+    suspend fun upsert(store: StoreEntity)
 
     @Update
     suspend fun update(store: StoreEntity)

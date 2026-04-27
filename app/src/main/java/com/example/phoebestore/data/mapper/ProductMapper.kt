@@ -28,6 +28,18 @@ fun ProductDto.toDomain(): Product = Product(
     createdAt = createdAt
 )
 
+fun Product.toDto(): ProductDto = ProductDto(
+    id = id,
+    storeId = storeId,
+    name = name,
+    description = description,
+    price = price,
+    costPrice = costPrice,
+    stock = stock,
+    imageUrl = imageUrl,
+    createdAt = createdAt
+)
+
 fun Product.toEntity(): ProductEntity = ProductEntity(
     id = id,
     storeId = storeId,

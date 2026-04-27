@@ -13,9 +13,9 @@ PhoebeStore follows **Clean Architecture** with three layers. Dependencies only 
 │                      Domain                          │  ← Pure Kotlin, zero Android deps
 │  domain/model/  ·  domain/repository/ (interfaces)  │
 ├──────────────────────────────────────────────────────┤
-│                       Data                           │  ← Room, Retrofit (future), Hilt
+│                       Data                           │  ← Room, Supabase, Hilt
 │  data/local/  ·  data/remote/  ·  data/mapper/      │
-│  data/repository/impl/                               │
+│  data/repository/impl/  ·  data/sync/               │
 └──────────────────────────────────────────────────────┘
            ↑  dependencies point inward only  ↑
 ```
@@ -41,9 +41,11 @@ Implements `domain/repository/` contracts. The only layer allowed to touch datab
 | `data/local/entity/` | Room `@Entity` classes (suffixed `Entity`) |
 | `data/local/dao/` | Room DAO interfaces |
 | `data/local/AppDatabase.kt` | Room database definition |
-| `data/remote/dto/` | `@Serializable` API response classes (suffixed `Dto`) |
-| `data/mapper/` | Extension functions: `Entity → Domain`, `Dto → Domain`, `Domain → Entity` |
-| `data/repository/impl/` | Concrete repository implementations |
+| `data/remote/dto/` | `@Serializable` Supabase response classes (suffixed `Dto`) |
+| `data/remote/source/` | Remote data source interfaces and implementations |
+| `data/mapper/` | Extension functions: `Entity → Domain`, `Dto → Domain`, `Domain → Entity`, `Domain → Dto` |
+| `data/repository/impl/` | Concrete repository implementations (offline-first: Room + Supabase) |
+| `data/sync/` | `SyncManager` (initial pull on fresh install) and `RemoteErrorHandler` |
 
 Rule: never expose entities or DTOs above this layer — always map to domain models first.
 
@@ -63,7 +65,8 @@ Hilt modules that wire everything at startup.
 
 | File | Provides |
 |---|---|
-| `di/DatabaseModule.kt` | Room database, DAOs, repository bindings |
+| `di/DatabaseModule.kt` | Room database, DAOs, repository bindings (including `UserSettingsRepository`) |
+| `di/SupabaseModule.kt` | `SupabaseClient` singleton, remote data source bindings |
 
 ---
 
@@ -101,7 +104,8 @@ app/src/main/java/com/example/phoebestore/
 │   │   ├── StoreRepository.kt
 │   │   ├── ProductRepository.kt
 │   │   ├── SaleRepository.kt           ← update() + getOnCreditByStore()
-│   │   └── InventoryLogRepository.kt
+│   │   ├── InventoryLogRepository.kt
+│   │   └── UserSettingsRepository.kt   ← lastAccessedStoreId (DataStore)
 │   └── usecase/
 │       └── RecordSaleUseCase.kt
 ├── data/
@@ -113,29 +117,42 @@ app/src/main/java/com/example/phoebestore/
 │   │   │   ├── SaleEntity.kt           ← onCredit + creditPersonName columns
 │   │   │   └── InventoryLogEntity.kt
 │   │   └── dao/
-│   │       ├── StoreDao.kt
-│   │       ├── ProductDao.kt
-│   │       ├── SaleDao.kt              ← update() + getOnCreditByStore() queries
+│   │       ├── StoreDao.kt             ← upsert() added
+│   │       ├── ProductDao.kt           ← upsert() added
+│   │       ├── SaleDao.kt              ← upsert() added
 │   │       └── InventoryLogDao.kt
 │   ├── remote/
-│   │   └── dto/
-│   │       ├── StoreDto.kt
-│   │       ├── ProductDto.kt
-│   │       └── SaleDto.kt
+│   │   ├── dto/
+│   │   │   ├── StoreDto.kt
+│   │   │   ├── ProductDto.kt
+│   │   │   └── SaleDto.kt              ← onCredit + creditPersonName added
+│   │   └── source/
+│   │       ├── StoreRemoteDataSource.kt
+│   │       ├── ProductRemoteDataSource.kt
+│   │       ├── SaleRemoteDataSource.kt
+│   │       └── impl/
+│   │           ├── StoreRemoteDataSourceImpl.kt
+│   │           ├── ProductRemoteDataSourceImpl.kt
+│   │           └── SaleRemoteDataSourceImpl.kt
 │   ├── mapper/
-│   │   ├── StoreMapper.kt
-│   │   ├── ProductMapper.kt
-│   │   ├── SaleMapper.kt               ← maps onCredit + creditPersonName
+│   │   ├── StoreMapper.kt              ← toDto() added
+│   │   ├── ProductMapper.kt            ← toDto() added
+│   │   ├── SaleMapper.kt               ← toDto() added
 │   │   └── InventoryLogMapper.kt
+│   ├── sync/
+│   │   ├── SyncManager.kt              ← initial pull on fresh install
+│   │   └── RemoteErrorHandler.kt       ← centralized network error logging
 │   └── repository/
 │       └── impl/
-│           ├── StoreRepositoryImpl.kt
+│           ├── StoreRepositoryImpl.kt  ← offline-first + Supabase sync
 │           ├── ProductRepositoryImpl.kt
 │           ├── SaleRepositoryImpl.kt
-│           └── InventoryLogRepositoryImpl.kt
+│           ├── InventoryLogRepositoryImpl.kt
+│           └── UserSettingsRepositoryImpl.kt ← DataStore Preferences
 ├── presentation/
 │   ├── navigation/
-│   │   └── AppNavigation.kt
+│   │   ├── AppNavigation.kt            ← Scaffold with snackbar + sync progress bar
+│   │   └── SyncViewModel.kt            ← bridges SyncManager + RemoteErrorHandler to UI
 │   └── screens/
 │       └── AppRoutes.kt                ← CreditSalesListScreen route added
 ├── ui/
