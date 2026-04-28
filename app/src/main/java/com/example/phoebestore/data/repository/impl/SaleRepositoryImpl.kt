@@ -5,6 +5,7 @@ import com.example.phoebestore.data.mapper.toDomain
 import com.example.phoebestore.data.mapper.toDto
 import com.example.phoebestore.data.mapper.toEntity
 import com.example.phoebestore.data.remote.source.SaleRemoteDataSource
+import com.example.phoebestore.data.sync.DeviceIdProvider
 import com.example.phoebestore.data.sync.RemoteErrorHandler
 import com.example.phoebestore.domain.model.Sale
 import com.example.phoebestore.domain.repository.SaleRepository
@@ -15,19 +16,20 @@ import javax.inject.Inject
 class SaleRepositoryImpl @Inject constructor(
     private val dao: SaleDao,
     private val remote: SaleRemoteDataSource,
-    private val errorHandler: RemoteErrorHandler
+    private val errorHandler: RemoteErrorHandler,
+    private val deviceIdProvider: DeviceIdProvider
 ) : SaleRepository {
 
     override suspend fun create(sale: Sale): Long {
         val id = dao.insert(sale.toEntity())
-        runCatching { remote.insert(sale.copy(id = id).toDto()) }
+        runCatching { remote.insert(sale.copy(id = id, deviceId = deviceIdProvider.id).toDto()) }
             .onFailure { errorHandler.log("SaleCreate", it) }
         return id
     }
 
     override suspend fun update(sale: Sale) {
         dao.update(sale.toEntity())
-        runCatching { remote.update(sale.toDto()) }
+        runCatching { remote.update(sale.copy(deviceId = deviceIdProvider.id).toDto()) }
             .onFailure { errorHandler.log("SaleUpdate", it) }
     }
 

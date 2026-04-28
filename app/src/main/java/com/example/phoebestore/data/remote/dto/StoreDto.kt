@@ -11,5 +11,6 @@ data class StoreDto(
     val currency: String = "USD",
     @SerialName("logo_url") val logoUrl: String = "",
     @SerialName("photo_url") val photoUrl: String = "",
-    @SerialName("created_at") val createdAt: Long
+    @SerialName("created_at") val createdAt: Long,
+    @SerialName("device_id") val deviceId: String = ""
 )

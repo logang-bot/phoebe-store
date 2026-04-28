@@ -13,7 +13,8 @@ fun ProductEntity.toDomain(): Product = Product(
     costPrice = costPrice,
     stock = stock,
     imageUrl = imageUrl,
-    createdAt = createdAt
+    createdAt = createdAt,
+    deviceId = deviceId
 )
 
 fun ProductDto.toDomain(): Product = Product(
@@ -25,7 +26,8 @@ fun ProductDto.toDomain(): Product = Product(
     costPrice = costPrice,
     stock = stock,
     imageUrl = imageUrl,
-    createdAt = createdAt
+    createdAt = createdAt,
+    deviceId = deviceId
 )
 
 fun Product.toDto(): ProductDto = ProductDto(
@@ -37,7 +39,8 @@ fun Product.toDto(): ProductDto = ProductDto(
     costPrice = costPrice,
     stock = stock,
     imageUrl = imageUrl,
-    createdAt = createdAt
+    createdAt = createdAt,
+    deviceId = deviceId
 )
 
 fun Product.toEntity(): ProductEntity = ProductEntity(
@@ -49,5 +52,6 @@ fun Product.toEntity(): ProductEntity = ProductEntity(
     costPrice = costPrice,
     stock = stock,
     imageUrl = imageUrl,
-    createdAt = createdAt
+    createdAt = createdAt,
+    deviceId = deviceId
 )

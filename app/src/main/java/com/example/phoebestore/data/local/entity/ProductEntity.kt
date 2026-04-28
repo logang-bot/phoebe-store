@@ -27,5 +27,6 @@ data class ProductEntity(
     val costPrice: Double = 0.0,
     val stock: Int = 0,
     val imageUrl: String = "",
-    val createdAt: Long = System.currentTimeMillis()
+    val createdAt: Long = System.currentTimeMillis(),
+    val deviceId: String = ""
 )

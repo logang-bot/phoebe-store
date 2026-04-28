@@ -16,7 +16,8 @@ fun StoreEntity.toDomain(): Store = Store(
     logoUrl = logoUrl,
     photoUrl = photoUrl,
     createdAt = createdAt,
-    lastAccessedAt = lastAccessedAt
+    lastAccessedAt = lastAccessedAt,
+    deviceId = deviceId
 )
 
 fun StoreDto.toDomain(): Store = Store(
@@ -26,7 +27,8 @@ fun StoreDto.toDomain(): Store = Store(
     currency = currency.toCurrency(),
     logoUrl = logoUrl,
     photoUrl = photoUrl,
-    createdAt = createdAt
+    createdAt = createdAt,
+    deviceId = deviceId
 )
 
 fun Store.toDto(): StoreDto = StoreDto(
@@ -36,7 +38,8 @@ fun Store.toDto(): StoreDto = StoreDto(
     currency = currency.name,
     logoUrl = logoUrl,
     photoUrl = photoUrl,
-    createdAt = createdAt
+    createdAt = createdAt,
+    deviceId = deviceId
 )
 
 fun Store.toEntity(): StoreEntity = StoreEntity(
@@ -47,5 +50,6 @@ fun Store.toEntity(): StoreEntity = StoreEntity(
     logoUrl = logoUrl,
     photoUrl = photoUrl,
     createdAt = createdAt,
-    lastAccessedAt = lastAccessedAt
+    lastAccessedAt = lastAccessedAt,
+    deviceId = deviceId
 )

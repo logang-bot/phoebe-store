@@ -67,23 +67,23 @@ Entry point of the app. Shows a welcome greeting, a card for the last store the 
 
 | Property | Type | Description |
 |---|---|---|
-| `uiState` | `StateFlow<HomeUiState>` | Driven by `UserSettingsRepository.lastAccessedStoreId` — see below |
+| `uiState` | `StateFlow<HomeUiState>` | Driven by `storeRepository.getAll().flatMapLatest { … }` — see below |
 | `isSyncing` | `StateFlow<Boolean>` | Mirrors `SyncManager.isSyncing`; used to gate auto-navigation |
 
 `HomeUiState` fields:
 
 | Field | Notes |
 |---|---|
-| `lastStore: Store?` | The last explicitly-visited store; `null` until the user visits one |
+| `lastStore: Store?` | The most recently created store (`stores.firstOrNull()` from `getAll()` ordered by `createdAt DESC`); `null` when no stores exist |
 | `totalSales: Int` | Sale count for `lastStore` |
 | `formattedRevenue: String` | Total revenue formatted as `"%.2f"` |
 | `formattedProfit: String` | Total profit formatted as `"%.2f"` |
 | `totalStock: Int` | Sum of all product stocks for `lastStore` |
 | `lowStockAlerts: String?` | Comma-joined names of products with stock ≤ 5 (top 3); `null` when none |
 | `hasProducts: Boolean` | `true` when the store has at least one product |
-| `isInitialized: Boolean` | `false` on the initial empty value; `true` once the DataStore / Room emission arrives |
+| `isInitialized: Boolean` | `false` on the initial empty value; `true` once the first Room emission arrives |
 
-`uiState` is driven by `UserSettingsRepository.lastAccessedStoreId.flatMapLatest { … }`. If `lastAccessedStoreId` is `null` (fresh install / no store visited yet), `uiState` emits `HomeUiState(isInitialized = true)` with `lastStore = null`.
+`uiState` is driven by `storeRepository.getAll().flatMapLatest { stores → … }`. When `stores` is empty, `uiState` emits `HomeUiState(isInitialized = true)` with `lastStore = null`.
 
 State class: `HomeUiState.kt`
 
@@ -230,8 +230,8 @@ State class: `StoreDetailUiState.kt`
 #### Header (`StoreDetailHeader`)
 A `Box` with total height of `photoHeight + logoRadius` (240dp = 200dp photo + 40dp overlap):
 
-- **Cover photo**: full-width `AsyncImage` at 200dp height; `surfaceVariant` background shown when no `photoUrl` is set.
-- **Logo circle**: 80dp `Box` with `CircleShape`, centered horizontally, offset so its center sits exactly at the photo's bottom edge (40dp overlap). Shows `AsyncImage` when `logoUrl` is set, otherwise `Icons.Default.Star` placeholder. 2dp `outline` border.
+- **Cover photo**: full-width `SubcomposeAsyncImage` at 200dp height with `ContentScale.Crop`; `error` slot shows a centred `ic_landscape` icon. When `photoUrl` is blank, a `surfaceVariant` background with a centred `ic_landscape` icon is rendered directly (no network call).
+- **Logo circle**: 80dp `Box` with `CircleShape`, centered horizontally, offset so its center sits exactly at the photo's bottom edge (40dp overlap). Shows `SubcomposeAsyncImage` with `error` slot (`ic_brand_family`, 36dp) when `logoUrl` is non-blank, otherwise the icon directly. 2dp `outline` border.
 - **Store name** (`headlineSmall`, Bold) and **currency** (`bodyMedium`, `onSurfaceVariant`) centered in a `Column` directly below the header box.
 
 #### Body
@@ -283,7 +283,7 @@ State class: `ProductListUiState.kt`
 
 ### `ProductCard` (`ProductCard.kt`)
 Card showing:
-- Image area (`aspectRatio(1f)`): `AsyncImage` with `ContentScale.Crop`; `Icons.Default.Share` placeholder when `imageUrl` is blank. A `SmallFloatingActionButton` (using `ic_box_add`) sits at `Alignment.BottomEnd` of the image box — tapping it opens `UpdateStockDialog` for that product.
+- Image area (`aspectRatio(1f)`): `SubcomposeAsyncImage` with `ContentScale.Crop` when `imageUrl` is non-blank; `error` slot shows a centred `ic_package_2` icon with `padding(24.dp)`. When `imageUrl` is blank the icon is rendered directly (no network call). A `SmallFloatingActionButton` (using `ic_box_add`) sits at `Alignment.BottomEnd` of the image box — tapping it opens `UpdateStockDialog` for that product.
 - Info area below: product name (bold, single line), selling price, and stock count.
 
 Previews: light / dark (2 total).
@@ -485,7 +485,7 @@ Uses `BoxWithConstraints` to capture the viewport height and a `rememberScrollSt
 #### `ProductPickerGrid` (`ProductPickerGrid.kt`)
 3-column lazy grid rendered inside `BoxWithConstraints`. The grid height is set to `maxWidth` — because cells are square (`aspectRatio(1f)`) and gaps are equal in both directions, this makes exactly 3 rows visible at once; additional products scroll within the fixed viewport.
 
-Items are modelled as a sealed `GridItem` interface (`Search`, `Custom`, `ProductItem`). The first two slots are always `PickerActionCard`s (icon + label, centred). Remaining slots are `PickerProductCard`s showing the product image (`AsyncImage` with `ic_package_2` fallback) and the product name centred below. When an item is selected its card switches to `primaryContainer` and a `primary.copy(alpha = 0.4f)` overlay is drawn on top of the image area.
+Items are modelled as a sealed `GridItem` interface (`Search`, `Custom`, `ProductItem`). The first two slots are always `PickerActionCard`s (icon + label, centred). Remaining slots are `PickerProductCard`s showing the product image (`SubcomposeAsyncImage` with `error` slot showing `ic_package_2`; blank URL renders the icon directly) and the product name centred below. When an item is selected its card switches to `primaryContainer` and a `primary.copy(alpha = 0.4f)` overlay is drawn on top of the image area.
 
 Callbacks: `onProductSelected(Product)`, `onCustomSelected()`, `onSearchSelected()`.
 
@@ -726,7 +726,7 @@ On confirm, `viewModel.markAsDone(id)` is called, which fetches the sale by ID a
 ### `StoreCard` (`ui/common/StoreCard.kt`)
 Shared clickable card used in both `HomeScreen` and `StoreListScreen`. Accepts `Store?` (null = empty state) and `onClick: () -> Unit = {}`.
 
-- **With a store:** `AsyncImage` at 180dp height with vertical gradient scrim (transparent → `surfaceContainerHigh`). Logo circle (40dp, `CircleShape`) in the top-left corner showing `logoUrl` or `Icons.Default.Star` placeholder. Currency label anchored bottom-right. Store name + optional description bottom-left.
+- **With a store:** `SubcomposeAsyncImage` at 180dp height with `ContentScale.Crop` and a vertical gradient scrim (transparent → `surfaceContainerHigh`). `error` slot shows a centred `ic_landscape` icon (48dp); blank `photoUrl` renders a `surfaceVariant` background with the icon directly. Logo circle (56dp, `CircleShape`) in the top-left corner: `SubcomposeAsyncImage` when `logoUrl` is non-blank (`error` slot shows `ic_brand_family`, 28dp), otherwise the icon directly. Currency label anchored bottom-right. Store name + optional description bottom-left.
 - **Without a store:** Centered empty-state text prompting the user to create their first store.
 
 Previews: light / dark × with store / empty state (4 total).

@@ -13,5 +13,6 @@ data class ProductDto(
     @SerialName("cost_price") val costPrice: Double = 0.0,
     val stock: Int = 0,
     @SerialName("image_url") val imageUrl: String = "",
-    @SerialName("created_at") val createdAt: Long
+    @SerialName("created_at") val createdAt: Long,
+    @SerialName("device_id") val deviceId: String = ""
 )

@@ -25,7 +25,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
+import coil3.compose.SubcomposeAsyncImage
 import com.example.phoebestore.R
 import com.example.phoebestore.domain.model.Product
 import com.example.phoebestore.ui.common.ThemedCard
@@ -53,11 +53,21 @@ fun ProductCard(
                     .background(MaterialTheme.colorScheme.surfaceVariant)
             ) {
                 if (product.imageUrl.isNotBlank()) {
-                    AsyncImage(
+                    SubcomposeAsyncImage(
                         model = product.imageUrl,
                         contentDescription = null,
                         contentScale = ContentScale.Crop,
-                        modifier = Modifier.fillMaxSize()
+                        modifier = Modifier.fillMaxSize(),
+                        error = {
+                            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                Icon(
+                                    painter = painterResource(R.drawable.ic_package_2),
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.padding(24.dp).fillMaxSize()
+                                )
+                            }
+                        }
                     )
                 } else {
                     Icon(

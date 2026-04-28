@@ -11,11 +11,16 @@ import com.example.phoebestore.data.remote.dto.StoreDto
 import com.example.phoebestore.data.remote.source.ProductRemoteDataSource
 import com.example.phoebestore.data.remote.source.SaleRemoteDataSource
 import com.example.phoebestore.data.remote.source.StoreRemoteDataSource
+import com.example.phoebestore.data.remote.storage.ImageUploader
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.withContext
+import java.io.File
+import java.net.URI
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -28,7 +33,9 @@ class SyncManager @Inject constructor(
     private val storeDao: StoreDao,
     private val productDao: ProductDao,
     private val saleDao: SaleDao,
-    private val errorHandler: RemoteErrorHandler
+    private val errorHandler: RemoteErrorHandler,
+    private val imageUploader: ImageUploader,
+    private val deviceIdProvider: DeviceIdProvider
 ) {
     private val prefs = context.getSharedPreferences("sync_prefs", Context.MODE_PRIVATE)
 
@@ -87,12 +94,76 @@ class SyncManager @Inject constructor(
     }
 
     private suspend fun pushAll() {
+        val deviceId = deviceIdProvider.id
         val stores = storeDao.getAll().first()
-        stores.forEach { storeRemote.insert(it.toDomain().toDto()) }
-        stores.forEach { store ->
-            productDao.getByStore(store.id).first().forEach { productRemote.insert(it.toDomain().toDto()) }
-            saleDao.getByStore(store.id).first().forEach { saleRemote.insert(it.toDomain().toDto()) }
+        stores.forEach { storeEntity ->
+            val s = storeEntity.toDomain()
+            val logo = imageUploader.resolveUrl(s.logoUrl, "store-images", "logos/$deviceId/${s.id}.jpg")
+            val photo = imageUploader.resolveUrl(s.photoUrl, "store-images", "photos/$deviceId/${s.id}.jpg")
+            if (logo != s.logoUrl || photo != s.photoUrl)
+                storeDao.update(s.copy(logoUrl = logo, photoUrl = photo).toEntity())
+            storeRemote.insert(s.copy(logoUrl = logo, photoUrl = photo, deviceId = deviceId).toDto())
+
+            productDao.getByStore(s.id).first().forEach { productEntity ->
+                val p = productEntity.toDomain()
+                val image = imageUploader.resolveUrl(p.imageUrl, "product-images", "products/$deviceId/${p.id}.jpg")
+                if (image != p.imageUrl) productDao.update(p.copy(imageUrl = image).toEntity())
+                productRemote.insert(p.copy(imageUrl = image, deviceId = deviceId).toDto())
+            }
+
+            saleDao.getByStore(s.id).first().forEach { saleEntity ->
+                saleRemote.insert(saleEntity.toDomain().copy(deviceId = deviceId).toDto())
+            }
         }
+    }
+
+    suspend fun repairLocalImageUrls() {
+        val deviceId = deviceIdProvider.id
+        val stores = storeDao.getAll().first()
+        if (stores.isEmpty()) return
+
+        val hasLocalUrls = stores.any { e ->
+            val s = e.toDomain()
+            s.logoUrl.startsWith("file://") || s.photoUrl.startsWith("file://")
+        } || stores.any { e ->
+            productDao.getByStore(e.id).first().any { it.toDomain().imageUrl.startsWith("file://") }
+        }
+        if (!hasLocalUrls) return
+
+        _isSyncing.value = true
+        try {
+            stores.forEach { storeEntity ->
+                val s = storeEntity.toDomain()
+                val logo  = repairUrl(s.logoUrl,  "store-images", "logos/$deviceId/${s.id}.jpg")
+                val photo = repairUrl(s.photoUrl, "store-images", "photos/$deviceId/${s.id}.jpg")
+                if (logo != s.logoUrl || photo != s.photoUrl) {
+                    storeDao.update(s.copy(logoUrl = logo, photoUrl = photo).toEntity())
+                    runCatching {
+                        storeRemote.update(s.copy(logoUrl = logo, photoUrl = photo, deviceId = deviceId).toDto())
+                    }.onFailure { errorHandler.log("StoreRepair", it) }
+                }
+                productDao.getByStore(s.id).first().forEach { pEntity ->
+                    val p = pEntity.toDomain()
+                    val img = repairUrl(p.imageUrl, "product-images", "products/$deviceId/${p.id}.jpg")
+                    if (img != p.imageUrl) {
+                        productDao.update(p.copy(imageUrl = img).toEntity())
+                        runCatching {
+                            productRemote.update(p.copy(imageUrl = img, deviceId = deviceId).toDto())
+                        }.onFailure { errorHandler.log("ProductRepair", it) }
+                    }
+                }
+            }
+        } finally {
+            _isSyncing.value = false
+        }
+    }
+
+    private suspend fun repairUrl(url: String, bucket: String, remotePath: String): String {
+        if (url.isBlank() || url.startsWith("https://")) return url
+        val fileExists = runCatching {
+            withContext(Dispatchers.IO) { File(URI.create(url)).exists() }
+        }.getOrDefault(false)
+        return if (!fileExists) "" else imageUploader.resolveUrl(url, bucket, remotePath)
     }
 
     companion object {

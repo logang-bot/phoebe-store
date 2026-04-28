@@ -33,5 +33,6 @@ data class SaleEntity(
     val onCredit: Boolean = false,
     val creditPersonName: String = "",
     val soldAt: Long = System.currentTimeMillis(),
-    val createdAt: Long = System.currentTimeMillis()
+    val createdAt: Long = System.currentTimeMillis(),
+    val deviceId: String = ""
 )

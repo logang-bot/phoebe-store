@@ -30,7 +30,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
+import coil3.compose.SubcomposeAsyncImage
 import com.example.phoebestore.R
 import com.example.phoebestore.domain.model.Currency
 import com.example.phoebestore.domain.model.Store
@@ -87,13 +87,23 @@ fun StoreCard(
             ) {
                 // Background photo
                 if (store.photoUrl.isNotBlank()) {
-                    AsyncImage(
+                    SubcomposeAsyncImage(
                         model = store.photoUrl,
                         contentDescription = null,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
                             .fillMaxSize()
-                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                            .background(MaterialTheme.colorScheme.surfaceVariant),
+                        error = {
+                            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                Icon(
+                                    painter = painterResource(R.drawable.ic_landscape),
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.size(48.dp)
+                                )
+                            }
+                        }
                     )
                 } else {
                     Box(
@@ -135,11 +145,21 @@ fun StoreCard(
                     contentAlignment = Alignment.Center
                 ) {
                     if (store.logoUrl.isNotBlank()) {
-                        AsyncImage(
+                        SubcomposeAsyncImage(
                             model = store.logoUrl,
                             contentDescription = null,
                             contentScale = ContentScale.Crop,
-                            modifier = Modifier.fillMaxSize()
+                            modifier = Modifier.fillMaxSize(),
+                            error = {
+                                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                    Icon(
+                                        painter = painterResource(R.drawable.ic_brand_family),
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier.size(28.dp)
+                                    )
+                                }
+                            }
                         )
                     } else {
                         Icon(

@@ -83,6 +83,7 @@ dependencies {
 
     // Supabase
     implementation(libs.supabase.postgrest)
+    implementation(libs.supabase.storage)
     implementation(libs.ktor.client.okhttp)
 
     testImplementation(libs.junit)

@@ -3,6 +3,7 @@ package com.example.phoebestore.di
 import android.content.Context
 import androidx.room.Room
 import com.example.phoebestore.data.local.AppDatabase
+import com.example.phoebestore.data.local.MIGRATION_8_9
 import com.example.phoebestore.data.local.dao.InventoryLogDao
 import com.example.phoebestore.data.local.dao.ProductDao
 import com.example.phoebestore.data.local.dao.SaleDao
@@ -33,7 +34,7 @@ object DatabaseModule {
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): AppDatabase =
         Room.databaseBuilder(context, AppDatabase::class.java, "phoebe_store.db")
-            .fallbackToDestructiveMigration()
+            .addMigrations(MIGRATION_8_9)
             .build()
 
     @Provides

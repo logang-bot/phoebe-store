@@ -20,6 +20,7 @@ class PhoebeStoreApp : Application() {
         super.onCreate()
         appScope.launch {
             syncManager.runInitialSyncIfNeeded()
+            syncManager.repairLocalImageUrls()
         }
     }
 }

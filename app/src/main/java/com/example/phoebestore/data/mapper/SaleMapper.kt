@@ -21,7 +21,8 @@ fun SaleEntity.toDomain(): Sale = Sale(
     onCredit = onCredit,
     creditPersonName = creditPersonName,
     soldAt = soldAt,
-    createdAt = createdAt
+    createdAt = createdAt,
+    deviceId = deviceId
 )
 
 fun SaleDto.toDomain(): Sale = Sale(
@@ -39,7 +40,8 @@ fun SaleDto.toDomain(): Sale = Sale(
     onCredit = onCredit,
     creditPersonName = creditPersonName,
     soldAt = soldAt,
-    createdAt = createdAt
+    createdAt = createdAt,
+    deviceId = deviceId
 )
 
 fun Sale.toDto(): SaleDto = SaleDto(
@@ -57,7 +59,8 @@ fun Sale.toDto(): SaleDto = SaleDto(
     onCredit = onCredit,
     creditPersonName = creditPersonName,
     soldAt = soldAt,
-    createdAt = createdAt
+    createdAt = createdAt,
+    deviceId = deviceId
 )
 
 fun Sale.toEntity(): SaleEntity = SaleEntity(
@@ -75,5 +78,6 @@ fun Sale.toEntity(): SaleEntity = SaleEntity(
     onCredit = onCredit,
     creditPersonName = creditPersonName,
     soldAt = soldAt,
-    createdAt = createdAt
+    createdAt = createdAt,
+    deviceId = deviceId
 )

@@ -13,5 +13,6 @@ data class StoreEntity(
     val logoUrl: String = "",
     val photoUrl: String = "",
     val createdAt: Long = System.currentTimeMillis(),
-    val lastAccessedAt: Long = 0
+    val lastAccessedAt: Long = 0,
+    val deviceId: String = ""
 )

@@ -26,7 +26,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
+import coil3.compose.SubcomposeAsyncImage
 import com.example.phoebestore.R
 import com.example.phoebestore.domain.model.Store
 
@@ -53,11 +53,21 @@ internal fun StoreDetailHeader(
                 .background(MaterialTheme.colorScheme.surfaceVariant)
         ) {
             if (store?.photoUrl?.isNotBlank() == true) {
-                AsyncImage(
+                SubcomposeAsyncImage(
                     model = store.photoUrl,
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier.fillMaxSize(),
+                    error = {
+                        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_landscape),
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(56.dp)
+                            )
+                        }
+                    }
                 )
             } else {
                 Icon(
@@ -99,11 +109,21 @@ internal fun StoreDetailHeader(
             contentAlignment = Alignment.Center
         ) {
             if (store?.logoUrl?.isNotBlank() == true) {
-                AsyncImage(
+                SubcomposeAsyncImage(
                     model = store.logoUrl,
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier.fillMaxSize(),
+                    error = {
+                        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_brand_family),
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(36.dp)
+                            )
+                        }
+                    }
                 )
             } else {
                 Icon(

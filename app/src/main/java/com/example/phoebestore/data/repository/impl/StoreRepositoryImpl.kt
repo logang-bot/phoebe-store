@@ -4,7 +4,9 @@ import com.example.phoebestore.data.local.dao.StoreDao
 import com.example.phoebestore.data.mapper.toDomain
 import com.example.phoebestore.data.mapper.toDto
 import com.example.phoebestore.data.mapper.toEntity
+import com.example.phoebestore.data.remote.storage.ImageUploader
 import com.example.phoebestore.data.remote.source.StoreRemoteDataSource
+import com.example.phoebestore.data.sync.DeviceIdProvider
 import com.example.phoebestore.data.sync.RemoteErrorHandler
 import com.example.phoebestore.domain.model.Store
 import com.example.phoebestore.domain.repository.StoreRepository
@@ -15,20 +17,34 @@ import javax.inject.Inject
 class StoreRepositoryImpl @Inject constructor(
     private val dao: StoreDao,
     private val remote: StoreRemoteDataSource,
-    private val errorHandler: RemoteErrorHandler
+    private val errorHandler: RemoteErrorHandler,
+    private val imageUploader: ImageUploader,
+    private val deviceIdProvider: DeviceIdProvider
 ) : StoreRepository {
 
     override suspend fun create(store: Store): Long {
         val id = dao.insert(store.toEntity())
-        runCatching { remote.insert(store.copy(id = id).toDto()) }
-            .onFailure { errorHandler.log("StoreCreate", it) }
+        runCatching {
+            val deviceId = deviceIdProvider.id
+            val logo = imageUploader.resolveUrl(store.logoUrl, "store-images", "logos/$deviceId/$id.jpg")
+            val photo = imageUploader.resolveUrl(store.photoUrl, "store-images", "photos/$deviceId/$id.jpg")
+            if (logo != store.logoUrl || photo != store.photoUrl)
+                dao.update(store.copy(id = id, logoUrl = logo, photoUrl = photo).toEntity())
+            remote.insert(store.copy(id = id, logoUrl = logo, photoUrl = photo, deviceId = deviceId).toDto())
+        }.onFailure { errorHandler.log("StoreCreate", it) }
         return id
     }
 
     override suspend fun update(store: Store) {
         dao.update(store.toEntity())
-        runCatching { remote.update(store.toDto()) }
-            .onFailure { errorHandler.log("StoreUpdate", it) }
+        runCatching {
+            val deviceId = deviceIdProvider.id
+            val logo = imageUploader.resolveUrl(store.logoUrl, "store-images", "logos/$deviceId/${store.id}.jpg")
+            val photo = imageUploader.resolveUrl(store.photoUrl, "store-images", "photos/$deviceId/${store.id}.jpg")
+            if (logo != store.logoUrl || photo != store.photoUrl)
+                dao.update(store.copy(logoUrl = logo, photoUrl = photo).toEntity())
+            remote.update(store.copy(logoUrl = logo, photoUrl = photo, deviceId = deviceId).toDto())
+        }.onFailure { errorHandler.log("StoreUpdate", it) }
     }
 
     override suspend fun getById(id: Long): Store? =

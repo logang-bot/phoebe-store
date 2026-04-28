@@ -19,5 +19,6 @@ data class SaleDto(
     @SerialName("on_credit") val onCredit: Boolean = false,
     @SerialName("credit_person_name") val creditPersonName: String = "",
     @SerialName("sold_at") val soldAt: Long,
-    @SerialName("created_at") val createdAt: Long
+    @SerialName("created_at") val createdAt: Long,
+    @SerialName("device_id") val deviceId: String = ""
 )

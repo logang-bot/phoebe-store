@@ -56,6 +56,7 @@ fun HomeScreen(
         if (isSyncing) return@LaunchedEffect
         if (!viewModel.shouldAutoNav()) return@LaunchedEffect
         val lastStore = uiState.lastStore ?: return@LaunchedEffect
+        if (lastStore.lastAccessedAt == 0L) return@LaunchedEffect
         viewModel.markAutoNavHandled()
         if (uiState.hasProducts) {
             delay(1000)
