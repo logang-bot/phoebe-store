@@ -322,6 +322,92 @@ private fun RecordSaleScreenDarkPreview() {
 
 @Preview(showBackground = true)
 @Composable
+private fun RecordSaleExceedsStockLightPreview() {
+    PhoebeStoreTheme {
+        RecordSaleScreenContent(
+            onNavigateBack = {},
+            formState = RecordSaleFormState(
+                products = previewProducts,
+                selectedProduct = previewProducts.first(),
+                unitPrice = "5.00",
+                unitCost = "2.00",
+                quantity = "15",
+                totalAmount = 75.00,
+                currency = Currency.USD,
+                formattedTotalAmount = "75.00",
+                formattedSoldAt = "Mar 28, 2026 - 3:45 PM",
+                formattedUnitPrice = "5.00",
+                formattedUnitCost = "2.00",
+                quantityExceedsStock = true,
+                canSave = true
+            ),
+            onProductSelected = {},
+            onCustomProductSelected = {},
+            onSearchSelected = {},
+            onSearchQueryChange = {},
+            onSearchConfirmed = {},
+            onProductNameChange = {},
+            onQuantityChange = {},
+            onQuantityIncrement = {},
+            onQuantityDecrement = {},
+            onUnitPriceChange = {},
+            onUnitCostChange = {},
+            onUnitPriceFocusLost = {},
+            onUnitCostFocusLost = {},
+            onSoldAtChange = {},
+            onNotesChange = {},
+            onOnCreditChange = {},
+            onCreditPersonNameChange = {},
+            onSave = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun RecordSaleExceedsStockDarkPreview() {
+    PhoebeStoreTheme {
+        RecordSaleScreenContent(
+            onNavigateBack = {},
+            formState = RecordSaleFormState(
+                products = previewProducts,
+                selectedProduct = previewProducts.first(),
+                unitPrice = "5.00",
+                unitCost = "2.00",
+                quantity = "15",
+                totalAmount = 75.00,
+                currency = Currency.USD,
+                formattedTotalAmount = "75.00",
+                formattedSoldAt = "Mar 28, 2026 - 3:45 PM",
+                formattedUnitPrice = "5.00",
+                formattedUnitCost = "2.00",
+                quantityExceedsStock = true,
+                canSave = true
+            ),
+            onProductSelected = {},
+            onCustomProductSelected = {},
+            onSearchSelected = {},
+            onSearchQueryChange = {},
+            onSearchConfirmed = {},
+            onProductNameChange = {},
+            onQuantityChange = {},
+            onQuantityIncrement = {},
+            onQuantityDecrement = {},
+            onUnitPriceChange = {},
+            onUnitCostChange = {},
+            onUnitPriceFocusLost = {},
+            onUnitCostFocusLost = {},
+            onSoldAtChange = {},
+            onNotesChange = {},
+            onOnCreditChange = {},
+            onCreditPersonNameChange = {},
+            onSave = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
 private fun RecordSaleSearchExpandedPreview() {
     PhoebeStoreTheme {
         RecordSaleScreenContent(

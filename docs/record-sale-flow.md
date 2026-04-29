@@ -78,7 +78,6 @@ Recomputed by `withComputedDisplayFields()` on every state change:
 canSave = (selectedProduct != null OR productName is not blank)
        AND quantity > 0
        AND unitPrice > 0
-       AND quantity does NOT exceed selectedProduct.stock
        AND (isOnCredit = false OR creditPersonName is not blank)
 ```
 
@@ -86,7 +85,7 @@ The Save button in the bottom bar is disabled when `canSave = false`.
 
 ### Stock validation
 
-`quantityExceedsStock` is set to `true` when a catalogue product is selected and the entered quantity exceeds `selectedProduct.stock`. This shows an inline error on the quantity field and blocks saving.
+`quantityExceedsStock` is set to `true` when a catalogue product is selected and the entered quantity exceeds `selectedProduct.stock`. This shows an inline **warning** (in `tertiary` colour) on the quantity field but **does not block saving** — the user is allowed to record the sale anyway. The `+` stepper is never disabled regardless of available stock; only the `−` stepper is blocked at quantity 1.
 
 ### Price/cost modification tracking
 
@@ -132,9 +131,12 @@ RecordSaleUseCase(sale, selectedProduct, isCustomProduct)
     ├─ saleRepository.create(sale)            → inserts SaleEntity into Room
     │      (includes onCredit and creditPersonName fields)
     ├─ if selectedProduct != null:
-    │      productRepository.update(
-    │          product.copy(stock = (product.stock - quantity).coerceAtLeast(0))
-    │      )                                  → decrements stock (floor 0)
+    │      newStock = (product.stock - quantity).coerceAtLeast(0)
+    │      productRepository.update(product.copy(stock = newStock))
+    │      if quantity > product.stock:       → sale exceeded available stock
+    │          inventoryLogRepository.log(    → records forced stock reduction
+    │              previousStock = product.stock, newStock = 0
+    │          )
     └─ else if isCustomProduct and productName is not blank:
            productRepository.create(Product(…)) → creates a new catalogue entry
     ↓

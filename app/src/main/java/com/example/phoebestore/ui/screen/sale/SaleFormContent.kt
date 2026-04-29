@@ -109,14 +109,10 @@ internal fun SaleFormContent(
             onValueChange = onQuantityChange,
             onIncrement = onQuantityIncrement,
             onDecrement = onQuantityDecrement,
-            isError = formState.quantityError || formState.quantityExceedsStock,
-            errorMessage = when {
-                formState.quantityError -> stringResource(R.string.record_sale_quantity_error)
-                formState.quantityExceedsStock -> stringResource(R.string.record_sale_quantity_exceeds_stock)
-                else -> null
-            },
-            canIncrement = formState.selectedProduct == null ||
-                (formState.quantity.toIntOrNull() ?: 0) < formState.selectedProduct.stock,
+            isError = formState.quantityError,
+            errorMessage = if (formState.quantityError) stringResource(R.string.record_sale_quantity_error) else null,
+            warningMessage = if (formState.quantityExceedsStock) stringResource(R.string.record_sale_quantity_exceeds_stock) else null,
+            canIncrement = true,
             modifier = Modifier
                 .fillMaxWidth()
                 .onGloballyPositioned { coords ->

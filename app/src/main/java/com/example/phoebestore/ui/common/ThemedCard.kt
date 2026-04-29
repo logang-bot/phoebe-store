@@ -36,15 +36,13 @@ fun ThemedCard(
     modifier: Modifier = Modifier,
     shape: Shape = MaterialTheme.shapes.medium,
     colors: CardColors = CardDefaults.cardColors(),
-    shadowElevation: Dp = 6.dp,
     content: @Composable ColumnScope.() -> Unit
 ) {
     Card(
         onClick = onClick,
-        modifier = modifier.themedShadow(elevation = shadowElevation, shape = shape),
+        modifier = modifier,
         shape = shape,
         colors = colors,
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         content = content
     )
 }

@@ -3,10 +3,9 @@ package com.example.phoebestore.ui.screen.product
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.phoebestore.domain.model.InventoryLog
 import com.example.phoebestore.domain.model.Product
-import com.example.phoebestore.domain.repository.InventoryLogRepository
 import com.example.phoebestore.domain.repository.ProductRepository
+import com.example.phoebestore.domain.usecase.RestockProductUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -18,7 +17,7 @@ import javax.inject.Inject
 @HiltViewModel
 class ProductListViewModel @Inject constructor(
     private val productRepository: ProductRepository,
-    private val inventoryLogRepository: InventoryLogRepository,
+    private val restockProduct: RestockProductUseCase,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -65,21 +64,8 @@ class ProductListViewModel @Inject constructor(
         if (product.stock == newStock) { onDismissStockDialog(); return }
         viewModelScope.launch {
             _uiState.update { it.copy(isSavingStock = true) }
-            productRepository.update(product.copy(stock = newStock))
-            logStockChange(product, newStock)
+            restockProduct(product, newStock)
             _uiState.update { it.copy(isSavingStock = false, stockDialogProduct = null, stockDialogInput = "") }
         }
-    }
-
-    private suspend fun logStockChange(product: Product, newStock: Int) {
-        inventoryLogRepository.log(
-            InventoryLog(
-                storeId = storeId,
-                productId = product.id,
-                productName = product.name,
-                previousStock = product.stock,
-                newStock = newStock
-            )
-        )
     }
 }

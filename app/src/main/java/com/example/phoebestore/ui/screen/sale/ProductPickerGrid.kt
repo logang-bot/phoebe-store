@@ -4,12 +4,10 @@ import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -68,47 +66,43 @@ internal fun ProductPickerGrid(
         }
     }
 
-    // For a 3-column square-cell grid: height = width (3 cells + 2 gaps cancel out).
-    // This fixes the height to exactly 3 visible rows.
-    BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(GRID_COLUMNS),
-            modifier = Modifier.fillMaxWidth().height(maxWidth),
-            horizontalArrangement = Arrangement.spacedBy(GRID_GAP),
-            verticalArrangement = Arrangement.spacedBy(GRID_GAP)
-        ) {
-            items(
-                items = gridItems,
-                key = { item ->
-                    when (item) {
-                        GridItem.Search -> "search"
-                        GridItem.Custom -> "custom"
-                        is GridItem.ProductItem -> item.product.id
-                    }
-                }
-            ) { item ->
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(GRID_COLUMNS),
+        modifier = modifier.fillMaxWidth().aspectRatio(1f),
+        horizontalArrangement = Arrangement.spacedBy(GRID_GAP),
+        verticalArrangement = Arrangement.spacedBy(GRID_GAP)
+    ) {
+        items(
+            items = gridItems,
+            key = { item ->
                 when (item) {
-                    GridItem.Search -> PickerActionCard(
-                        label = stringResource(R.string.record_sale_search_product),
-                        icon = Icons.Default.Search,
-                        isSelected = isSearchSelected,
-                        onClick = onSearchSelected,
-                        modifier = Modifier.aspectRatio(1f)
-                    )
-                    GridItem.Custom -> PickerActionCard(
-                        label = stringResource(R.string.record_sale_custom_product),
-                        icon = Icons.Default.Edit,
-                        isSelected = isCustomSelected,
-                        onClick = onCustomSelected,
-                        modifier = Modifier.aspectRatio(1f)
-                    )
-                    is GridItem.ProductItem -> PickerProductCard(
-                        product = item.product,
-                        isSelected = selectedProduct?.id == item.product.id,
-                        onClick = { onProductSelected(item.product) },
-                        modifier = Modifier.aspectRatio(1f)
-                    )
+                    GridItem.Search -> "search"
+                    GridItem.Custom -> "custom"
+                    is GridItem.ProductItem -> item.product.id
                 }
+            }
+        ) { item ->
+            when (item) {
+                GridItem.Search -> PickerActionCard(
+                    label = stringResource(R.string.record_sale_search_product),
+                    icon = Icons.Default.Search,
+                    isSelected = isSearchSelected,
+                    onClick = onSearchSelected,
+                    modifier = Modifier.aspectRatio(1f)
+                )
+                GridItem.Custom -> PickerActionCard(
+                    label = stringResource(R.string.record_sale_custom_product),
+                    icon = Icons.Default.Edit,
+                    isSelected = isCustomSelected,
+                    onClick = onCustomSelected,
+                    modifier = Modifier.aspectRatio(1f)
+                )
+                is GridItem.ProductItem -> PickerProductCard(
+                    product = item.product,
+                    isSelected = selectedProduct?.id == item.product.id,
+                    onClick = { onProductSelected(item.product) },
+                    modifier = Modifier.aspectRatio(1f)
+                )
             }
         }
     }

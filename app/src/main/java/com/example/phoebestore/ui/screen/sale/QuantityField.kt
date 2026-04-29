@@ -50,7 +50,8 @@ internal fun QuantityField(
     isError: Boolean,
     errorMessage: String?,
     canIncrement: Boolean,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    warningMessage: String? = null
 ) {
     val qty = value.toIntOrNull() ?: 0
 
@@ -81,6 +82,13 @@ internal fun QuantityField(
                 text = errorMessage,
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.error,
+                modifier = Modifier.padding(start = 16.dp, top = 4.dp)
+            )
+        } else if (warningMessage != null) {
+            Text(
+                text = warningMessage,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.tertiary,
                 modifier = Modifier.padding(start = 16.dp, top = 4.dp)
             )
         }

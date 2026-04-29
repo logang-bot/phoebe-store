@@ -358,7 +358,6 @@ class RecordSaleViewModel @Inject constructor(
             canSave = (selectedProduct != null || productName.isNotBlank()) &&
                     (qty > 0) &&
                     (unitPrice.toDoubleOrNull()?.let { it > 0.0 } == true) &&
-                    !exceedsStock &&
                     (!isOnCredit || creditPersonName.isNotBlank())
         )
     }

@@ -4,13 +4,14 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.phoebestore.domain.model.Product
-import com.example.phoebestore.domain.repository.ProductRepository
-import com.example.phoebestore.domain.repository.SaleRepository
+import com.example.phoebestore.domain.usecase.GetSalesHistoryUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import java.text.SimpleDateFormat
@@ -28,8 +29,7 @@ private data class SaleFilters(
 
 @HiltViewModel
 class SalesListViewModel @Inject constructor(
-    private val saleRepository: SaleRepository,
-    private val productRepository: ProductRepository,
+    private val getSalesHistory: GetSalesHistoryUseCase,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -46,36 +46,35 @@ class SalesListViewModel @Inject constructor(
         SaleFilters(from, to, product, count)
     }
 
-    val uiState: StateFlow<SalesListUiState> = combine(
-        saleRepository.getByStore(storeId),
-        productRepository.getByStore(storeId),
-        _filters
-    ) { sales, products, filters ->
-        val filtered = sales.filter { sale ->
-            sale.soldAt in filters.from..filters.to &&
-                    (filters.selectedProduct == null || sale.productId == filters.selectedProduct.id)
-        }
-        val page = filtered.take(filters.displayedCount).map { sale ->
-            SaleDisplayItem(
-                id = sale.id,
-                productName = sale.productName,
-                formattedDate = saleItemDateFormat.format(Date(sale.soldAt)),
-                formattedTotal = "%.2f".format(sale.totalAmount),
-                formattedQuantity = "×${sale.quantity}",
-                isOnCredit = sale.onCredit
-            )
-        }
-        SalesListUiState(
-            sales = page,
-            products = products,
-            selectedProduct = filters.selectedProduct,
+    val uiState: StateFlow<SalesListUiState> = _filters.flatMapLatest { filters ->
+        getSalesHistory(
+            storeId = storeId,
             fromDate = filters.from,
             toDate = filters.to,
-            formattedFromDate = filterDateFormat.format(Date(filters.from)),
-            formattedToDate = filterDateFormat.format(Date(filters.to)),
-            isLoading = false,
-            hasMore = filtered.size > filters.displayedCount
-        )
+            productId = filters.selectedProduct?.id,
+            limit = filters.displayedCount
+        ).map { result ->
+            SalesListUiState(
+                sales = result.sales.map { sale ->
+                    SaleDisplayItem(
+                        id = sale.id,
+                        productName = sale.productName,
+                        formattedDate = saleItemDateFormat.format(Date(sale.soldAt)),
+                        formattedTotal = "%.2f".format(sale.totalAmount),
+                        formattedQuantity = "×${sale.quantity}",
+                        isOnCredit = sale.onCredit
+                    )
+                },
+                products = result.products,
+                selectedProduct = filters.selectedProduct,
+                fromDate = filters.from,
+                toDate = filters.to,
+                formattedFromDate = filterDateFormat.format(Date(filters.from)),
+                formattedToDate = filterDateFormat.format(Date(filters.to)),
+                isLoading = false,
+                hasMore = result.hasMore
+            )
+        }
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),

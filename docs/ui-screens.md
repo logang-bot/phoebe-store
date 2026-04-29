@@ -298,6 +298,8 @@ Previews: light / dark (2 total).
 
 All controls are disabled while `isSavingStock = true`. Tapping outside or the Cancel button is blocked during saving. On success the dialog is dismissed automatically by the ViewModel.
 
+`onSaveStock()` delegates to `RestockProductUseCase(product, newStock)`, which enforces stock ≥ 0, no-ops when the value is unchanged, updates `ProductRepository`, and writes an `InventoryLog` entry to `InventoryLogRepository`.
+
 Previews: light / dark / saving state (3 total).
 
 ---
@@ -415,7 +417,7 @@ State class: `RecordSaleFormState.kt`
 | `isSaving` | `false` | Disables Save button while the coroutine runs |
 | `saleResult` | `null` | `SaleResult.Success` or `SaleResult.Error` — drives the post-save result dialog |
 | `creditPersonNameError` | `false` | Shows supporting error text when credit name is required but blank |
-| `canSave` | `false` | Derived: product + quantity + price valid, stock not exceeded, and credit name filled if on credit |
+| `canSave` | `false` | Derived: product + quantity + price valid, and credit name filled if on credit. Exceeding stock shows a warning but does **not** block saving |
 
 **Derived display fields** (pre-formatted strings, computed in the ViewModel):
 
@@ -483,7 +485,7 @@ Internal wrapper composable that renders the full scrollable form. Extracted fro
 Uses `BoxWithConstraints` to capture the viewport height and a `rememberScrollState` reference. A `LaunchedEffect` keyed on `selectedProduct` and `isCustomProduct` fires when a product or custom option is chosen, calling `scrollState.animateScrollTo()` with a target that centres the `QuantityField` in the viewport. The field's position is tracked via `Modifier.onGloballyPositioned`.
 
 #### `ProductPickerGrid` (`ProductPickerGrid.kt`)
-3-column lazy grid rendered inside `BoxWithConstraints`. The grid height is set to `maxWidth` — because cells are square (`aspectRatio(1f)`) and gaps are equal in both directions, this makes exactly 3 rows visible at once; additional products scroll within the fixed viewport.
+3-column lazy grid with `aspectRatio(1f)` applied directly to the `LazyVerticalGrid` — this makes its height equal to its width so exactly 3 rows are visible at once; additional products scroll within the fixed viewport.
 
 Items are modelled as a sealed `GridItem` interface (`Search`, `Custom`, `ProductItem`). The first two slots are always `PickerActionCard`s (icon + label, centred). Remaining slots are `PickerProductCard`s showing the product image (`SubcomposeAsyncImage` with `error` slot showing `ic_package_2`; blank URL renders the icon directly) and the product name centred below. When an item is selected its card switches to `primaryContainer` and a `primary.copy(alpha = 0.4f)` overlay is drawn on top of the image area.
 
@@ -495,8 +497,9 @@ Previews: light / dark (2 total).
 Composite composable with three parts:
 - **Label** — `labelMedium` text above, coloured `error` when the field is in error state.
 - **`QuantityInput`** — `BasicTextField` at 72dp height with `headlineMedium` text aligned to the centre. Border colour cycles through `outline` → `primary` (focused) → `error` using `MutableInteractionSource`. Cursor brush uses `primary`.
-- **`QuantitySteppers`** — 52dp `Row` of two `FilledTonalButton`s with no gap between them. The left button has large `topStart`/`bottomStart` corner radii and the right has `topEnd`/`bottomEnd`, so together they form one pill split down the middle by a 1dp `outlineVariant` divider. Left button calls `onDecrement` (disabled when `qty ≤ 1`); right calls `onIncrement` (disabled when at max stock).
+- **`QuantitySteppers`** — 52dp `Row` of two `FilledTonalButton`s with no gap between them. The left button has large `topStart`/`bottomStart` corner radii and the right has `topEnd`/`bottomEnd`, so together they form one pill split down the middle by a 1dp `outlineVariant` divider. Left button calls `onDecrement` (disabled when `qty ≤ 1`); right calls `onIncrement` (never disabled — quantity is uncapped).
 - **Error text** — `bodySmall` error-coloured message shown below the steppers when `errorMessage != null`.
+- **Warning text** — `bodySmall` `tertiary`-coloured message shown below the steppers (in place of `errorMessage`) when `warningMessage != null`. Used to signal that the entered quantity exceeds available stock without blocking the save action.
 
 Previews: light / dark (2 total).
 
@@ -617,7 +620,7 @@ Paginated, filterable list of all sales for a store. Shows all sales regardless 
 ### Filtering and pagination
 - Page size: 15 items. `loadMore()` increments the displayed count by 15.
 - Any filter change (date or product) resets `displayedCount` to 15.
-- The three-way `combine` (sales flow + products flow + filter state flow) means the list reactively updates whenever a sale is added, updated, or deleted elsewhere.
+- `_filters` (a `StateFlow<SaleFilters>`) is combined from the four filter `MutableStateFlow`s. It drives `flatMapLatest { GetSalesHistoryUseCase(…) }`, which handles filtering, pagination, and the `hasMore` boundary. The list reactively updates whenever a sale or product changes in the database.
 
 ### Overflow menu
 A `MoreVert` icon in the top bar exposes three actions:
@@ -637,7 +640,7 @@ Aggregated analytics for a fixed date range (and optional product filter) passed
 
 ### State
 
-`SalesReportViewModel` receives `storeId`, `fromDate`, `toDate`, and `productId?` from `SavedStateHandle`. It combines `saleRepository.getByStore()` and `productRepository.getByStore()` into a single `StateFlow<SalesReportUiState>`.
+`SalesReportViewModel` receives `storeId`, `fromDate`, `toDate`, and `productId?` from `SavedStateHandle`. It calls `GetSalesSummaryUseCase` with those params and maps the resulting `Flow<Summary>` into a `StateFlow<SalesReportUiState>`. All domain aggregations (revenue, profit, credit totals, daily grouping, product grouping, profit-outcome breakdown) are computed inside the use case; the ViewModel only formats values and computes chart fractions.
 
 `SalesReportUiState` fields:
 
