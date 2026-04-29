@@ -25,6 +25,15 @@ class RecordSaleUseCase @Inject constructor(
                         productId = selectedProduct.id,
                         productName = selectedProduct.name,
                         previousStock = selectedProduct.stock,
+                        newStock = sale.quantity
+                    )
+                )
+                inventoryLogRepository.log(
+                    InventoryLog(
+                        storeId = sale.storeId,
+                        productId = selectedProduct.id,
+                        productName = selectedProduct.name,
+                        previousStock = sale.quantity,
                         newStock = newStock
                     )
                 )

@@ -134,8 +134,11 @@ RecordSaleUseCase(sale, selectedProduct, isCustomProduct)
     │      newStock = (product.stock - quantity).coerceAtLeast(0)
     │      productRepository.update(product.copy(stock = newStock))
     │      if quantity > product.stock:       → sale exceeded available stock
-    │          inventoryLogRepository.log(    → records forced stock reduction
-    │              previousStock = product.stock, newStock = 0
+    │          inventoryLogRepository.log(    → entry 1: on-demand addition
+    │              previousStock = product.stock, newStock = quantity
+    │          )
+    │          inventoryLogRepository.log(    → entry 2: stock consumed by sale
+    │              previousStock = quantity, newStock = 0
     │          )
     └─ else if isCustomProduct and productName is not blank:
            productRepository.create(Product(…)) → creates a new catalogue entry
