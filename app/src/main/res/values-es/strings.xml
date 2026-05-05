@@ -105,6 +105,7 @@
     <string name="sales_report_no_data">No se encontraron ventas en este período</string>
     <string name="sales_report_credit_note">%1$d a crédito · ingresos %2$s · ganancia %3$s pendiente</string>
     <string name="sales_report_credit_note_amount">%1$d a crédito</string>
+    <string name="sales_report_zero_cost_warning">%1$d producto(s) sin precio de costo establecido — la ganancia neta puede estar subestimada</string>
     <string name="sales_report_revenue_over_time_title">Ingresos a lo largo del tiempo</string>
     <string name="sales_report_profit_outcome_title">Distribución de ganancias</string>
     <string name="sales_report_outcome_normal">Ganancia normal</string>
@@ -195,6 +196,20 @@
     <string name="record_sale_credit_person_label">Nombre del cliente</string>
     <string name="record_sale_credit_person_required_error">El nombre del cliente es obligatorio</string>
     <string name="record_sale_on_credit_confirm_label">A crédito (cliente)</string>
+
+    <!-- Notification Permission Dialog -->
+    <string name="notification_permission_dialog_title">Activar notificaciones</string>
+    <string name="notification_permission_dialog_body">PhoebeStore usa notificaciones para avisarte cuando tus datos se están guardando o si una sincronización falla mientras estás sin conexión. Ve a Configuración para activarlas.</string>
+    <string name="notification_permission_skip">Omitir</string>
+    <string name="notification_permission_go_to_settings">Abrir configuración</string>
+
+    <!-- Sync Notifications -->
+    <string name="sync_notification_channel_name">Sincronización de datos</string>
+    <string name="sync_notification_channel_description">Estado de sincronización en segundo plano</string>
+    <string name="sync_notification_started_title">Sincronizando tus cambios…</string>
+    <string name="sync_notification_success_title">Cambios guardados</string>
+    <string name="sync_notification_failure_title">Error de sincronización</string>
+    <string name="sync_notification_failure_body">Se reintentará cuando haya conexión</string>
 
     <!-- Credit Sales List Screen -->
     <string name="credit_sales_list_title">Ventas a crédito</string>

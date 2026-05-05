@@ -104,6 +104,7 @@
     <string name="sales_report_no_data">No sales found for this period</string>
     <string name="sales_report_credit_note">%1$d on credit · revenue %2$s · profit %3$s pending</string>
     <string name="sales_report_credit_note_amount">%1$d on credit</string>
+    <string name="sales_report_zero_cost_warning">%1$d product(s) have no cost price set — net profit may be understated</string>
     <string name="sales_report_revenue_over_time_title">Revenue over time</string>
     <string name="sales_report_profit_outcome_title">Profit outcome distribution</string>
     <string name="sales_report_outcome_normal">Normal profit</string>

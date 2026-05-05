@@ -71,7 +71,8 @@ class SalesReportViewModel @Inject constructor(
             creditSalesCount = summary.creditCount,
             formattedCreditRevenue = "%.2f".format(summary.creditRevenue),
             formattedCreditProfit = "%.2f".format(summary.creditProfit),
-            hasData = summary.saleCount > 0
+            hasData = summary.saleCount > 0,
+            zeroCostPriceProductCount = summary.zeroCostPriceProductCount
         )
     }.stateIn(
         scope = viewModelScope,

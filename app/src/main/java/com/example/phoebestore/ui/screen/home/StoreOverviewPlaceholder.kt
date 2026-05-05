@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.CardDefaults
 import com.example.phoebestore.ui.common.ThemedCard
 import androidx.compose.material3.HorizontalDivider
@@ -83,6 +84,7 @@ private fun OverviewRow(label: String, value: String) {
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
+        Spacer(modifier = Modifier.width(50.dp))
         Text(
             text = value,
             style = MaterialTheme.typography.bodyMedium,

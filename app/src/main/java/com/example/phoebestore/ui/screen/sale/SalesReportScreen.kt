@@ -4,6 +4,7 @@ import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -13,6 +14,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -89,6 +91,9 @@ private fun ReportContent(uiState: SalesReportUiState, modifier: Modifier = Modi
             InventoryChart(items = uiState.inventoryItems, modifier = Modifier.fillMaxWidth())
         }
         TotalsSection(uiState = uiState, modifier = Modifier.fillMaxWidth())
+        if (uiState.zeroCostPriceProductCount > 0) {
+            ZeroCostPriceWarning(count = uiState.zeroCostPriceProductCount, modifier = Modifier.fillMaxWidth())
+        }
         if (uiState.dailyRevenue.isNotEmpty()) {
             DailyRevenueChart(items = uiState.dailyRevenue, modifier = Modifier.fillMaxWidth())
         }
@@ -193,6 +198,31 @@ private fun RevenueAndProfitResume(
 }
 
 @Composable
+private fun ZeroCostPriceWarning(count: Int, modifier: Modifier = Modifier) {
+    ThemedCard(
+        modifier = modifier,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = Icons.Filled.Warning,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onErrorContainer
+            )
+            Text(
+                text = stringResource(R.string.sales_report_zero_cost_warning, count),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onErrorContainer
+            )
+        }
+    }
+}
+
+@Composable
 private fun LoadingContent(modifier: Modifier = Modifier) {
     Box(modifier = modifier, contentAlignment = Alignment.Center) {
         CircularProgressIndicator()
@@ -252,4 +282,16 @@ private fun SalesReportScreenLightPreview() {
 @Composable
 private fun SalesReportScreenDarkPreview() {
     PhoebeStoreTheme { ReportContent(uiState = previewUiState) }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun ZeroCostPriceWarningLightPreview() {
+    PhoebeStoreTheme { ZeroCostPriceWarning(count = 3) }
+}
+
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun ZeroCostPriceWarningDarkPreview() {
+    PhoebeStoreTheme { ZeroCostPriceWarning(count = 3) }
 }

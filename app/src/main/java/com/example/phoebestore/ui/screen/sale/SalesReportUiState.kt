@@ -33,5 +33,6 @@ data class SalesReportUiState(
     val creditSalesCount: Int = 0,
     val formattedCreditRevenue: String = "",
     val formattedCreditProfit: String = "",
-    val hasData: Boolean = false
+    val hasData: Boolean = false,
+    val zeroCostPriceProductCount: Int = 0
 )

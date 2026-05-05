@@ -23,7 +23,8 @@ class GetSalesSummaryUseCase @Inject constructor(
         val creditProfit: Double,
         val revenueByDay: Map<String, Double>,
         val unitsSoldByProduct: List<Pair<Product, Int>>,
-        val profitOutcomeBreakdown: Map<ProfitOutcome, Int>
+        val profitOutcomeBreakdown: Map<ProfitOutcome, Int>,
+        val zeroCostPriceProductCount: Int
     )
 
     operator fun invoke(
@@ -63,7 +64,12 @@ class GetSalesSummaryUseCase @Inject constructor(
                 .sortedByDescending { it.second },
             profitOutcomeBreakdown = filtered
                 .groupBy { it.profitOutcome }
-                .mapValues { (_, s) -> s.size }
+                .mapValues { (_, s) -> s.size },
+            zeroCostPriceProductCount = filtered
+                .filter { it.unitCost == 0.0 && it.productId != null }
+                .map { it.productId!! }
+                .distinct()
+                .size
         )
     }
 
