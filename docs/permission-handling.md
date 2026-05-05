@@ -4,9 +4,9 @@
 
 Runtime permission requests follow an MVVM pattern: the **ViewModel** owns the permission dialog queue state, and the **Composable screen** handles the Android system interactions (launching the permission request and showing the dialog).
 
-Currently only `CAMERA` is requested. It is triggered in two screens:
-- `CreateStoreScreen` — to take a logo or cover photo for a store.
-- `CreateProductScreen` — to take a product image.
+Two permissions are requested:
+- `CAMERA` — triggered inside specific screens when the user taps "Take photo".
+- `POST_NOTIFICATIONS` — requested once on app start via a global handler.
 
 ---
 
@@ -153,6 +153,64 @@ val galleryLauncher = rememberLauncherForActivityResult(PickVisualMedia()) { uri
 ```
 
 The stored URI is a `file://` path that Coil resolves natively, ensuring images remain visible after the app is backgrounded or the user navigates away and back.
+
+---
+
+---
+
+## POST_NOTIFICATIONS (app-start, global)
+
+`POST_NOTIFICATIONS` is required on Android 13+ (API 33) to show sync notifications. It is requested once on app start via two classes in `presentation/navigation/`:
+
+### `NotificationPermissionViewModel`
+
+Owns all persisted decision state via `SharedPreferences("notification_prefs")`:
+
+| Key | Purpose |
+|---|---|
+| `notification_requested` | Set to `true` after the first system dialog is launched |
+| `notification_skipped` | Set to `true` when the user explicitly taps Skip |
+
+**Decision logic (`onStart`):**
+
+```
+Permission already granted  →  do nothing
+User previously skipped     →  do nothing
+Never requested before      →  triggerRequest = true (launch system dialog)
+canShowRationale = true     →  triggerRequest = true (user denied once, try again)
+Permanently declined        →  showSettingsDialog = true (custom dialog)
+```
+
+Permanent denial is identified by: `hasRequested = true` AND `canShowRationale = false` AND permission not granted.
+
+### `NotificationPermissionHandler` composable
+
+Handles all Android interactions — placed at the root of `AppNavigation` so it runs on every app start:
+
+```
+LaunchedEffect(Unit)
+  ├── checkSelfPermission(POST_NOTIFICATIONS)
+  ├── shouldShowRequestPermissionRationale(POST_NOTIFICATIONS)
+  └── viewModel.onStart(isGranted, canShowRationale)
+
+LaunchedEffect(triggerRequest)
+  └── if true → permissionLauncher.launch(POST_NOTIFICATIONS)
+        └── result → viewModel.onPermissionResult(isGranted, canShowRationale)
+
+if (showSettingsDialog)
+  └── NotificationPermissionDialog(onSkip, onGoToSettings)
+```
+
+### `NotificationPermissionDialog`
+
+Custom dialog shown only in the permanently-declined case. Two buttons:
+
+| Button | Action |
+|---|---|
+| Skip | `viewModel.onSkip()` — sets `notification_skipped = true`, not shown again |
+| Open Settings | `viewModel.onSettingsDismissed()` + `activity.openAppSettings()` |
+
+`onDismissRequest` maps to Skip so pressing back or tapping outside behaves the same as Skip.
 
 ---
 

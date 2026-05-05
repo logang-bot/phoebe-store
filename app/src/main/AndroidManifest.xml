@@ -7,6 +7,19 @@
         android:required="false" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!-- Disable auto-init so WorkManager uses the HiltWorkerFactory from Configuration.Provider -->
+    <provider
+        android:name="androidx.startup.InitializationProvider"
+        android:authorities="${applicationId}.androidx-startup"
+        android:exported="false"
+        tools:node="merge">
+        <meta-data
+            android:name="androidx.work.WorkManagerInitializer"
+            android:value="@string/androidx_startup"
+            tools:node="remove" />
+    </provider>
 
     <application
         android:name=".PhoebeStoreApp"

@@ -186,6 +186,20 @@
     <string name="record_sale_credit_person_required_error">Customer name is required</string>
     <string name="record_sale_on_credit_confirm_label">On credit (customer)</string>
 
+    <!-- Notification Permission Dialog -->
+    <string name="notification_permission_dialog_title">Enable notifications</string>
+    <string name="notification_permission_dialog_body">PhoebeStore uses notifications to let you know when your data is being saved or if a sync fails while you\'re offline. Go to Settings to enable them.</string>
+    <string name="notification_permission_skip">Skip</string>
+    <string name="notification_permission_go_to_settings">Open settings</string>
+
+    <!-- Sync Notifications -->
+    <string name="sync_notification_channel_name">Data Sync</string>
+    <string name="sync_notification_channel_description">Background data sync status</string>
+    <string name="sync_notification_started_title">Syncing your changes…</string>
+    <string name="sync_notification_success_title">Changes saved</string>
+    <string name="sync_notification_failure_title">Sync failed</string>
+    <string name="sync_notification_failure_body">Will retry when back online</string>
+
     <!-- Credit Sales List Screen -->
     <string name="credit_sales_list_title">Sales on Credit</string>
     <string name="credit_sales_list_empty_title">No pending credits</string>

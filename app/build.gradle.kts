@@ -81,6 +81,11 @@ dependencies {
     // DataStore
     implementation(libs.datastore.preferences)
 
+    // WorkManager + Hilt integration
+    implementation(libs.androidx.work.runtime.ktx)
+    implementation(libs.hilt.work)
+    ksp(libs.hilt.work.compiler)
+
     // Supabase
     implementation(libs.supabase.postgrest)
     implementation(libs.supabase.storage)

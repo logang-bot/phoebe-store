@@ -4,10 +4,12 @@ import android.content.Context
 import androidx.room.Room
 import com.example.phoebestore.data.local.AppDatabase
 import com.example.phoebestore.data.local.MIGRATION_8_9
+import com.example.phoebestore.data.local.MIGRATION_9_10
 import com.example.phoebestore.data.local.dao.InventoryLogDao
 import com.example.phoebestore.data.local.dao.ProductDao
 import com.example.phoebestore.data.local.dao.SaleDao
 import com.example.phoebestore.data.local.dao.StoreDao
+import com.example.phoebestore.data.local.dao.SyncOperationDao
 import com.example.phoebestore.data.repository.impl.InventoryLogRepositoryImpl
 import com.example.phoebestore.data.repository.impl.ProductRepositoryImpl
 import com.example.phoebestore.data.repository.impl.SaleRepositoryImpl
@@ -34,7 +36,7 @@ object DatabaseModule {
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): AppDatabase =
         Room.databaseBuilder(context, AppDatabase::class.java, "phoebe_store.db")
-            .addMigrations(MIGRATION_8_9)
+            .addMigrations(MIGRATION_8_9, MIGRATION_9_10)
             .build()
 
     @Provides
@@ -48,6 +50,9 @@ object DatabaseModule {
 
     @Provides
     fun provideInventoryLogDao(db: AppDatabase): InventoryLogDao = db.inventoryLogDao()
+
+    @Provides
+    fun provideSyncOperationDao(db: AppDatabase): SyncOperationDao = db.syncOperationDao()
 }
 
 @Module

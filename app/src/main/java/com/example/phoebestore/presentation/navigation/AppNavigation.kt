@@ -68,6 +68,7 @@ fun AppNavigation(
     navController: NavHostController = rememberNavController(),
     syncViewModel: SyncViewModel = hiltViewModel()
 ) {
+    NotificationPermissionHandler()
     val snackbarHostState = remember { SnackbarHostState() }
     val isSyncing by syncViewModel.isSyncing.collectAsState()
 
@@ -83,183 +84,192 @@ fun AppNavigation(
     val isOnStores = currentDestination?.hasRoute(StoreListScreen::class) == true
     val showBottomBar = isOnHome || isOnStores
 
-    Scaffold(
-        snackbarHost = { SnackbarHost(snackbarHostState) },
-        bottomBar = {
-            if (showBottomBar) {
-                AppBottomNavBar(
-                    isHomeSelected = isOnHome,
-                    onHomeClick = {
-                        navController.navigate(HomeScreen) {
-                            popUpTo(HomeScreen) { inclusive = false }
-                            launchSingleTop = true
-                        }
-                    },
-                    onStoresClick = {
-                        navController.navigate(StoreListScreen) {
-                            popUpTo(HomeScreen) { saveState = true }
-                            launchSingleTop = true
-                            restoreState = true
-                        }
-                    }
-                )
-            }
-        }
-    ) { innerPadding ->
-        Box(modifier = Modifier.fillMaxSize()) {
-            NavHost(
-                navController = navController,
-                startDestination = HomeScreen,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-                    .consumeWindowInsets(innerPadding)
-                    .then(if (isSyncing) Modifier.blur(16.dp) else Modifier),
-                enterTransition = { slideInHorizontally { it } },
-                exitTransition = { slideOutHorizontally { -it } },
-                popEnterTransition = { slideInHorizontally { -it } },
-                popExitTransition = { slideOutHorizontally { it } }
-            ) {
-                composable<HomeScreen> {
-                    HomeScreen(
-                        onNavigateToCreateSale = { storeId ->
-                            navController.navigate(RecordSaleScreen(storeId))
+    Box(modifier = Modifier.fillMaxSize()) {
+        Scaffold(
+            snackbarHost = { SnackbarHost(snackbarHostState) },
+            bottomBar = {
+                if (showBottomBar) {
+                    AppBottomNavBar(
+                        isHomeSelected = isOnHome,
+                        onHomeClick = {
+                            navController.navigate(HomeScreen) {
+                                popUpTo(HomeScreen) { inclusive = false }
+                                launchSingleTop = true
+                            }
+                        },
+                        onStoresClick = {
+                            navController.navigate(StoreListScreen) {
+                                popUpTo(HomeScreen) { saveState = true }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
                         }
                     )
-                }
-
-                composable<StoreListScreen> {
-                    StoreListScreen(
-                        onNavigateBack = { navController.popBackStack() },
-                        onNavigateToStoreDetail = { storeId ->
-                            navController.navigate(StoreDetailScreen(storeId))
-                        },
-                        onNavigateToCreateStore = {
-                            navController.navigate(CreateStoreScreen())
-                        }
-                    )
-                }
-
-                composable<StoreDetailScreen> { backStackEntry ->
-                    val route = backStackEntry.toRoute<StoreDetailScreen>()
-                    StoreDetailScreen(
-                        storeId = route.storeId,
-                        onNavigateToEditStore = { storeId ->
-                            navController.navigate(CreateStoreScreen(storeId))
-                        },
-                        onNavigateToProductList = { storeId ->
-                            navController.navigate(ProductListScreen(storeId))
-                        },
-                        onNavigateToSalesList = { storeId ->
-                            navController.navigate(SalesListScreen(storeId))
-                        },
-                        onNavigateToInventoryHistory = { storeId ->
-                            navController.navigate(InventoryHistoryScreen(storeId))
-                        },
-                        onNavigateToCreditSales = { storeId ->
-                            navController.navigate(CreditSalesListScreen(storeId))
-                        },
-                        onNavigateToCreateSale = {
-                            navController.navigate(RecordSaleScreen(route.storeId))
-                        },
-                        onDeleteStore = { navController.popBackStack() }
-                    )
-                }
-
-                composable<SalesListScreen> { backStackEntry ->
-                    val route = backStackEntry.toRoute<SalesListScreen>()
-                    SalesListScreen(
-                        storeId = route.storeId,
-                        onNavigateBack = { navController.popBackStack() },
-                        onNavigateToSaleDetail = { saleId ->
-                            navController.navigate(SaleDetailScreen(saleId))
-                        },
-                        onNavigateToReport = { fromDate, toDate, productId ->
-                            navController.navigate(SalesReportScreen(route.storeId, fromDate, toDate, productId))
-                        }
-                    )
-                }
-
-                composable<SaleDetailScreen> {
-                    SaleDetailScreen(
-                        onNavigateBack = { navController.popBackStack() }
-                    )
-                }
-
-                composable<CreateStoreScreen> { backStackEntry ->
-                    val route = backStackEntry.toRoute<CreateStoreScreen>()
-                    CreateStoreScreen(
-                        storeId = route.storeId,
-                        onStoreSaved = { navController.popBackStack() },
-                        onNavigateBack = { navController.popBackStack() }
-                    )
-                }
-
-                composable<CreateProductScreen> { backStackEntry ->
-                    val route = backStackEntry.toRoute<CreateProductScreen>()
-                    CreateProductScreen(
-                        storeId = route.storeId,
-                        productId = route.productId,
-                        onProductSaved = { navController.popBackStack() },
-                        onNavigateBack = { navController.popBackStack() }
-                    )
-                }
-
-                composable<ProductListScreen> { backStackEntry ->
-                    val route = backStackEntry.toRoute<ProductListScreen>()
-                    ProductListScreen(
-                        storeId = route.storeId,
-                        onNavigateBack = { navController.popBackStack() },
-                        onNavigateToCreateProduct = { storeId ->
-                            navController.navigate(CreateProductScreen(storeId))
-                        },
-                        onNavigateToEditProduct = { storeId, productId ->
-                            navController.navigate(CreateProductScreen(storeId, productId))
-                        }
-                    )
-                }
-
-                composable<RecordSaleScreen> { backStackEntry ->
-                    val route = backStackEntry.toRoute<RecordSaleScreen>()
-                    RecordSaleScreen(
-                        storeId = route.storeId,
-                        onSaleRecorded = { navController.popBackStack() },
-                        onNavigateBack = { navController.popBackStack() }
-                    )
-                }
-
-                composable<CreditSalesListScreen> {
-                    CreditSalesListScreen(onNavigateBack = { navController.popBackStack() })
-                }
-
-                composable<SalesReportScreen> {
-                    SalesReportScreen(onNavigateBack = { navController.popBackStack() })
-                }
-
-                composable<InventoryHistoryScreen> {
-                    InventoryHistoryScreen(onNavigateBack = { navController.popBackStack() })
                 }
             }
-
-            AnimatedVisibility(
-                visible = isSyncing,
-                enter = scaleIn(
-                    initialScale = 0f,
-                    animationSpec = tween(durationMillis = 400, easing = FastOutSlowInEasing)
-                ) + fadeIn(animationSpec = tween(400)),
-                exit = scaleOut(
-                    targetScale = 0f,
-                    animationSpec = tween(durationMillis = 300, easing = FastOutSlowInEasing)
-                ) + fadeOut(animationSpec = tween(300))
-            ) {
-                Box(
+        ) { innerPadding ->
+            Box(modifier = Modifier.fillMaxSize()) {
+                NavHost(
+                    navController = navController,
+                    startDestination = HomeScreen,
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.7f)),
-                    contentAlignment = Alignment.Center
+                        .padding(innerPadding)
+                        .consumeWindowInsets(innerPadding)
+                        .then(if (isSyncing) Modifier.blur(16.dp) else Modifier),
+                    enterTransition = { slideInHorizontally { it } },
+                    exitTransition = { slideOutHorizontally { -it } },
+                    popEnterTransition = { slideInHorizontally { -it } },
+                    popExitTransition = { slideOutHorizontally { it } }
                 ) {
-                    CircularProgressIndicator(modifier = Modifier.size(64.dp))
+                    composable<HomeScreen> {
+                        HomeScreen(
+                            onNavigateToCreateSale = { storeId ->
+                                navController.navigate(RecordSaleScreen(storeId))
+                            }
+                        )
+                    }
+
+                    composable<StoreListScreen> {
+                        StoreListScreen(
+                            onNavigateBack = { navController.popBackStack() },
+                            onNavigateToStoreDetail = { storeId ->
+                                navController.navigate(StoreDetailScreen(storeId))
+                            },
+                            onNavigateToCreateStore = {
+                                navController.navigate(CreateStoreScreen())
+                            }
+                        )
+                    }
+
+                    composable<StoreDetailScreen> { backStackEntry ->
+                        val route = backStackEntry.toRoute<StoreDetailScreen>()
+                        StoreDetailScreen(
+                            storeId = route.storeId,
+                            onNavigateToEditStore = { storeId ->
+                                navController.navigate(CreateStoreScreen(storeId))
+                            },
+                            onNavigateToProductList = { storeId ->
+                                navController.navigate(ProductListScreen(storeId))
+                            },
+                            onNavigateToSalesList = { storeId ->
+                                navController.navigate(SalesListScreen(storeId))
+                            },
+                            onNavigateToInventoryHistory = { storeId ->
+                                navController.navigate(InventoryHistoryScreen(storeId))
+                            },
+                            onNavigateToCreditSales = { storeId ->
+                                navController.navigate(CreditSalesListScreen(storeId))
+                            },
+                            onNavigateToCreateSale = {
+                                navController.navigate(RecordSaleScreen(route.storeId))
+                            },
+                            onDeleteStore = { navController.popBackStack() }
+                        )
+                    }
+
+                    composable<SalesListScreen> { backStackEntry ->
+                        val route = backStackEntry.toRoute<SalesListScreen>()
+                        SalesListScreen(
+                            storeId = route.storeId,
+                            onNavigateBack = { navController.popBackStack() },
+                            onNavigateToSaleDetail = { saleId ->
+                                navController.navigate(SaleDetailScreen(saleId))
+                            },
+                            onNavigateToReport = { fromDate, toDate, productId ->
+                                navController.navigate(
+                                    SalesReportScreen(
+                                        route.storeId,
+                                        fromDate,
+                                        toDate,
+                                        productId
+                                    )
+                                )
+                            }
+                        )
+                    }
+
+                    composable<SaleDetailScreen> {
+                        SaleDetailScreen(
+                            onNavigateBack = { navController.popBackStack() }
+                        )
+                    }
+
+                    composable<CreateStoreScreen> { backStackEntry ->
+                        val route = backStackEntry.toRoute<CreateStoreScreen>()
+                        CreateStoreScreen(
+                            storeId = route.storeId,
+                            onStoreSaved = { navController.popBackStack() },
+                            onNavigateBack = { navController.popBackStack() }
+                        )
+                    }
+
+                    composable<CreateProductScreen> { backStackEntry ->
+                        val route = backStackEntry.toRoute<CreateProductScreen>()
+                        CreateProductScreen(
+                            storeId = route.storeId,
+                            productId = route.productId,
+                            onProductSaved = { navController.popBackStack() },
+                            onNavigateBack = { navController.popBackStack() }
+                        )
+                    }
+
+                    composable<ProductListScreen> { backStackEntry ->
+                        val route = backStackEntry.toRoute<ProductListScreen>()
+                        ProductListScreen(
+                            storeId = route.storeId,
+                            onNavigateBack = { navController.popBackStack() },
+                            onNavigateToCreateProduct = { storeId ->
+                                navController.navigate(CreateProductScreen(storeId))
+                            },
+                            onNavigateToEditProduct = { storeId, productId ->
+                                navController.navigate(CreateProductScreen(storeId, productId))
+                            }
+                        )
+                    }
+
+                    composable<RecordSaleScreen> { backStackEntry ->
+                        val route = backStackEntry.toRoute<RecordSaleScreen>()
+                        RecordSaleScreen(
+                            storeId = route.storeId,
+                            onSaleRecorded = { navController.popBackStack() },
+                            onNavigateBack = { navController.popBackStack() }
+                        )
+                    }
+
+                    composable<CreditSalesListScreen> {
+                        CreditSalesListScreen(onNavigateBack = { navController.popBackStack() })
+                    }
+
+                    composable<SalesReportScreen> {
+                        SalesReportScreen(onNavigateBack = { navController.popBackStack() })
+                    }
+
+                    composable<InventoryHistoryScreen> {
+                        InventoryHistoryScreen(onNavigateBack = { navController.popBackStack() })
+                    }
                 }
+
+            }
+        }
+        AnimatedVisibility(
+            visible = isSyncing,
+            enter = scaleIn(
+                initialScale = 0f,
+                animationSpec = tween(durationMillis = 400, easing = FastOutSlowInEasing)
+            ) + fadeIn(animationSpec = tween(400)),
+            exit = scaleOut(
+                targetScale = 0f,
+                animationSpec = tween(durationMillis = 300, easing = FastOutSlowInEasing)
+            ) + fadeOut(animationSpec = tween(300))
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.7f)),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(modifier = Modifier.size(64.dp))
             }
         }
     }
