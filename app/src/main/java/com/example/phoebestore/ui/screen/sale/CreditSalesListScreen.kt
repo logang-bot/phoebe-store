@@ -69,7 +69,7 @@ private fun CreditSalesListScreenContent(
     onFromDateChange: (Long) -> Unit,
     onToDateChange: (Long) -> Unit,
     onResetFilters: () -> Unit,
-    onMarkAsDone: (Long) -> Unit
+    onMarkAsDone: (String) -> Unit
 ) {
     var pendingDoneItem by remember { mutableStateOf<CreditSaleDisplayItem?>(null) }
 
@@ -213,9 +213,9 @@ private fun MarkAsDoneDialog(
 }
 
 private val previewItems = listOf(
-    CreditSaleDisplayItem(1L, "Summer Dress", "Maria García", "Apr 03, 2026 - 10:00 AM", "59.98", 2),
-    CreditSaleDisplayItem(2L, "Leather Bag", "John Smith", "Apr 04, 2026 - 2:00 PM", "89.99", 1),
-    CreditSaleDisplayItem(3L, "Sun Hat", "Ana López", "Apr 05, 2026 - 11:30 AM", "44.97", 3)
+    CreditSaleDisplayItem("1", "Summer Dress", "Maria García", "Apr 03, 2026 - 10:00 AM", "59.98", 2),
+    CreditSaleDisplayItem("2", "Leather Bag", "John Smith", "Apr 04, 2026 - 2:00 PM", "89.99", 1),
+    CreditSaleDisplayItem("3", "Sun Hat", "Ana López", "Apr 05, 2026 - 11:30 AM", "44.97", 3)
 )
 
 @Preview(showBackground = true)

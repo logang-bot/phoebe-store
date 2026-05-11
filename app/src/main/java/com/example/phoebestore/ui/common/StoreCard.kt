@@ -211,7 +211,7 @@ fun StoreCard(
 }
 
 private val previewStore = Store(
-    id = 1L,
+    id = "1",
     name = "Phoebe's Boutique",
     description = "Fashion & Accessories",
     currency = Currency.USD

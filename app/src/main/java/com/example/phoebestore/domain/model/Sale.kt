@@ -1,9 +1,9 @@
 package com.example.phoebestore.domain.model
 
 data class Sale(
-    val id: Long = 0,
-    val storeId: Long,
-    val productId: Long? = null,
+    val id: String = "",
+    val storeId: String,
+    val productId: String? = null,
     val productName: String,
     val quantity: Int,
     val unitPrice: Double,

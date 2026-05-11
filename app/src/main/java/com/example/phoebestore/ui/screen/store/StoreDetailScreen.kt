@@ -47,12 +47,12 @@ import com.example.phoebestore.ui.theme.PhoebeStoreTheme
 
 @Composable
 fun StoreDetailScreen(
-    storeId: Long,
-    onNavigateToEditStore: (storeId: Long) -> Unit,
-    onNavigateToProductList: (storeId: Long) -> Unit,
-    onNavigateToSalesList: (storeId: Long) -> Unit,
-    onNavigateToInventoryHistory: (storeId: Long) -> Unit = {},
-    onNavigateToCreditSales: (storeId: Long) -> Unit = {},
+    storeId: String,
+    onNavigateToEditStore: (storeId: String) -> Unit,
+    onNavigateToProductList: (storeId: String) -> Unit,
+    onNavigateToSalesList: (storeId: String) -> Unit,
+    onNavigateToInventoryHistory: (storeId: String) -> Unit = {},
+    onNavigateToCreditSales: (storeId: String) -> Unit = {},
     onNavigateToCreateSale: () -> Unit = {},
     onDeleteStore: () -> Unit = {},
     viewModel: StoreDetailViewModel = hiltViewModel()
@@ -325,7 +325,7 @@ private fun StoreTileButton(
 }
 
 private val previewStore = Store(
-    id = 1L,
+    id = "1",
     name = "Phoebe's Boutique",
     description = "Fashion & Accessories",
     currency = Currency.USD

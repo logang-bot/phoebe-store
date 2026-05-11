@@ -17,7 +17,7 @@ class ProductSyncer @Inject constructor(
     private val deviceIdProvider: DeviceIdProvider
 ) : EntitySyncer {
 
-    override suspend fun syncWrite(entityId: Long) {
+    override suspend fun syncWrite(entityId: String) {
         val entity = productDao.getById(entityId) ?: return
         val p = entity.toDomain()
         val deviceId = deviceIdProvider.id
@@ -27,7 +27,7 @@ class ProductSyncer @Inject constructor(
         productRemote.insert(p.copy(imageUrl = image, deviceId = deviceId).toDto())
     }
 
-    override suspend fun syncDelete(entityId: Long) {
+    override suspend fun syncDelete(entityId: String) {
         productRemote.delete(entityId)
     }
 }

@@ -55,10 +55,10 @@ import com.example.phoebestore.ui.theme.PhoebeStoreTheme
 
 @Composable
 fun SalesListScreen(
-    storeId: Long,
+    storeId: String,
     onNavigateBack: () -> Unit,
-    onNavigateToSaleDetail: (saleId: Long) -> Unit,
-    onNavigateToReport: (fromDate: Long, toDate: Long, productId: Long?) -> Unit,
+    onNavigateToSaleDetail: (saleId: String) -> Unit,
+    onNavigateToReport: (fromDate: Long, toDate: Long, productId: String?) -> Unit,
     viewModel: SalesListViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -102,8 +102,8 @@ private fun SalesListScreenContent(
     onToDateChange: (Long) -> Unit,
     onLoadMore: () -> Unit,
     onResetFilters: () -> Unit,
-    onNavigateToSaleDetail: (saleId: Long) -> Unit,
-    onNavigateToReport: (fromDate: Long, toDate: Long, productId: Long?) -> Unit
+    onNavigateToSaleDetail: (saleId: String) -> Unit,
+    onNavigateToReport: (fromDate: Long, toDate: Long, productId: String?) -> Unit
 ) {
     var showMenu by remember { mutableStateOf(false) }
     val todayStart = remember {
@@ -378,15 +378,15 @@ private fun CreditBadge() {
 }
 
 private val previewSales = listOf(
-    SaleDisplayItem(id = 1L, productName = "Summer Dress", formattedDate = "Apr 03, 2026 - 10:00 AM", formattedTotal = "59.98", formattedQuantity = "×2", isOnCredit = true),
-    SaleDisplayItem(id = 2L, productName = "Leather Bag", formattedDate = "Apr 03, 2026 - 11:30 AM", formattedTotal = "89.99", formattedQuantity = "×1"),
-    SaleDisplayItem(id = 3L, productName = "Sun Hat", formattedDate = "Apr 03, 2026 - 2:15 PM", formattedTotal = "44.97", formattedQuantity = "×3")
+    SaleDisplayItem(id = "1", productName = "Summer Dress", formattedDate = "Apr 03, 2026 - 10:00 AM", formattedTotal = "59.98", formattedQuantity = "×2", isOnCredit = true),
+    SaleDisplayItem(id = "2", productName = "Leather Bag", formattedDate = "Apr 03, 2026 - 11:30 AM", formattedTotal = "89.99", formattedQuantity = "×1"),
+    SaleDisplayItem(id = "3", productName = "Sun Hat", formattedDate = "Apr 03, 2026 - 2:15 PM", formattedTotal = "44.97", formattedQuantity = "×3")
 )
 
 private val previewProducts = listOf(
-    Product(id = 1L, storeId = 1L, name = "Summer Dress", price = 29.99),
-    Product(id = 2L, storeId = 1L, name = "Leather Bag", price = 89.99),
-    Product(id = 3L, storeId = 1L, name = "Sun Hat", price = 14.99)
+    Product(id = "1", storeId = "1", name = "Summer Dress", price = 29.99),
+    Product(id = "2", storeId = "1", name = "Leather Bag", price = 89.99),
+    Product(id = "3", storeId = "1", name = "Sun Hat", price = 14.99)
 )
 
 @Preview(showBackground = true)

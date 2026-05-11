@@ -20,7 +20,7 @@ class SaleDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    private val saleId: Long = checkNotNull(savedStateHandle["saleId"])
+    private val saleId: String = checkNotNull(savedStateHandle["saleId"])
 
     private val dateFormat = SimpleDateFormat("MMM dd, yyyy - h:mm a", Locale.getDefault())
 

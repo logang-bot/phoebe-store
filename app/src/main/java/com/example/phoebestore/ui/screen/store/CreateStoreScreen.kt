@@ -78,7 +78,7 @@ private enum class CameraTarget { LOGO, PHOTO }
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateStoreScreen(
-    storeId: Long?,
+    storeId: String?,
     onStoreSaved: () -> Unit,
     onNavigateBack: () -> Unit,
     viewModel: CreateStoreViewModel = hiltViewModel()

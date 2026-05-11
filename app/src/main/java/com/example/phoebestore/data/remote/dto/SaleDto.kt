@@ -5,9 +5,9 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class SaleDto(
-    val id: Long,
-    @SerialName("store_id") val storeId: Long,
-    @SerialName("product_id") val productId: Long? = null,
+    val id: String,
+    @SerialName("store_id") val storeId: String,
+    @SerialName("product_id") val productId: String? = null,
     @SerialName("product_name") val productName: String,
     val quantity: Int,
     @SerialName("unit_price") val unitPrice: Double,

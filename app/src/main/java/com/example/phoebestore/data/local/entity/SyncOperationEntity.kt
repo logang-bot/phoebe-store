@@ -7,7 +7,7 @@ import androidx.room.PrimaryKey
 data class SyncOperationEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val entityType: String,
-    val entityId: Long,
+    val entityId: String,
     val operation: String,
     val createdAt: Long = System.currentTimeMillis()
 ) {

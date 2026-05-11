@@ -45,7 +45,7 @@ import com.example.phoebestore.ui.theme.PhoebeStoreTheme
 @Composable
 fun StoreListScreen(
     onNavigateBack: () -> Unit,
-    onNavigateToStoreDetail: (storeId: Long) -> Unit,
+    onNavigateToStoreDetail: (storeId: String) -> Unit,
     onNavigateToCreateStore: () -> Unit,
     viewModel: StoreListViewModel = hiltViewModel()
 ) {
@@ -64,7 +64,7 @@ fun StoreListScreen(
 private fun StoreListScreenContent(
     stores: List<Store>,
     onNavigateBack: () -> Unit,
-    onNavigateToStoreDetail: (storeId: Long) -> Unit,
+    onNavigateToStoreDetail: (storeId: String) -> Unit,
     onNavigateToCreateStore: () -> Unit
 ) {
     Scaffold(
@@ -151,9 +151,9 @@ private fun StoreListScreenContent(
 }
 
 private val previewStores = listOf(
-    Store(id = 1L, name = "Phoebe's Boutique", description = "Fashion & Accessories", currency = Currency.BOB),
-    Store(id = 2L, name = "Tech Corner", description = "Electronics & Gadgets", currency = Currency.BOB),
-    Store(id = 3L, name = "The Green Market", currency = Currency.USD)
+    Store(id = "1", name = "Phoebe's Boutique", description = "Fashion & Accessories", currency = Currency.BOB),
+    Store(id = "2", name = "Tech Corner", description = "Electronics & Gadgets", currency = Currency.BOB),
+    Store(id = "3", name = "The Green Market", currency = Currency.USD)
 )
 
 @Preview(showBackground = true)

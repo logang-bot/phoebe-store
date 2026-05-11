@@ -148,8 +148,8 @@ private fun SaleDetailCard(uiState: SaleDetailUiState) {
 }
 
 private val previewSale = Sale(
-    id = 1L,
-    storeId = 1L,
+    id = "1",
+    storeId = "1",
     productName = "Summer Dress",
     quantity = 2,
     unitPrice = 29.99,

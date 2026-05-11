@@ -20,8 +20,8 @@ import androidx.room.PrimaryKey
 data class InventoryLogEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
-    val storeId: Long,
-    val productId: Long,
+    val storeId: String,
+    val productId: String,
     val productName: String,
     val previousStock: Int,
     val newStock: Int,

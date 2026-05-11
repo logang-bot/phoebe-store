@@ -1,7 +1,7 @@
 package com.example.phoebestore.domain.model
 
 data class Store(
-    val id: Long = 0,
+    val id: String = "",
     val name: String,
     val description: String = "",
     val currency: Currency = Currency.USD,

@@ -5,5 +5,5 @@ import kotlinx.coroutines.flow.Flow
 
 interface InventoryLogRepository {
     suspend fun log(entry: InventoryLog)
-    fun getByStore(storeId: Long): Flow<List<InventoryLog>>
+    fun getByStore(storeId: String): Flow<List<InventoryLog>>
 }

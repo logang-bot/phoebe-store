@@ -4,10 +4,10 @@ import com.example.phoebestore.domain.model.Store
 import kotlinx.coroutines.flow.Flow
 
 interface StoreRepository {
-    suspend fun create(store: Store): Long
+    suspend fun create(store: Store): String
     suspend fun update(store: Store)
-    suspend fun getById(id: Long): Store?
+    suspend fun getById(id: String): Store?
     fun getAll(): Flow<List<Store>>
-    suspend fun delete(id: Long)
-    suspend fun markAccessed(id: Long)
+    suspend fun delete(id: String)
+    suspend fun markAccessed(id: String)
 }

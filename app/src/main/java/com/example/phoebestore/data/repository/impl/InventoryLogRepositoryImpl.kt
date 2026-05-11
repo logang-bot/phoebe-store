@@ -17,6 +17,6 @@ class InventoryLogRepositoryImpl @Inject constructor(
         dao.insert(entry.toEntity())
     }
 
-    override fun getByStore(storeId: Long): Flow<List<InventoryLog>> =
+    override fun getByStore(storeId: String): Flow<List<InventoryLog>> =
         dao.getByStore(storeId).map { list -> list.map { it.toDomain() } }
 }

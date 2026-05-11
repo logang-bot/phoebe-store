@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class StoreDto(
-    val id: Long,
+    val id: String,
     val name: String,
     val description: String = "",
     val currency: String = "USD",

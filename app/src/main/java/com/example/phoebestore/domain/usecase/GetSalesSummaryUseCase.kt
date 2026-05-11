@@ -28,10 +28,10 @@ class GetSalesSummaryUseCase @Inject constructor(
     )
 
     operator fun invoke(
-        storeId: Long,
+        storeId: String,
         fromDate: Long,
         toDate: Long,
-        productId: Long?
+        productId: String?
     ): Flow<Summary> = combine(
         saleRepository.getByStore(storeId),
         productRepository.getByStore(storeId)

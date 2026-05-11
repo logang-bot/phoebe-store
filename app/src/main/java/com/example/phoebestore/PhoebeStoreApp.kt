@@ -34,7 +34,7 @@ class PhoebeStoreApp : Application(), Configuration.Provider {
         syncNotifier.createChannel()
         SyncWorker.schedule(workManager)
         appScope.launch {
-            syncManager.runInitialSyncIfNeeded()
+            syncManager.runSync()
             syncManager.repairLocalImageUrls()
         }
     }

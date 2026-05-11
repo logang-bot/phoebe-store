@@ -77,8 +77,8 @@ import java.io.File
 
 @Composable
 fun CreateProductScreen(
-    storeId: Long,
-    productId: Long?,
+    storeId: String,
+    productId: String?,
     onProductSaved: () -> Unit,
     onNavigateBack: () -> Unit,
     viewModel: CreateProductViewModel = hiltViewModel()
@@ -189,7 +189,7 @@ fun CreateProductScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun CreateProductScreenContent(
-    productId: Long?,
+    productId: String?,
     onNavigateBack: () -> Unit,
     formState: CreateProductFormState,
     onNameChange: (String) -> Unit,

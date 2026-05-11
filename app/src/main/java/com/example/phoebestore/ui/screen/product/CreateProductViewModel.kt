@@ -27,8 +27,8 @@ class CreateProductViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    private val storeId: Long = checkNotNull(savedStateHandle["storeId"])
-    private val productId: Long? = savedStateHandle["productId"]
+    private val storeId: String = checkNotNull(savedStateHandle["storeId"])
+    private val productId: String? = savedStateHandle["productId"]
     private var originalStock: Int? = null
 
     private val _formState = MutableStateFlow(CreateProductFormState())
@@ -115,7 +115,7 @@ class CreateProductViewModel @Inject constructor(
     }
 
     private fun buildProduct(state: CreateProductFormState, price: Double): Product = Product(
-        id = productId ?: 0L,
+        id = productId ?: "",
         storeId = storeId,
         name = state.name.trim(),
         description = state.description.trim(),

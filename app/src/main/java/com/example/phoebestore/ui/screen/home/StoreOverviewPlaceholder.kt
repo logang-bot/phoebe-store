@@ -95,7 +95,7 @@ private fun OverviewRow(label: String, value: String) {
 }
 
 private val previewStore = Store(
-    id = 1L,
+    id = "1",
     name = "Phoebe's Boutique",
     currency = Currency.USD
 )

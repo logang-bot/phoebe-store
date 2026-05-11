@@ -95,8 +95,8 @@ fun ProductDropdown(
 }
 
 private val previewProducts = listOf(
-    Product(id = 1L, storeId = 1L, name = "Coffee", price = 5.00, costPrice = 2.00),
-    Product(id = 2L, storeId = 1L, name = "Tea", price = 3.50, costPrice = 1.00),
+    Product(id = "1", storeId = "1", name = "Coffee", price = 5.00, costPrice = 2.00),
+    Product(id = "2", storeId = "2", name = "Tea", price = 3.50, costPrice = 1.00),
 )
 
 @Preview(showBackground = true)

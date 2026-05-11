@@ -1,7 +1,7 @@
 package com.example.phoebestore.ui.screen.sale
 
 data class CreditSaleDisplayItem(
-    val id: Long,
+    val id: String,
     val productName: String,
     val creditPersonName: String,
     val formattedDate: String,

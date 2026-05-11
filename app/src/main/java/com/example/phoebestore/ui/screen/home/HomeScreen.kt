@@ -43,7 +43,7 @@ import com.example.phoebestore.ui.theme.PhoebeStoreTheme
 
 @Composable
 fun HomeScreen(
-    onNavigateToCreateSale: (storeId: Long) -> Unit = {},
+    onNavigateToCreateSale: (storeId: String) -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -164,7 +164,7 @@ private fun HomeScreenContent(
 }
 
 private val previewStore = Store(
-    id = 1L,
+    id = "1",
     name = "Phoebe's Boutique",
     description = "Fashion & Accessories",
     currency = Currency.USD

@@ -3,7 +3,7 @@ package com.example.phoebestore.ui.screen.sale
 import com.example.phoebestore.domain.model.Product
 
 data class SaleDisplayItem(
-    val id: Long,
+    val id: String,
     val productName: String,
     val formattedDate: String,
     val formattedTotal: String,

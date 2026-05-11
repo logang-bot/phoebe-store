@@ -23,7 +23,7 @@ class CreateStoreViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    private val storeId: Long? = savedStateHandle["storeId"]
+    private val storeId: String? = savedStateHandle["storeId"]
 
     private val _formState = MutableStateFlow(CreateStoreFormState())
     val formState: StateFlow<CreateStoreFormState> = _formState.asStateFlow()
@@ -37,7 +37,7 @@ class CreateStoreViewModel @Inject constructor(
         storeId?.let { loadStore(it) }
     }
 
-    private fun loadStore(id: Long) {
+    private fun loadStore(id: String) {
         viewModelScope.launch {
             storeRepository.getById(id)?.let { store ->
                 _formState.value = CreateStoreFormState(
@@ -91,7 +91,7 @@ class CreateStoreViewModel @Inject constructor(
             _formState.update { it.copy(isLoading = true) }
             try {
                 val store = Store(
-                    id = storeId ?: 0L,
+                    id = storeId ?: "",
                     name = state.name.trim(),
                     description = state.description.trim(),
                     currency = state.currency,

@@ -14,12 +14,12 @@ class SaleSyncer @Inject constructor(
     private val deviceIdProvider: DeviceIdProvider
 ) : EntitySyncer {
 
-    override suspend fun syncWrite(entityId: Long) {
+    override suspend fun syncWrite(entityId: String) {
         val entity = saleDao.getById(entityId) ?: return
         saleRemote.insert(entity.toDomain().copy(deviceId = deviceIdProvider.id).toDto())
     }
 
-    override suspend fun syncDelete(entityId: Long) {
+    override suspend fun syncDelete(entityId: String) {
         saleRemote.delete(entityId)
     }
 }

@@ -69,8 +69,8 @@ internal fun SearchResultsContent(
 }
 
 private val previewProducts = listOf(
-    Product(id = 1L, storeId = 1L, name = "Coffee", price = 5.00, costPrice = 2.00, stock = 10),
-    Product(id = 2L, storeId = 1L, name = "Cappuccino", price = 6.50, costPrice = 2.50, stock = 8),
+    Product(id = "1", storeId = "1", name = "Coffee", price = 5.00, costPrice = 2.00, stock = 10),
+    Product(id = "2", storeId = "1", name = "Cappuccino", price = 6.50, costPrice = 2.50, stock = 8),
 )
 
 @Preview(showBackground = true)

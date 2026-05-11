@@ -219,13 +219,13 @@ private fun PickerProductCard(
 }
 
 private val previewProducts = listOf(
-    Product(id = 1L, storeId = 1L, name = "Coffee", price = 5.00, costPrice = 2.00, stock = 10),
-    Product(id = 2L, storeId = 1L, name = "Tea", price = 3.50, costPrice = 1.00, stock = 5),
-    Product(id = 3L, storeId = 1L, name = "Cappuccino", price = 6.50, costPrice = 2.50, stock = 8),
-    Product(id = 4L, storeId = 1L, name = "Lemonade", price = 4.00, costPrice = 1.50, stock = 15),
-    Product(id = 5L, storeId = 1L, name = "Orange Juice", price = 3.00, costPrice = 1.00, stock = 20),
-    Product(id = 6L, storeId = 1L, name = "Smoothie", price = 5.50, costPrice = 2.00, stock = 6),
-    Product(id = 7L, storeId = 1L, name = "Hot Chocolate", price = 4.50, costPrice = 1.80, stock = 9),
+    Product(id = "1", storeId = "1", name = "Coffee", price = 5.00, costPrice = 2.00, stock = 10),
+    Product(id = "2", storeId = "2", name = "Tea", price = 3.50, costPrice = 1.00, stock = 5),
+    Product(id = "3", storeId = "3", name = "Cappuccino", price = 6.50, costPrice = 2.50, stock = 8),
+    Product(id = "4", storeId = "4", name = "Lemonade", price = 4.00, costPrice = 1.50, stock = 15),
+    Product(id = "5", storeId = "5", name = "Orange Juice", price = 3.00, costPrice = 1.00, stock = 20),
+    Product(id = "6", storeId = "6", name = "Smoothie", price = 5.50, costPrice = 2.00, stock = 6),
+    Product(id = "7", storeId = "7", name = "Hot Chocolate", price = 4.50, costPrice = 1.80, stock = 9),
 )
 
 @Preview(showBackground = true)

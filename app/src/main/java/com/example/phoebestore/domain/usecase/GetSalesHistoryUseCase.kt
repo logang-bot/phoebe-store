@@ -19,10 +19,10 @@ class GetSalesHistoryUseCase @Inject constructor(
     )
 
     operator fun invoke(
-        storeId: Long,
+        storeId: String,
         fromDate: Long,
         toDate: Long,
-        productId: Long?,
+        productId: String?,
         limit: Int
     ): Flow<Result> = combine(
         saleRepository.getByStore(storeId),

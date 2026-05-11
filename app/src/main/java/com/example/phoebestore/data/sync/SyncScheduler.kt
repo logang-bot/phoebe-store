@@ -11,7 +11,7 @@ class SyncScheduler @Inject constructor(
     private val syncOpDao: SyncOperationDao,
     private val workManager: WorkManager
 ) {
-    suspend fun enqueue(entityType: String, entityId: Long, operation: String) {
+    suspend fun enqueue(entityType: String, entityId: String, operation: String) {
         syncOpDao.insert(SyncOperationEntity(entityType = entityType, entityId = entityId, operation = operation))
         SyncWorker.schedule(workManager)
     }

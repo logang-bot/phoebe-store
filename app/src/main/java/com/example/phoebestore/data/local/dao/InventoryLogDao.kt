@@ -11,8 +11,8 @@ import kotlinx.coroutines.flow.Flow
 interface InventoryLogDao {
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
-    suspend fun insert(log: InventoryLogEntity): Long
+    suspend fun insert(log: InventoryLogEntity)
 
     @Query("SELECT * FROM inventory_logs WHERE storeId = :storeId ORDER BY loggedAt DESC")
-    fun getByStore(storeId: Long): Flow<List<InventoryLogEntity>>
+    fun getByStore(storeId: String): Flow<List<InventoryLogEntity>>
 }

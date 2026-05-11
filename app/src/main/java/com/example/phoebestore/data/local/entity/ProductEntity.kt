@@ -18,9 +18,9 @@ import androidx.room.PrimaryKey
     indices = [Index("storeId")]
 )
 data class ProductEntity(
-    @PrimaryKey(autoGenerate = true)
-    val id: Long = 0,
-    val storeId: Long,
+    @PrimaryKey
+    val id: String,
+    val storeId: String,
     val name: String,
     val description: String = "",
     val price: Double,

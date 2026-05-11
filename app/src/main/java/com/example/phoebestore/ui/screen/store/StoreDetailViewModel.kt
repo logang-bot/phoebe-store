@@ -25,7 +25,7 @@ class StoreDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    private val storeId: Long = checkNotNull(savedStateHandle["storeId"])
+    private val storeId: String = checkNotNull(savedStateHandle["storeId"])
 
     private val _uiState = MutableStateFlow(StoreDetailUiState())
     val uiState: StateFlow<StoreDetailUiState> = _uiState.asStateFlow()

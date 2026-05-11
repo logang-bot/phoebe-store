@@ -16,10 +16,10 @@ import java.util.Locale
 import javax.inject.Inject
 
 private data class ReportParams(
-    val storeId: Long,
+    val storeId: String,
     val fromDate: Long,
     val toDate: Long,
-    val productId: Long?
+    val productId: String?
 ) {
     companion object {
         fun from(handle: SavedStateHandle) = ReportParams(

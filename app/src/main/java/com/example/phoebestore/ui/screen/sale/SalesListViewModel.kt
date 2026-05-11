@@ -33,7 +33,7 @@ class SalesListViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    private val storeId: Long = checkNotNull(savedStateHandle["storeId"])
+    private val storeId: String = checkNotNull(savedStateHandle["storeId"])
     private val filterDateFormat = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
     private val saleItemDateFormat = SimpleDateFormat("MMM dd, yyyy - h:mm a", Locale.getDefault())
 

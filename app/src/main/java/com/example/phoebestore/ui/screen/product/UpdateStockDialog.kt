@@ -129,7 +129,7 @@ fun UpdateStockDialog(
     )
 }
 
-private val previewProduct = Product(id = 1L, storeId = 1L, name = "Summer Dress", price = 29.99, stock = 12)
+private val previewProduct = Product(id = "1", storeId = "1", name = "Summer Dress", price = 29.99, stock = 12)
 
 @Preview(showBackground = true)
 @Composable

@@ -5,6 +5,7 @@ import androidx.room.Room
 import com.example.phoebestore.data.local.AppDatabase
 import com.example.phoebestore.data.local.MIGRATION_8_9
 import com.example.phoebestore.data.local.MIGRATION_9_10
+import com.example.phoebestore.data.local.MIGRATION_10_11
 import com.example.phoebestore.data.local.dao.InventoryLogDao
 import com.example.phoebestore.data.local.dao.ProductDao
 import com.example.phoebestore.data.local.dao.SaleDao
@@ -36,7 +37,7 @@ object DatabaseModule {
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): AppDatabase =
         Room.databaseBuilder(context, AppDatabase::class.java, "phoebe_store.db")
-            .addMigrations(MIGRATION_8_9, MIGRATION_9_10)
+            .addMigrations(MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11)
             .build()
 
     @Provides

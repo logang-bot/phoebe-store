@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.Flow
 interface ProductDao {
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
-    suspend fun insert(product: ProductEntity): Long
+    suspend fun insert(product: ProductEntity)
 
     @Upsert
     suspend fun upsert(product: ProductEntity)
@@ -22,11 +22,11 @@ interface ProductDao {
     suspend fun update(product: ProductEntity)
 
     @Query("SELECT * FROM products WHERE id = :id")
-    suspend fun getById(id: Long): ProductEntity?
+    suspend fun getById(id: String): ProductEntity?
 
     @Query("SELECT * FROM products WHERE storeId = :storeId ORDER BY name ASC")
-    fun getByStore(storeId: Long): Flow<List<ProductEntity>>
+    fun getByStore(storeId: String): Flow<List<ProductEntity>>
 
     @Query("DELETE FROM products WHERE id = :id")
-    suspend fun deleteById(id: Long)
+    suspend fun deleteById(id: String)
 }

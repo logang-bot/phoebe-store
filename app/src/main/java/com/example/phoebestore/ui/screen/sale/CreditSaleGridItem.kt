@@ -75,7 +75,7 @@ internal fun CreditSaleGridItem(
 }
 
 private val previewItem = CreditSaleDisplayItem(
-    id = 1L,
+    id = "1",
     productName = "Summer Dress",
     creditPersonName = "Maria García",
     formattedDate = "Apr 03, 2026 - 10:00 AM",

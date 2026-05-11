@@ -9,6 +9,7 @@ import com.example.phoebestore.domain.model.Sale
 import com.example.phoebestore.domain.repository.SaleRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import java.util.UUID
 import javax.inject.Inject
 
 class SaleRepositoryImpl @Inject constructor(
@@ -16,8 +17,9 @@ class SaleRepositoryImpl @Inject constructor(
     private val syncScheduler: SyncScheduler
 ) : SaleRepository {
 
-    override suspend fun create(sale: Sale): Long {
-        val id = dao.insert(sale.toEntity())
+    override suspend fun create(sale: Sale): String {
+        val id = UUID.randomUUID().toString()
+        dao.insert(sale.copy(id = id).toEntity())
         syncScheduler.enqueue(SyncOperationEntity.TYPE_SALE, id, SyncOperationEntity.OP_CREATE)
         return id
     }
@@ -27,16 +29,16 @@ class SaleRepositoryImpl @Inject constructor(
         syncScheduler.enqueue(SyncOperationEntity.TYPE_SALE, sale.id, SyncOperationEntity.OP_UPDATE)
     }
 
-    override suspend fun getById(id: Long): Sale? =
+    override suspend fun getById(id: String): Sale? =
         dao.getById(id)?.toDomain()
 
-    override fun getByStore(storeId: Long): Flow<List<Sale>> =
+    override fun getByStore(storeId: String): Flow<List<Sale>> =
         dao.getByStore(storeId).map { list -> list.map { it.toDomain() } }
 
-    override fun getOnCreditByStore(storeId: Long): Flow<List<Sale>> =
+    override fun getOnCreditByStore(storeId: String): Flow<List<Sale>> =
         dao.getOnCreditByStore(storeId).map { list -> list.map { it.toDomain() } }
 
-    override suspend fun delete(id: Long) {
+    override suspend fun delete(id: String) {
         dao.deleteById(id)
         syncScheduler.enqueue(SyncOperationEntity.TYPE_SALE, id, SyncOperationEntity.OP_DELETE)
     }

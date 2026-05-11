@@ -123,8 +123,8 @@ fun ProductCard(
 }
 
 private val previewProduct = Product(
-    id = 1L,
-    storeId = 1L,
+    id = "1",
+    storeId = "1",
     name = "Summer Dress",
     price = 29.99,
     stock = 12

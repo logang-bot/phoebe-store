@@ -1,6 +1,5 @@
 package com.example.phoebestore.data.sync
 
-import android.content.Context
 import com.example.phoebestore.data.local.dao.ProductDao
 import com.example.phoebestore.data.local.dao.SaleDao
 import com.example.phoebestore.data.local.dao.StoreDao
@@ -12,7 +11,6 @@ import com.example.phoebestore.data.remote.source.ProductRemoteDataSource
 import com.example.phoebestore.data.remote.source.SaleRemoteDataSource
 import com.example.phoebestore.data.remote.source.StoreRemoteDataSource
 import com.example.phoebestore.data.remote.storage.ImageUploader
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -26,7 +24,6 @@ import javax.inject.Singleton
 
 @Singleton
 class SyncManager @Inject constructor(
-    @ApplicationContext private val context: Context,
     private val storeRemote: StoreRemoteDataSource,
     private val productRemote: ProductRemoteDataSource,
     private val saleRemote: SaleRemoteDataSource,
@@ -37,27 +34,23 @@ class SyncManager @Inject constructor(
     private val imageUploader: ImageUploader,
     private val deviceIdProvider: DeviceIdProvider
 ) {
-    private val prefs = context.getSharedPreferences("sync_prefs", Context.MODE_PRIVATE)
-
     private val _isSyncing = MutableStateFlow(false)
     val isSyncing: StateFlow<Boolean> = _isSyncing.asStateFlow()
 
-    suspend fun runInitialSyncIfNeeded() {
-        if (prefs.getBoolean(KEY_INITIAL_SYNC_DONE, false)) return
-
+    suspend fun runSync() {
         _isSyncing.value = true
         try {
             val remoteStores = try {
                 storeRemote.getAll()
             } catch (e: Exception) {
                 errorHandler.notify(
-                    "InitialSync", e,
+                    "Sync", e,
                     "Could not connect to the server. Your data will sync when back online."
                 )
                 return
             }
 
-            val succeeded = when {
+            when {
                 remoteStores.isNotEmpty() -> runCatching { pullAll(remoteStores) }
                     .onFailure {
                         errorHandler.notify(
@@ -65,7 +58,6 @@ class SyncManager @Inject constructor(
                             "Failed to restore your data. Check your connection and try again."
                         )
                     }
-                    .isSuccess
 
                 storeDao.getAll().first().isNotEmpty() -> runCatching { pushAll() }
                     .onFailure {
@@ -74,12 +66,7 @@ class SyncManager @Inject constructor(
                             "Failed to back up your local data. Check your connection and try again."
                         )
                     }
-                    .isSuccess
-
-                else -> true
             }
-
-            if (succeeded) prefs.edit().putBoolean(KEY_INITIAL_SYNC_DONE, true).apply()
         } finally {
             _isSyncing.value = false
         }
@@ -166,7 +153,4 @@ class SyncManager @Inject constructor(
         return if (!fileExists) "" else imageUploader.resolveUrl(url, bucket, remotePath)
     }
 
-    companion object {
-        private const val KEY_INITIAL_SYNC_DONE = "initial_sync_done"
-    }
 }

@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.Flow
 interface SaleDao {
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
-    suspend fun insert(sale: SaleEntity): Long
+    suspend fun insert(sale: SaleEntity)
 
     @Upsert
     suspend fun upsert(sale: SaleEntity)
@@ -22,14 +22,14 @@ interface SaleDao {
     suspend fun update(sale: SaleEntity)
 
     @Query("SELECT * FROM sales WHERE id = :id")
-    suspend fun getById(id: Long): SaleEntity?
+    suspend fun getById(id: String): SaleEntity?
 
     @Query("SELECT * FROM sales WHERE storeId = :storeId ORDER BY soldAt DESC")
-    fun getByStore(storeId: Long): Flow<List<SaleEntity>>
+    fun getByStore(storeId: String): Flow<List<SaleEntity>>
 
     @Query("SELECT * FROM sales WHERE storeId = :storeId AND onCredit = 1 ORDER BY soldAt DESC")
-    fun getOnCreditByStore(storeId: Long): Flow<List<SaleEntity>>
+    fun getOnCreditByStore(storeId: String): Flow<List<SaleEntity>>
 
     @Query("DELETE FROM sales WHERE id = :id")
-    suspend fun deleteById(id: Long)
+    suspend fun deleteById(id: String)
 }

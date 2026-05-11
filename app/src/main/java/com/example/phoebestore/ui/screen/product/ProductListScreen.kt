@@ -44,10 +44,10 @@ import com.example.phoebestore.ui.theme.PhoebeStoreTheme
 
 @Composable
 fun ProductListScreen(
-    storeId: Long,
+    storeId: String,
     onNavigateBack: () -> Unit,
-    onNavigateToCreateProduct: (storeId: Long) -> Unit,
-    onNavigateToEditProduct: (storeId: Long, productId: Long) -> Unit,
+    onNavigateToCreateProduct: (storeId: String) -> Unit,
+    onNavigateToEditProduct: (storeId: String, productId: String) -> Unit,
     viewModel: ProductListViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -80,7 +80,7 @@ private fun ProductListScreenContent(
     products: List<Product>,
     onNavigateBack: () -> Unit,
     onNavigateToCreateProduct: () -> Unit,
-    onNavigateToEditProduct: (productId: Long) -> Unit,
+    onNavigateToEditProduct: (productId: String) -> Unit,
     onUpdateStockClick: (Product) -> Unit
 ) {
     Scaffold(
@@ -175,9 +175,9 @@ private fun ProductListScreenContent(
 }
 
 private val previewProducts = listOf(
-    Product(id = 1L, storeId = 1L, name = "Summer Dress", price = 29.99, stock = 12),
-    Product(id = 2L, storeId = 1L, name = "Leather Bag", price = 89.99, stock = 3),
-    Product(id = 3L, storeId = 1L, name = "Sun Hat", price = 14.99, stock = 25)
+    Product(id = "1", storeId = "1", name = "Summer Dress", price = 29.99, stock = 12),
+    Product(id = "2", storeId = "2", name = "Leather Bag", price = 89.99, stock = 3),
+    Product(id = "3", storeId = "3", name = "Sun Hat", price = 14.99, stock = 25)
 )
 
 @Preview(showBackground = true)

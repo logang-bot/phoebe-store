@@ -21,7 +21,7 @@ class ProductListViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    val storeId: Long = checkNotNull(savedStateHandle["storeId"])
+    val storeId: String = checkNotNull(savedStateHandle["storeId"])
 
     private val _uiState = MutableStateFlow(ProductListUiState())
     val uiState: StateFlow<ProductListUiState> = _uiState.asStateFlow()

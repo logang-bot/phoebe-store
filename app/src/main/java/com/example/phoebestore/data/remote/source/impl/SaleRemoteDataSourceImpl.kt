@@ -2,24 +2,22 @@ package com.example.phoebestore.data.remote.source.impl
 
 import com.example.phoebestore.data.remote.dto.SaleDto
 import com.example.phoebestore.data.remote.source.SaleRemoteDataSource
-import com.example.phoebestore.data.sync.DeviceIdProvider
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.from
 import javax.inject.Inject
 
 class SaleRemoteDataSourceImpl @Inject constructor(
-    private val supabase: SupabaseClient,
-    private val deviceIdProvider: DeviceIdProvider
+    private val supabase: SupabaseClient
 ) : SaleRemoteDataSource {
 
-    override suspend fun getByStore(storeId: Long): List<SaleDto> =
+    override suspend fun getByStore(storeId: String): List<SaleDto> =
         supabase.from("sales")
-            .select { filter { eq("store_id", storeId); eq("device_id", deviceIdProvider.id) } }
+            .select { filter { eq("store_id", storeId) } }
             .decodeList()
 
-    override suspend fun getById(id: Long): SaleDto? =
+    override suspend fun getById(id: String): SaleDto? =
         supabase.from("sales")
-            .select { filter { eq("id", id); eq("device_id", deviceIdProvider.id) } }
+            .select { filter { eq("id", id) } }
             .decodeSingleOrNull()
 
     override suspend fun insert(dto: SaleDto) {
@@ -32,7 +30,7 @@ class SaleRemoteDataSourceImpl @Inject constructor(
         }
     }
 
-    override suspend fun delete(id: Long) {
+    override suspend fun delete(id: String) {
         supabase.from("sales").delete {
             filter { eq("id", id) }
         }

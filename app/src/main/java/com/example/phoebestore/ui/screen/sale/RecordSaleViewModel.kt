@@ -35,7 +35,7 @@ class RecordSaleViewModel @Inject constructor(
     private val userSettingsRepository: UserSettingsRepository
 ) : ViewModel() {
 
-    private val storeId: Long = checkNotNull(savedStateHandle["storeId"])
+    private val storeId: String = checkNotNull(savedStateHandle["storeId"])
 
     private val dateFormat = SimpleDateFormat("MMM dd, yyyy - h:mm a", Locale.getDefault())
 
